@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Public pages
-import Landing from './pages/Landing';
+import Landing from './pages/homepage';
 
 // Auth pages - eager load (needed before user logs in)
 import Login from './pages/auth/Login';

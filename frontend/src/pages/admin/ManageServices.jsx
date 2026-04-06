@@ -12,6 +12,7 @@ export default function ManageServices() {
     price: '',
     duration: '',
   });
+  const [editingServiceId, setEditingServiceId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -34,6 +35,19 @@ export default function ManageServices() {
     }
   };
 
+  const handleEdit = (service) => {
+    setEditingServiceId(service.id);
+    setFormData({
+      name: service.name,
+      description: service.description,
+      category: service.category,
+      price: service.price,
+      duration: service.duration,
+    });
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -42,20 +56,34 @@ export default function ManageServices() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const newService = { id: Date.now(), ...formData };
-      setServices([...services, newService]);
-      setFormData({ name: '', description: '', category: '', price: '', duration: '' });
-      setShowForm(false);
-      
-      const response = await serviceService.createService(formData);
-      setServices(services => 
-        services.map(s => s.id === newService.id ? response.data : s)
-      );
+      if (editingServiceId) {
+        setServices(services.map(s => s.id === editingServiceId ? { ...s, ...formData } : s));
+        const currentEditId = editingServiceId;
+        
+        setShowForm(false);
+        setEditingServiceId(null);
+        setFormData({ name: '', description: '', category: '', price: '', duration: '' });
+
+        const response = await serviceService.updateService(currentEditId, formData);
+        setServices(services => 
+          services.map(s => s.id === currentEditId ? response.data : s)
+        );
+      } else {
+        const newService = { id: Date.now(), ...formData };
+        setServices([...services, newService]);
+        setFormData({ name: '', description: '', category: '', price: '', duration: '' });
+        setShowForm(false);
+        
+        const response = await serviceService.createService(formData);
+        setServices(services => 
+          services.map(s => s.id === newService.id ? response.data : s)
+        );
+      }
     } catch (err) {
-      setServices(services.filter(s => s.id !== (formData.name + Date.now())));
       setShowForm(true);
-      setError('Failed to create service');
+      setError(editingServiceId ? 'Failed to update service' : 'Failed to create service');
       console.error(err);
+      fetchServices();
     }
   };
 
@@ -106,7 +134,15 @@ export default function ManageServices() {
             <h2 className="text-2xl font-bold text-slate-900 mt-1">Photography Services</h2>
           </div>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              if (showForm) {
+                setShowForm(false);
+                setEditingServiceId(null);
+                setFormData({ name: '', description: '', category: '', price: '', duration: '' });
+              } else {
+                setShowForm(true);
+              }
+            }}
             className={`px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 ${
               showForm
                 ? 'bg-red-600 hover:bg-red-700'
@@ -120,7 +156,7 @@ export default function ManageServices() {
         {/* Add Service Form */}
         {showForm && (
           <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-lg">
-            <h3 className="text-xl font-bold text-slate-900 mb-6">Create New Service</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-6">{editingServiceId ? 'Edit Service' : 'Create New Service'}</h3>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Service Name</label>
@@ -191,7 +227,7 @@ export default function ManageServices() {
                 type="submit"
                 className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold py-3 rounded-lg transition-all duration-300"
               >
-                Create Service
+                {editingServiceId ? 'Update Service' : 'Create Service'}
               </button>
             </form>
           </div>
@@ -232,7 +268,9 @@ export default function ManageServices() {
                 </div>
 
                 <div className="flex gap-3">
-                  <button className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition">
+                  <button 
+                    onClick={() => handleEdit(service)}
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition">
                     Edit
                   </button>
                   <button
