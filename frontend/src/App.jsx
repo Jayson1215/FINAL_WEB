@@ -8,6 +8,7 @@ import Landing from './pages/homepage';
 // Auth pages - eager load (needed before user logs in)
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import SocialCallback from './pages/auth/SocialCallback';
 
 // Client pages - lazy loaded
 const ClientDashboard = React.lazy(() => import('./pages/client/Dashboard'));
@@ -27,10 +28,10 @@ const RevenueReports = React.lazy(() => import('./pages/admin/RevenueReports'));
 
 // Loading fallback component
 const PageLoader = () => (
-  <div className="flex justify-center items-center h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+  <div className="flex justify-center items-center h-screen bg-[#F9F9F9]">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-400 border-t-purple-200 mb-4"></div>
-      <p className="text-white text-lg font-semibold">Loading page...</p>
+      <div className="w-12 h-12 border-2 border-[#C79F68] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+      <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#333]">PhotoStudio</p>
     </div>
   </div>
 );
@@ -62,6 +63,7 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/auth/callback" element={<SocialCallback />} />
 
       {/* Client Routes */}
       <Route

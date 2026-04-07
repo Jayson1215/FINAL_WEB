@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import NotificationBell from '../common/NotificationBell';
 
 export default function AdminLayout({ children, title }) {
   const { user, logout } = useAuth();
@@ -43,78 +44,86 @@ export default function AdminLayout({ children, title }) {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Premium Sidebar */}
-      <aside className={`fixed md:static w-72 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 shadow-2xl flex flex-col transition-all duration-300 z-40 h-screen border-r border-slate-700/50 ${
+    <div className="flex h-screen bg-[#F9F9F9] font-sans selection:bg-[#C79F68] selection:text-white">
+      {/* Luxury Gallery Sidebar */}
+      <aside className={`fixed md:static w-72 bg-white flex flex-col transition-all duration-500 z-40 h-screen border-r border-[#EEEEEE] ${
         sidebarOpen ? 'left-0' : '-left-72 md:left-0'
       }`}>
-        {/* Logo Section */}
-        <Link to="/" className="p-8 hover:opacity-90 transition duration-300 block border-b border-slate-700/50">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center font-bold text-white text-lg">
-              📸
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white tracking-tight">PhotoStudio</h2>
-              <p className="text-xs text-amber-400 font-semibold uppercase tracking-widest">Studio Manager</p>
-            </div>
+        {/* Logo Section - Iconic Serif Branding */}
+        <Link to="/" className="p-12 hover:opacity-80 transition-all duration-700 block border-b border-[#F5F5F5]">
+          <div className="text-center group">
+            <h2 className="text-2xl font-serif text-[#1A1A1A] tracking-[0.3em] group-hover:text-[#C79F68] transition-colors duration-700">L I G H T</h2>
+            <div className="w-8 h-px bg-[#C79F68] mx-auto mt-4 opacity-40"></div>
+            <p className="text-[8px] text-[#AAA] font-bold uppercase tracking-[0.5em] mt-4">Studio Manager</p>
           </div>
         </Link>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto">
+        {/* Navigation - Minimalist & Refined */}
+        <nav className="flex-1 px-0 py-10 space-y-1 overflow-y-auto custom-scrollbar">
           {navLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-4 px-6 py-4 rounded-xl transition-all duration-300 text-sm font-semibold uppercase tracking-wide ${
+              className={`flex items-center gap-5 px-10 py-5 transition-all duration-500 text-[10px] font-bold uppercase tracking-[0.25em] relative group ${
                 isActive(link.path)
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/20'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                  ? 'text-[#1A1A1A] bg-[#F9F9F9]'
+                  : 'text-[#999] hover:text-[#1A1A1A]'
               }`}
             >
-              <span className="text-xl">{link.icon}</span>
+              {/* Active Indicator Line */}
+              {isActive(link.path) && (
+                <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#C79F68] animate-slideIn"></span>
+              )}
+              
+              <span className={`text-lg transition-transform duration-500 group-hover:scale-110 ${isActive(link.path) ? 'text-[#C79F68]' : 'grayscale opacity-50 text-slate-400 group-hover:grayscale-0 group-hover:opacity-100'}`}>
+                {link.icon}
+              </span>
               <span>{link.label}</span>
-              {isActive(link.path) && <span className="ml-auto w-2 h-2 bg-white rounded-full"></span>}
             </Link>
           ))}
         </nav>
 
-        {/* User Section */}
-        <div className="px-4 py-6 border-t border-slate-700/50 space-y-4">
-          <div className="px-6 py-4 bg-gradient-to-r from-slate-800 to-slate-800/50 border border-slate-700 rounded-xl">
-            <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-2">Logged in as</p>
-            <p className="font-semibold text-white truncate flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+        {/* User Section - Understated Elegance */}
+        <div className="px-8 py-10 border-t border-[#F5F5F5] space-y-6 bg-white">
+          <div className="text-center">
+            <p className="text-[8px] text-[#BBB] uppercase tracking-[0.3em] font-bold mb-3">Logged in as</p>
+            <p className="text-xs font-serif text-[#1A1A1A] tracking-wider truncate mb-1">
               {user?.name}
             </p>
-            <p className="text-xs text-amber-400 mt-1">{user?.email}</p>
+            <p className="text-[9px] text-[#C79F68] tracking-widest lowercase">{user?.email}</p>
           </div>
+          
           <button
             onClick={handleLogoutClick}
-            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 text-sm uppercase tracking-wide shadow-lg hover:shadow-red-600/30"
+            className="w-full border border-[#EEEEEE] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white hover:border-[#1A1A1A] font-bold py-4 px-4 transition-all duration-700 text-[9px] uppercase tracking-[0.3em] active:scale-[0.98]"
           >
-            Logout
+            Sign Out
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Premium Top Bar */}
-        <div className="bg-white border-b border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between px-6 py-5">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
-              <p className="text-sm text-slate-500 mt-1">Welcome to your photography studio management</p>
+        {/* Understated Top Bar */}
+        <div className="bg-white border-b border-[#F5F5F5]">
+          <div className="flex items-center justify-between px-8 py-8 md:py-10">
+            <div className="animate-fadeIn">
+              <h1 className="text-3xl md:text-4xl font-serif text-[#1A1A1A] tracking-tight">{title}</h1>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#BBB] mt-3 flex items-center gap-2">
+                <span className="w-1 h-1 bg-[#C79F68] rounded-full"></span>
+                Studio Management Overview
+              </p>
             </div>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition text-slate-600 text-2xl"
-            >
-              ☰
-            </button>
+            <div className="flex items-center gap-4">
+              <NotificationBell />
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden p-3 hover:bg-[#F9F9F9] rounded-full transition-all duration-500 text-[#1A1A1A] text-2xl"
+              >
+                ☰
+              </button>
+            </div>
           </div>
         </div>
 

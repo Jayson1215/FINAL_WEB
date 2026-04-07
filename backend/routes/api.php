@@ -7,12 +7,17 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\NotificationController;
 
 /**
  * Public Routes (No Authentication Required)
  */
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Social Authentication Routes
+Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\SocialAuthController::class, 'redirectToProvider']);
+Route::get('/auth/{provider}/callback', [\App\Http\Controllers\SocialAuthController::class, 'handleProviderCallback']);
 
 // Public services and portfolio access (for browsing before login)
 Route::get('/client/services', [ServiceController::class, 'index']);
@@ -30,6 +35,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     /**
+     * Notification Routes
+     */
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+    /**
      * Client Routes
      */
     Route::middleware('role:client')->group(function () {
@@ -39,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/client/bookings/{booking}', [BookingController::class, 'show']);
         Route::put('/client/bookings/{booking}', [BookingController::class, 'update']);
         Route::delete('/client/bookings/{booking}', [BookingController::class, 'destroy']);
+        Route::post('/client/bookings/{booking}/cancel', [BookingController::class, 'requestCancellation']);
 
         // Payments routes (client)
         Route::post('/client/payments', [PaymentController::class, 'store']);
@@ -58,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/bookings', [BookingController::class, 'indexAll']);
         Route::get('/admin/bookings/{booking}', [BookingController::class, 'show']);
         Route::patch('/admin/bookings/{booking}/status', [BookingController::class, 'updateStatus']);
+        Route::post('/admin/bookings/{booking}/refund', [BookingController::class, 'processRefund']);
         Route::put('/admin/bookings/{booking}', [BookingController::class, 'update']);
 
         // Users management (admin)
@@ -69,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Payments management (admin)
         Route::get('/admin/payments', [PaymentController::class, 'getAll']);
+        Route::post('/admin/payments/{payment}/confirm', [PaymentController::class, 'confirm']);
         Route::get('/admin/reports', [PaymentController::class, 'reports']);
     });
 });

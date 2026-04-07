@@ -5,8 +5,11 @@ import { bookingService } from '../../services/bookingService';
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -25,17 +28,27 @@ export default function MyBookings() {
     }
   };
 
-  const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm('Are you sure you want to cancel this booking?')) {
-      return;
-    }
+  const handleCancelRequest = async (e) => {
+    e.preventDefault();
+    if (!showCancelModal || !cancelReason.trim()) return;
 
     try {
-      await bookingService.cancelBooking(bookingId);
-      setBookings(bookings.filter(b => b.id !== bookingId));
+      setIsSubmitting(true);
+      await bookingService.requestCancellation(showCancelModal.id, cancelReason);
+      
+      // Update local state
+      setBookings(bookings.map(b => 
+        b.id === showCancelModal.id 
+          ? { ...b, status: 'cancelled', refund_status: b.paid_amount > 0 ? 'requested' : 'none', cancellation_reason: cancelReason }
+          : b
+      ));
+      
+      setShowCancelModal(null);
+      setCancelReason('');
     } catch (err) {
-      setError('Failed to cancel booking');
-      console.error(err);
+      setError('Failed to request cancellation');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -45,132 +58,193 @@ export default function MyBookings() {
     return booking.status !== 'cancelled' && bookingDate > now;
   };
 
+  const getStatusColor = (status, refundStatus) => {
+    if (status === 'cancelled') {
+        if (refundStatus === 'refunded') return 'text-emerald-600';
+        if (refundStatus === 'requested') return 'text-amber-600';
+        return 'text-red-600';
+    }
+    if (status === 'confirmed') return 'text-emerald-600';
+    return 'text-[#AAA]';
+  };
+
   return (
-    <ClientLayout title="My Bookings">
+    <ClientLayout title="My Sessions">
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">⚠️</span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-900">Error</p>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
-            </div>
-          </div>
+        <div className="mb-12 p-6 bg-red-50 border border-red-100 text-center">
+            <p className="text-sm font-bold uppercase tracking-widest text-red-800 mb-2">Notice</p>
+            <p className="text-sm text-red-600 font-medium">{error}</p>
         </div>
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-96">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-slate-600 font-medium">Loading your bookings...</p>
-          </div>
+        <div className="flex justify-center items-center h-64">
+          <div className="w-8 h-8 border-2 border-[#C79F68] border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
-        <div className="space-y-12">
-          {/* Professional Header */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-500 via-purple-400 to-purple-600 p-12 shadow-2xl shadow-purple-500/30">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full blur-2xl -ml-20 -mb-20"></div>
-            <div className="relative z-10">
-              <p className="text-purple-100 text-xs font-bold uppercase tracking-widest mb-3">Session Management</p>
-              <h1 className="text-5xl font-bold text-white mb-4">My Bookings</h1>
-              <p className="text-purple-50 text-lg font-medium max-w-2xl">Manage and track all your photography sessions</p>
-            </div>
+        <div className="max-w-5xl mx-auto">
+          {/* Subtle Introduction */}
+          <div className="text-center mb-20">
+            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-4">Past & Present</p>
+            <h2 className="text-3xl font-serif text-[#333] mb-6">Your Photography History</h2>
+            <p className="text-sm text-[#777] max-w-xl mx-auto leading-relaxed">
+              Track your upcoming appointments and review your past sessions with us.
+            </p>
           </div>
 
           {bookings.length > 0 ? (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {bookings.map(booking => (
                 <div 
                   key={booking.id} 
-                  className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 group"
+                  className="bg-white border border-[#EEEEEE] p-12 transition-all duration-500 hover:shadow-premium group"
                 >
-                  <div className="p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                      {/* Service */}
-                      <div>
-                        <p className="text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">Service</p>
-                        <h3 className="text-lg font-bold text-slate-900">
-                          {booking.service?.name}
-                        </h3>
-                        {booking.service?.category && (
-                          <p className="text-xs text-slate-500 mt-2">{booking.service.category}</p>
-                        )}
-                      </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-12 items-center">
+                    {/* Service & Category */}
+                    <div className="md:col-span-1">
+                      <p className={`text-[9px] font-bold uppercase tracking-[0.3em] mb-4 ${getStatusColor(booking.status, booking.refund_status)}`}>
+                        {booking.status} {booking.refund_status !== 'none' && `(${booking.refund_status})`}
+                      </p>
+                      <h3 className="text-2xl font-serif text-[#333] mb-2 group-hover:text-[#C79F68] transition">
+                        {booking.service?.name}
+                      </h3>
+                      <p className="text-[10px] text-[#AAA] uppercase tracking-[0.2em] font-bold">
+                        {booking.service?.category || 'Session'}
+                      </p>
+                    </div>
 
-                      {/* Date & Time */}
-                      <div>
-                        <p className="text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">Date & Time</p>
-                        <p className="text-lg font-bold text-slate-900">
-                          {new Date(booking.booking_date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </p>
-                        <p className="text-slate-600 font-semibold text-sm mt-1">{booking.booking_time}</p>
-                      </div>
+                    {/* Date & Time */}
+                    <div className="md:col-span-1">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#AAA] mb-3">Schedule</p>
+                      <p className="text-sm font-bold text-[#333] tracking-[0.1em]">
+                        {new Date(booking.booking_date).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                      <p className="text-[11px] text-[#C79F68] mt-1 font-bold">{booking.booking_time}</p>
+                    </div>
 
-                      {/* Amount */}
-                      <div>
-                        <p className="text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">Amount</p>
-                        <p className="text-3xl font-bold text-purple-600">
-                          ₱{parseFloat(booking.total_amount || 0).toFixed(2)}
-                        </p>
-                      </div>
-
-                      {/* Status */}
-                      <div>
-                        <p className="text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">Status</p>
-                        <span
-                          className={`inline-block px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap ${
-                            booking.status === 'confirmed' 
-                              ? 'bg-green-100 text-green-700' 
-                              : booking.status === 'cancelled' 
-                              ? 'bg-red-100 text-red-700' 
-                              : 'bg-purple-100 text-purple-700'
-                          }`}
-                        >
-                          {booking.status}
-                        </span>
+                    {/* Amount & Payments */}
+                    <div className="md:col-span-1">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#AAA] mb-3">Investment</p>
+                      <div className="space-y-1">
+                          <p className="text-xl font-serif text-[#333]">
+                            ₱{parseFloat(booking.total_amount || 0).toLocaleString()}
+                          </p>
+                          <div className="flex justify-between items-center text-[8px] font-bold uppercase tracking-widest text-[#AAA]">
+                              <span>Paid: ₱{parseFloat(booking.paid_amount || 0).toLocaleString()}</span>
+                              {booking.total_amount > booking.paid_amount && (
+                                  <span className="text-amber-600">Due: ₱{parseFloat(booking.total_amount - booking.paid_amount).toLocaleString()}</span>
+                              )}
+                          </div>
                       </div>
                     </div>
 
-                    {/* Special Requests */}
-                    {booking.special_requests && (
-                      <div className="mb-6 p-5 bg-slate-50 border border-slate-200 rounded-xl">
-                        <p className="text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">Special Requests</p>
-                        <p className="text-slate-800 font-medium">{booking.special_requests}</p>
-                      </div>
-                    )}
-
                     {/* Actions */}
-                    {canCancelBooking(booking) && (
-                      <div className="flex gap-3 pt-6 border-t border-slate-200">
-                        <button
-                          onClick={() => handleCancelBooking(booking.id)}
-                          className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-sm uppercase tracking-wider transition"
-                        >
-                          Cancel Booking
-                        </button>
-                      </div>
-                    )}
+                    <div className="md:col-span-1 flex flex-col space-y-4">
+                        {booking.status !== 'cancelled' && (
+                            <Link 
+                                to={`/client/booking/${booking.service_id}`}
+                                className="bg-[#333] text-white py-4 text-[9px] font-bold uppercase tracking-[0.25em] text-center hover:bg-[#C79F68] transition duration-500"
+                            >
+                                Re-Schedule
+                            </Link>
+                        )}
+                        {canCancelBooking(booking) && (
+                            <button
+                                onClick={() => setShowCancelModal(booking)}
+                                className="text-[9px] font-bold uppercase tracking-widest text-[#AAA] hover:text-red-600 transition duration-300 border border-[#EEEEEE] py-4"
+                            >
+                                Request Cancel
+                            </button>
+                        )}
+                        {booking.status === 'cancelled' && booking.refund_status === 'requested' && (
+                            <div className="py-4 text-center border border-amber-100 bg-amber-50">
+                                <p className="text-[8px] font-bold uppercase tracking-widest text-amber-700">Refund Review</p>
+                            </div>
+                        )}
+                    </div>
                   </div>
+
+                  {/* Cancellation Reason (If applicable) */}
+                  {booking.status === 'cancelled' && booking.cancellation_reason && (
+                    <div className="mt-12 pt-8 border-t border-[#EEEEEE] bg-[#F9F9F9] p-8">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-[#AAA] mb-3">Reason for Cancellation:</p>
+                      <p className="text-sm text-[#777] italic leading-relaxed">"{booking.cancellation_reason}"</p>
+                    </div>
+                  )}
+
+                  {/* Special Requests (Subtle) */}
+                  {booking.special_requests && (
+                    <div className="mt-12 pt-8 border-t border-[#EEEEEE]">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA] mb-4 italic">Note from Client:</p>
+                      <p className="text-sm text-[#777] italic leading-relaxed">"{booking.special_requests}"</p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
-              <span className="text-5xl mb-4 block">📸</span>
-              <p className="text-slate-700 text-lg mb-8 font-medium">You haven't booked any sessions yet</p>
-              <Link to="/client/services">
-                <button className="inline-block bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-8 py-4 rounded-xl font-bold uppercase tracking-wider transition shadow-lg shadow-purple-600/30">
-                  ✨ Book Your First Session
-                </button>
+            <div className="text-center py-24 border border-dashed border-[#EEEEEE]">
+              <p className="text-[11px] uppercase tracking-widest text-[#AAA] font-bold mb-10">No sessions scheduled yet</p>
+              <Link to="/client/services" className="bg-[#333] text-white py-5 px-10 text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-[#C79F68] transition duration-500 shadow-premium">
+                Explore Packages
               </Link>
             </div>
           )}
+          
+          <div className="mt-32 text-center">
+            <div className="w-px h-16 bg-[#EEEEEE] mx-auto mb-8"></div>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-[#AAA] font-bold">
+              Captured Moments Last Forever
+            </p>
+          </div>
+        </div>
+      )}
+      {/* Cancellation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-white/90 backdrop-blur-md z-[100] flex items-center justify-center p-8">
+            <div className="bg-white border border-[#EEEEEE] p-12 max-w-lg w-full shadow-premium animate-fadeIn" onClick={e => e.stopPropagation()}>
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-6">Reservation Reversal</p>
+                <h3 className="text-3xl font-serif text-[#333] mb-8">Request Cancellation</h3>
+                
+                <form onSubmit={handleCancelRequest} className="space-y-8">
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Please provide a reason for the record</label>
+                        <textarea
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                            required
+                            rows={4}
+                            placeholder="Reason for cancellation..."
+                            className="w-full bg-[#F9F9F9] border border-[#EEEEEE] p-6 text-sm text-[#333] focus:border-[#C79F68] outline-none transition-all duration-500 resize-none"
+                        />
+                    </div>
+
+                    <div className="flex gap-4 pt-4">
+                        <button
+                            type="button"
+                            onClick={() => setShowCancelModal(null)}
+                            className="flex-1 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#999] border border-[#EEEEEE] hover:bg-[#F9F9F9] transition"
+                        >
+                            Back
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting || !cancelReason.trim()}
+                            className="flex-1 py-5 text-[10px] font-bold uppercase tracking-[0.25em] text-white bg-[#333] hover:bg-red-600 transition duration-500 disabled:opacity-30"
+                        >
+                            {isSubmitting ? 'Processing...' : 'Submit Request'}
+                        </button>
+                    </div>
+
+                    <p className="text-[9px] uppercase tracking-widest text-[#AAA] text-center leading-relaxed">
+                        Note: Downpayments are subject to our refund policy. Refunds are typically processed within 5-7 business days after approval.
+                    </p>
+                </form>
+            </div>
         </div>
       )}
     </ClientLayout>

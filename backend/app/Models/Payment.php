@@ -20,6 +20,7 @@ class Payment extends Model
         'payment_status',
         'amount',
         'transaction_reference',
+        'type',
     ];
 
     protected $casts = [

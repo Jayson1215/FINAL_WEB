@@ -26,19 +26,36 @@ export default function BookingManager() {
 
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
-      // Optimistic update - update UI immediately
-      const previousBookings = bookings;
+      const previousBookings = [...bookings];
       setBookings(bookings.map(b => 
         b.id === bookingId ? { ...b, status: newStatus } : b
       ));
       
-      // Then update backend
       await bookingService.updateBookingStatus(bookingId, newStatus);
-      // UI already updated optimistically, no need to refetch
     } catch (err) {
-      // Revert on error
-      setBookings(previousBookings);
       setError('Failed to update booking status');
+    }
+  };
+
+  const handleProcessRefund = async (bookingId) => {
+    if (!window.confirm('Confirm refund processing? This will mark the transaction as refunded in the system.')) return;
+    
+    try {
+      await bookingService.processRefund(bookingId);
+      setBookings(bookings.map(b => 
+        b.id === bookingId ? { ...b, refund_status: 'refunded' } : b
+      ));
+    } catch (err) {
+      setError('Failed to process refund');
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch(status) {
+      case 'finished': return 'text-slate-500 border-slate-500/20 bg-slate-50';
+      case 'confirmed': return 'text-emerald-600 border-emerald-600/20 bg-emerald-50';
+      case 'cancelled': return 'text-red-500 border-red-500/20 bg-red-50';
+      default: return 'text-amber-500 border-amber-500/20 bg-amber-50';
     }
   };
 
@@ -56,96 +73,118 @@ export default function BookingManager() {
   }
 
   return (
-    <AdminLayout title="Manage Bookings">
+    <AdminLayout title="Studio Log">
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">⚠️</span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-900">Error</p>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
-            </div>
-          </div>
+        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">Notice</p>
+          <p className="text-sm text-red-800 font-serif italic">{error}</p>
         </div>
       )}
 
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest">Session Management</p>
-          <h2 className="text-2xl font-bold text-slate-900 mt-1">Client Bookings</h2>
+      <div className="space-y-16 animate-fadeIn">
+        {/* Editorial Header */}
+        <div className="border-b border-[#EEEEEE] pb-10">
+          <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">Client Sessions</h2>
+          <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Orchestrating the schedule and fulfillment of studio reservations.</p>
         </div>
 
-        {/* Bookings Table */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-slate-200">
-                  <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">Client</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">Service</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">Date & Time</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-blue-900 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {bookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+        {/* Bookings Table - Runway Style */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-separate border-spacing-0">
+            <thead>
+              <tr>
+                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Patron</th>
+                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Schedule</th>
+                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Investment</th>
+                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Accounting</th>
+                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A] text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#F5F5F5]">
+              {bookings.length > 0 ? (
+                bookings.map((booking) => (
+                  <tr key={booking.id} className="group hover:bg-[#FAFAFA] transition-all duration-500">
+                    <td className="py-8">
+                      <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 border border-[#EEEEEE] flex items-center justify-center text-[#999] text-xs font-serif group-hover:border-[#C79F68] group-hover:text-[#C79F68] transition-all duration-700">
                           {booking.user?.name?.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 text-sm">{booking.user?.name}</p>
-                          <p className="text-xs text-slate-500">{booking.user?.email}</p>
+                          <p className="text-sm font-serif text-[#1A1A1A] mb-1">{booking.user?.name || 'Guest'}</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C79F68]">{booking.service?.name}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-slate-900 text-sm">{booking.service?.name}</p>
-                      <p className="text-xs text-slate-500">{booking.service?.category}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm">
-                        <p className="font-medium text-slate-900">{new Date(booking.booking_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                        <p className="text-xs text-slate-500">{booking.booking_time}</p>
+                    <td className="py-8">
+                      <div className="text-[10px] text-[#777] font-medium tracking-widest">
+                        {new Date(booking.booking_date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        <span className="block mt-1 font-bold text-[#1A1A1A]">{booking.booking_time || 'TBD'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-lg text-blue-600">₱{parseFloat(booking.total_amount).toFixed(2)}</p>
+                    <td className="py-8">
+                      <div className="space-y-1">
+                          <p className="font-serif text-sm text-[#1A1A1A]">₱{parseFloat(booking.total_amount).toLocaleString()}</p>
+                          <div className="flex items-center gap-2">
+                              <span className="text-[8px] font-bold uppercase tracking-widest text-[#AAA]">Paid: ₱{parseFloat(booking.paid_amount || 0).toLocaleString()}</span>
+                          </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <select
-                        value={booking.status}
-                        onChange={(e) => handleStatusChange(booking.id, e.target.value)}
-                        className={`px-3 py-2 rounded-lg text-xs font-semibold border-0 transition-all cursor-pointer ${
-                          booking.status === 'confirmed'
-                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                            : booking.status === 'cancelled'
-                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                            : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                        }`}
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
+                    <td className="py-8">
+                      {booking.status === 'cancelled' ? (
+                        <div className="space-y-2">
+                             <span className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1 border ${
+                                 booking.refund_status === 'refunded' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
+                             }`}>
+                                 {booking.refund_status === 'requested' ? 'Refund Due' : booking.refund_status}
+                             </span>
+                             {booking.refund_status === 'requested' && (
+                                <button 
+                                    onClick={() => handleProcessRefund(booking.id)}
+                                    className="block text-[8px] font-bold uppercase tracking-widest text-[#333] border-b border-[#333] hover:text-[#C79F68] transition"
+                                >
+                                    Fulfill Refund
+                                </button>
+                             )}
+                        </div>
+                      ) : (
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-[#BBB]">Internal Records</span>
+                      )}
+                    </td>
+                    <td className="py-8 text-right">
+                      <div className="flex flex-col items-end gap-3">
+                        <select
+                            value={booking.status}
+                            onChange={(e) => handleStatusChange(booking.id, e.target.value)}
+                            className={`text-[9px] font-bold uppercase tracking-[0.3em] px-4 py-2 border bg-transparent cursor-pointer transition-all duration-500 outline-none ${getStatusStyle(booking.status)}`}
+                        >
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="finished">Finished</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        
+                        {booking.status === 'cancelled' && booking.cancellation_reason && (
+                            <div className="group/note relative">
+                                <span className="text-[8px] font-bold uppercase tracking-widest text-[#AAA] cursor-help border-b border-dashed border-[#AAA]">View Reason</span>
+                                <div className="absolute right-0 bottom-full mb-4 w-64 p-6 bg-white border border-[#EEEEEE] shadow-premium opacity-0 group-hover/note:opacity-100 transition-opacity z-50 pointer-events-none">
+                                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-3">Client Testimony</p>
+                                    <p className="text-[10px] text-[#777] italic leading-relaxed">"{booking.cancellation_reason}"</p>
+                                </div>
+                            </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {bookings.length === 0 && (
-            <div className="py-12 text-center">
-              <span className="text-4xl mb-3 block">📅</span>
-              <p className="text-slate-600 font-medium">No bookings yet</p>
-              <p className="text-slate-500 text-sm mt-2">When clients book sessions, they'll appear here</p>
-            </div>
-          )}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="py-24 text-center">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">No sessions currently curated</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </AdminLayout>

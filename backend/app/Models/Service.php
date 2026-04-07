@@ -21,6 +21,8 @@ class Service extends Model
         'category',
         'price',
         'duration',
+        'image_path',
+        'downpayment_rate',
     ];
 
     protected $casts = [

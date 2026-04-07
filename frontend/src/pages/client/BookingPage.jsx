@@ -25,19 +25,11 @@ export default function BookingPage() {
     try {
       setLoading(true);
       setError('');
-      console.log('Fetching service with ID:', serviceId);
       const response = await serviceService.getServiceDetail(serviceId);
-      console.log('Service response:', response.data);
-      
-      if (!response.data) {
-        throw new Error('Service data is empty');
-      }
-      
+      if (!response.data) throw new Error('Service data is empty');
       setService(response.data);
     } catch (err) {
-      console.error('Service fetch error:', err);
-      console.error('Error response:', err.response?.data);
-      setError(err.response?.data?.message || 'Failed to load service details. Please try again.');
+      setError(err.response?.data?.message || 'Failed to load service details.');
     } finally {
       setLoading(false);
     }
@@ -48,12 +40,10 @@ export default function BookingPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Generate available time slots (9 AM to 5 PM in 1-hour intervals)
   const getAvailableTimeSlots = () => {
     const slots = [];
     for (let hour = 9; hour < 17; hour++) {
-      const timeString = `${String(hour).padStart(2, '0')}:00`;
-      slots.push(timeString);
+      slots.push(`${String(hour).padStart(2, '0')}:00`);
     }
     return slots;
   };
@@ -70,18 +60,9 @@ export default function BookingPage() {
     setSubmitting(true);
 
     try {
-      console.log('=== BOOKING SUBMISSION ===');
-      console.log('Service ID:', serviceId);
-      console.log('Booking Date:', formData.bookingDate);
-      console.log('Booking Time:', formData.bookingTime);
-      console.log('Total Amount:', service.price);
-      
-      // Check if user is authenticated
       const token = localStorage.getItem('token');
-      console.log('Auth Token Present:', !!token);
-      
       if (!token) {
-        setError('You must be logged in to make a booking. Please log in first.');
+        setError('You must be logged in to make a booking.');
         setSubmitting(false);
         return;
       }
@@ -91,31 +72,15 @@ export default function BookingPage() {
         booking_date: formData.bookingDate,
         booking_time: formData.bookingTime,
         special_requests: formData.specialRequests,
-        total_amount: service.price,
+        total_amount: typeof service.price === 'string' ? parseFloat(service.price.replace(/,/g, '')) : service.price,
         add_on_ids: [],
       };
       
-      console.log('Sending booking payload:', bookingPayload);
-      
       const response = await bookingService.createBooking(bookingPayload);
-      console.log('✅ Booking created successfully:', response.data);
-
-      // Store booking in session and navigate to checkout
       sessionStorage.setItem('bookingData', JSON.stringify(response.data));
-      console.log('Navigating to checkout...');
       navigate('/client/checkout');
     } catch (err) {
-      console.error('❌ Booking Error:', err);
-      console.error('Error Response:', err.response?.data);
-      console.error('Error Status:', err.response?.status);
-      console.error('Error Message:', err.message);
-      
-      const errorMessage = err.response?.data?.message 
-        || err.response?.data?.error 
-        || err.message 
-        || 'Failed to create booking. Please try again.';
-      
-      setError(errorMessage);
+      setError(err.response?.data?.message || 'Failed to create booking.');
     } finally {
       setSubmitting(false);
     }
@@ -123,12 +88,9 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <ClientLayout title="Book a Session">
-        <div className="flex justify-center items-center h-96">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-slate-600 font-medium">Loading service details...</p>
-          </div>
+      <ClientLayout title="Reserve Session">
+        <div className="flex justify-center items-center h-64">
+          <div className="w-8 h-8 border-2 border-[#C79F68] border-t-transparent rounded-full animate-spin"></div>
         </div>
       </ClientLayout>
     );
@@ -136,211 +98,173 @@ export default function BookingPage() {
 
   if (!service) {
     return (
-      <ClientLayout title="Book a Session">
-        <div className="text-center py-16">
-          <div className="inline-block bg-red-50 border border-red-200 rounded-2xl p-8">
-            <span className="text-5xl block mb-4">❌</span>
-            <p className="text-red-700 text-xl font-bold mb-2">Service Not Found</p>
-            <p className="text-red-600 mb-6">The service you're trying to book doesn't exist or has been removed.</p>
-            <button
-              onClick={() => navigate('/client/services')}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
-            >
-              Browse Other Services
-            </button>
-          </div>
+      <ClientLayout title="Session Not Found">
+        <div className="text-center py-20 border border-dashed border-[#EEE]">
+          <p className="text-sm text-[#777] uppercase tracking-widest mb-8">This session is no longer available</p>
+          <button
+            onClick={() => navigate('/client/services')}
+            className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#333] border-b border-[#333] pb-1"
+          >
+            Browse Other Services
+          </button>
         </div>
       </ClientLayout>
     );
   }
 
-  // Get minimum date (today + 1 day)
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const minDate = tomorrow.toISOString().split('T')[0];
 
   return (
-    <ClientLayout title="Book a Session">
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">⚠️</span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-900">Booking Error</p>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
+    <ClientLayout title="Your Details">
+      <div className="max-w-4xl mx-auto">
+        {error && (
+            <div className="mb-12 p-6 bg-red-50 border border-red-100 text-center">
+                <p className="text-sm font-bold uppercase tracking-widest text-red-800 mb-2">Notice</p>
+                <p className="text-sm text-red-600 font-medium">{error}</p>
             </div>
-          </div>
-        </div>
-      )}
+        )}
 
-      <div className="space-y-10">
-        {/* Luxury Header Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 p-16 shadow-2xl border border-blue-500/30">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-400 to-transparent opacity-10 rounded-full blur-3xl -mr-32 -mt-32"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-300 to-transparent opacity-10 rounded-full blur-3xl -ml-40 -mb-40"></div>
-          
-          <div className="relative z-10">
-            <div className="inline-block mb-6 px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full">
-              <p className="text-blue-950 text-xs font-bold uppercase tracking-widest">✓ Secure Booking</p>
-            </div>
-            <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-100 via-blue-50 to-blue-200 mb-6 leading-tight">Reserve Your Perfect Session</h1>
-            <p className="text-blue-100 text-lg font-light max-w-3xl leading-relaxed">Choose your preferred date and time to capture your most precious moments</p>
-          </div>
+        {/* Multi-step flow indicator (Subtle) */}
+        <div className="flex justify-center items-center space-x-4 mb-20">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C79F68]">1. Package</span>
+            <span className="w-8 h-px bg-[#EEEEEE]"></span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#333]">2. Details</span>
+            <span className="w-8 h-px bg-[#EEEEEE]"></span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">3. Confirmation</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
           {/* Booking Form */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl border border-slate-200/50 p-10 shadow-xl hover:shadow-2xl transition-shadow">
-              <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Service Display */}
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-blue-800 to-slate-800 p-10 border border-blue-500/30">
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400 opacity-10 rounded-full blur-3xl"></div>
-                  <div className="relative z-10">
-                    <p className="text-blue-300 text-xs font-black uppercase tracking-widest mb-3">📸 Selected Service</p>
-                    <h3 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-100 to-blue-200 mb-4">{service.name}</h3>
-                    <p className="text-blue-100 text-sm font-light leading-relaxed">{service.description}</p>
-                  </div>
+          <div className="lg:col-span-8">
+            <form onSubmit={handleSubmit} className="space-y-16">
+              {/* Selected Summary (Non-intrusive) */}
+              <div className="pb-16 border-b border-[#EEEEEE]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C79F68] mb-4">Selected Session</p>
+                <h3 className="text-3xl font-serif text-[#333] mb-4">{service.name}</h3>
+                <p className="text-sm text-[#777] leading-relaxed italic">
+                    "{service.description}"
+                </p>
+              </div>
+
+              {/* Date Selection */}
+              <div className="space-y-8">
+                <div className="flex items-center space-x-6">
+                    <span className="w-8 h-8 rounded-full border border-[#333] flex items-center justify-center text-[10px] font-bold mt-1">01</span>
+                    <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#333]">
+                      Choose Your Date
+                    </label>
                 </div>
+                <input
+                  type="date"
+                  name="bookingDate"
+                  value={formData.bookingDate}
+                  onChange={handleInputChange}
+                  min={minDate}
+                  required
+                  className="w-full bg-white border border-[#EEEEEE] px-8 py-6 text-sm text-[#333] focus:border-[#C79F68] outline-none transition duration-500"
+                />
+              </div>
 
-                {/* Form Grid */}
-                <div className="space-y-8">
-                  {/* Date Selection */}
-                  <div>
-                    <label className="block text-sm font-black text-slate-900 mb-4 uppercase tracking-widest">
-                      📅 Select Your Date
+              {/* Time Selection */}
+              <div className="space-y-8">
+                <div className="flex items-center space-x-6">
+                    <span className="w-8 h-8 rounded-full border border-[#333] flex items-center justify-center text-[10px] font-bold mt-1">02</span>
+                    <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#333]">
+                        Select Time Slot
                     </label>
-                    <input
-                      type="date"
-                      name="bookingDate"
-                      value={formData.bookingDate}
-                      onChange={handleInputChange}
-                      min={minDate}
-                      required
-                      className="w-full px-5 py-4 bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-300 hover:border-blue-400 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
-                    />
-                  </div>
-
-                  {/* Time Selection */}
-                  <div>
-                    <label className="block text-sm font-black text-slate-900 mb-4 uppercase tracking-widest">
-                      ⏰ Choose Time Slot
-                    </label>
-                    {formData.bookingDate ? (
-                      <select
-                        name="bookingTime"
-                        value={formData.bookingTime}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-5 py-4 bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-300 hover:border-blue-400 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300"
+                </div>
+                {formData.bookingDate ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {getAvailableTimeSlots().map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, bookingTime: slot }))}
+                        className={`py-4 text-[11px] font-bold uppercase tracking-widest border transition duration-500 ${
+                          formData.bookingTime === slot 
+                            ? 'bg-[#333] text-white border-[#333]' 
+                            : 'bg-white text-[#777] border-[#EEEEEE] hover:border-[#333]'
+                        }`}
                       >
-                        <option value="">Choose a time slot</option>
-                        {getAvailableTimeSlots().map((slot) => (
-                          <option key={slot} value={slot} className="font-semibold">
-                            {slot} - {slot === '16:00' ? '17:00' : `${String(parseInt(slot) + 1).padStart(2, '0')}:00`}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="w-full px-5 py-4 bg-gradient-to-br from-slate-100 to-slate-200 border-2 border-slate-300 rounded-2xl text-slate-600 italic font-semibold">
-                        Select a date first
-                      </div>
-                    )}
+                        {slot}
+                      </button>
+                    ))}
                   </div>
+                ) : (
+                  <p className="text-[11px] uppercase tracking-widest text-[#AAA] italic py-8 border border-dashed border-[#EEEEEE] text-center">
+                    Please select a date first
+                  </p>
+                )}
+              </div>
 
-                  {/* Special Requests */}
-                  <div>
-                    <label className="block text-sm font-black text-slate-900 mb-4 uppercase tracking-widest">
-                      💬 Special Requests (Optional)
+              {/* Special Requests */}
+              <div className="space-y-8">
+                <div className="flex items-center space-x-6">
+                    <span className="w-8 h-8 rounded-full border border-[#333] flex items-center justify-center text-[10px] font-bold mt-1">03</span>
+                    <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#333]">
+                      Optional Notes
                     </label>
-                    <textarea
-                      name="specialRequests"
-                      value={formData.specialRequests}
-                      onChange={handleInputChange}
-                      rows={5}
-                      placeholder="Share any special themes, preferences, or detailed requirements for your session..."
-                      className="w-full px-5 py-4 bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-300 hover:border-blue-400 rounded-2xl text-slate-900 placeholder-slate-500 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 resize-none"
-                    />
-                  </div>
                 </div>
+                <textarea
+                  name="specialRequests"
+                  value={formData.specialRequests}
+                  onChange={handleInputChange}
+                  rows={4}
+                  placeholder="Share any special preferences or vision for your session..."
+                  className="w-full bg-white border border-[#EEEEEE] px-8 py-6 text-sm text-[#333] focus:border-[#C79F68] outline-none transition duration-500 resize-none"
+                />
+              </div>
 
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-blue-900 hover:from-blue-700 hover:via-blue-800 hover:to-blue-950 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-5 rounded-2xl transition-all duration-300 uppercase tracking-widest text-sm shadow-xl shadow-blue-600/40 hover:shadow-blue-700/50 border border-blue-500/30 relative overflow-hidden group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <span className="relative flex items-center justify-center gap-3">
-                    {submitting ? '⏳ Processing...' : '→ Continue to Checkout'}
-                  </span>
-                </button>
-              </form>
-            </div>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={submitting || !formData.bookingTime}
+                className="w-full bg-[#333] text-white py-6 text-[11px] font-bold uppercase tracking-[0.25em] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#C79F68] transition duration-500"
+              >
+                {submitting ? 'Processing Session...' : 'Continue to Checkout'}
+              </button>
+            </form>
           </div>
 
-          {/* Premium Order Summary Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 rounded-3xl border-2 border-slate-200/50 p-10 shadow-xl sticky top-6 h-fit">
-              <h3 className="text-2xl font-black text-slate-900 mb-8 pb-6 border-b-2 border-slate-300">
-                🎯 Order Summary
-              </h3>
-
-              <div className="space-y-8">
-                {/* Service Details */}
-                <div className="space-y-3">
-                  <p className="text-slate-600 text-xs font-black uppercase tracking-widest">Photography Service</p>
-                  <p className="text-slate-900 font-black text-xl">{service.name}</p>
-                </div>
-
-                <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
-
-                <div className="space-y-3">
-                  <p className="text-slate-600 text-xs font-black uppercase tracking-widest">Session Length</p>
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-slate-900 text-3xl font-black">{service.duration}</p>
-                    <p className="text-slate-600 font-bold">minutes</p>
-                  </div>
-                </div>
-
-                <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
-
-                <div className="space-y-3">
-                  <p className="text-slate-600 text-xs font-black uppercase tracking-widest">Category</p>
-                  <span className="inline-block px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-900 text-xs font-black rounded-full border border-blue-300">
-                    ✓ {service.category || 'Professional'}
-                  </span>
-                </div>
-
-                <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
-
-                {/* Total Amount - Premium Style */}
-                <div className="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 border-2 border-blue-300/50 rounded-2xl p-8 space-y-3">
-                  <p className="text-blue-900 text-xs font-black uppercase tracking-widest">Total Investment</p>
-                  <p className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700">
-                    ₱{parseFloat(service.price).toFixed(2)}
-                  </p>
-                  <p className="text-blue-800 text-xs font-semibold">All-inclusive, no hidden fees</p>
-                </div>
-
-                {/* Trust Indicators */}
-                <div className="space-y-3 rounded-2xl bg-slate-100/50 border-2 border-slate-300/50 p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="text-xl mt-0.5">🔒</span>
+          {/* Minimalist Summary Sidebar */}
+          <div className="lg:col-span-4">
+            <div className="bg-white border border-[#EEEEEE] p-12 sticky top-32">
+                <h3 className="text-xl font-serif text-[#333] mb-8 pb-6 border-b border-[#EEEEEE]">
+                    Summary
+                </h3>
+                
+                <div className="space-y-8">
                     <div>
-                      <p className="font-black text-slate-900 text-sm">Secure Payment</p>
-                      <p className="text-xs text-slate-600 font-medium">256-bit SSL encryption</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA] mb-2">Investment</p>
+                        <p className="text-2xl font-serif text-[#333]">₱{parseFloat(service.price).toLocaleString()}</p>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="text-xl mt-0.5">✓</span>
+                    
                     <div>
-                      <p className="font-black text-slate-900 text-sm">Satisfaction Guaranteed</p>
-                      <p className="text-xs text-slate-600 font-medium">100% customer satisfaction</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA] mb-2">Session</p>
+                        <p className="text-sm text-[#333] font-medium">{service.name}</p>
+                        <p className="text-[11px] text-[#777] mt-1">{service.duration} Minutes</p>
                     </div>
-                  </div>
+
+                    {formData.bookingDate && (
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA] mb-2">Schedule</p>
+                            <p className="text-sm text-[#333] font-medium">
+                                {new Date(formData.bookingDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            </p>
+                            {formData.bookingTime && (
+                                <p className="text-[11px] text-[#C79F68] mt-1 font-bold">{formData.bookingTime}</p>
+                            )}
+                        </div>
+                    )}
                 </div>
-              </div>
+
+                <div className="mt-12 pt-8 border-t border-[#EEEEEE]">
+                    <p className="text-[10px] uppercase tracking-widest text-[#AAA] font-bold italic">
+                        Price includes professional editing and digital delivery.
+                    </p>
+                </div>
             </div>
           </div>
         </div>

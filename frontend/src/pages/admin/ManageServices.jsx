@@ -11,6 +11,8 @@ export default function ManageServices() {
     category: '',
     price: '',
     duration: '',
+    image_path: '',
+    downpayment_rate: 20,
   });
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +45,8 @@ export default function ManageServices() {
       category: service.category,
       price: service.price,
       duration: service.duration,
+      image_path: service.image_path || '',
+      downpayment_rate: service.downpayment_rate || 20,
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -57,27 +61,21 @@ export default function ManageServices() {
     e.preventDefault();
     try {
       if (editingServiceId) {
-        setServices(services.map(s => s.id === editingServiceId ? { ...s, ...formData } : s));
         const currentEditId = editingServiceId;
         
         setShowForm(false);
         setEditingServiceId(null);
-        setFormData({ name: '', description: '', category: '', price: '', duration: '' });
+        setFormData({ name: '', description: '', category: '', price: '', duration: '', image_path: '', downpayment_rate: 20 });
 
         const response = await serviceService.updateService(currentEditId, formData);
         setServices(services => 
           services.map(s => s.id === currentEditId ? response.data : s)
         );
       } else {
-        const newService = { id: Date.now(), ...formData };
-        setServices([...services, newService]);
-        setFormData({ name: '', description: '', category: '', price: '', duration: '' });
-        setShowForm(false);
-        
         const response = await serviceService.createService(formData);
-        setServices(services => 
-          services.map(s => s.id === newService.id ? response.data : s)
-        );
+        setServices([...services, response.data]);
+        setFormData({ name: '', description: '', category: '', price: '', duration: '', image_path: '', downpayment_rate: 20 });
+        setShowForm(false);
       }
     } catch (err) {
       setShowForm(true);
@@ -90,7 +88,7 @@ export default function ManageServices() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this service?')) return;
     try {
-      const previousServices = services;
+      const previousServices = [...services];
       setServices(services.filter(s => s.id !== id));
       await serviceService.deleteService(id);
     } catch (err) {
@@ -113,79 +111,74 @@ export default function ManageServices() {
   }
 
   return (
-    <AdminLayout title="Manage Services">
+    <AdminLayout title="Studio Curations">
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">⚠️</span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-900">Error</p>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
-            </div>
-          </div>
+        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">Service Notice</p>
+          <p className="text-sm text-red-800 font-serif italic">{error}</p>
         </div>
       )}
 
-      <div className="space-y-8">
-        {/* Header with Button */}
-        <div className="flex items-center justify-between">
+      <div className="space-y-16 animate-fadeIn">
+        {/* Editorial Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#EEEEEE] pb-10 gap-8">
           <div>
-            <p className="text-amber-600 text-sm font-semibold uppercase tracking-widest">Studio Management</p>
-            <h2 className="text-2xl font-bold text-slate-900 mt-1">Photography Services</h2>
+            <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">Photography Services</h2>
+            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Defining the art and value of your studio sessions.</p>
           </div>
           <button
             onClick={() => {
               if (showForm) {
                 setShowForm(false);
                 setEditingServiceId(null);
-                setFormData({ name: '', description: '', category: '', price: '', duration: '' });
+                setFormData({ name: '', description: '', category: '', price: '', duration: '', image_path: '' });
               } else {
                 setShowForm(true);
               }
             }}
-            className={`px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 ${
+            className={`px-10 py-5 text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-700 shadow-sm active:scale-[0.98] ${
               showForm
-                ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg shadow-amber-500/20'
+                ? 'bg-white border border-[#EEEEEE] text-[#999] hover:text-red-600 hover:border-red-600'
+                : 'bg-[#1A1A1A] text-white hover:bg-[#C79F68]'
             }`}
           >
-            {showForm ? '✕ Cancel' : '+ Add Service'}
+            {showForm ? 'Cancel Creation' : 'Create New Service'}
           </button>
         </div>
 
-        {/* Add Service Form */}
+        {/* Add Service Form - Minimalist & Precise */}
         {showForm && (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-lg">
-            <h3 className="text-xl font-bold text-slate-900 mb-6">{editingServiceId ? 'Edit Service' : 'Create New Service'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Service Name</label>
+          <div className="bg-white border border-[#EEEEEE] p-10 md:p-12 animate-slideIn">
+            <h3 className="text-2xl font-serif text-[#1A1A1A] mb-10">{editingServiceId ? 'Edit Collection' : 'New Collection Details'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-10">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Service Nomenclature</label>
                 <input
                   type="text"
                   name="name"
-                  placeholder="e.g., Premium Portrait Session"
+                  placeholder="e.g., The Signature Portrait"
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                  className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Artistic Description</label>
                 <textarea
                   name="description"
-                  placeholder="Describe what's included in this service..."
+                  placeholder="Describe the aesthetic and deliverables..."
                   value={formData.description}
                   onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition resize-none"
+                  rows={3}
+                  className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD] resize-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Price (₱)</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Investment (₱)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -194,11 +187,29 @@ export default function ManageServices() {
                     value={formData.price}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                    className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Duration (minutes)</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Downpayment Rate (%)</label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="100"
+                    name="downpayment_rate"
+                    placeholder="20"
+                    value={formData.downpayment_rate}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Session Duration (min)</label>
                   <input
                     type="number"
                     name="duration"
@@ -206,79 +217,107 @@ export default function ManageServices() {
                     value={formData.duration}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                    className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Curated Category</label>
+                  <input
+                    type="text"
+                    name="category"
+                    placeholder="Portraits, Wedding, Editorial..."
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Category</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Image Registry URL</label>
                 <input
                   type="text"
-                  name="category"
-                  placeholder="e.g., Portraits, Events, Weddings"
-                  value={formData.category}
+                  name="image_path"
+                  placeholder="assets/images/service_wedding.png"
+                  value={formData.image_path}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                  className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold py-3 rounded-lg transition-all duration-300"
+                className="w-full bg-[#1A1A1A] text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#C79F68] transition-all duration-700 shadow-sm"
               >
-                {editingServiceId ? 'Update Service' : 'Create Service'}
+                {editingServiceId ? 'Update Collection' : 'Publish Service'}
               </button>
             </form>
           </div>
         )}
 
-        {/* Services Grid */}
+        {/* Services Grid - Gallery Layout */}
         {services.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <span className="text-5xl mb-4 block">📸</span>
-            <p className="text-slate-600 text-lg font-medium">No services yet</p>
-            <p className="text-slate-500 text-sm mt-2">Create your first photography service to get started</p>
+          <div className="py-24 text-center border border-dashed border-[#EEEEEE]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">Your studio catalog is empty</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-[#EEEEEE] divide-y md:divide-y-0 md:divide-x divide-[#EEEEEE]">
             {services.map(service => (
-              <div key={service.id} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold mb-3">
-                      {service.category || 'Photography'}
+              <div key={service.id} className="bg-white p-10 group hover:bg-[#FAFAFA] transition-all duration-700 flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start mb-8">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#C79F68] border border-[#C79F68]/20 px-3 py-1">
+                      {service.category || 'Standard'}
+                    </span>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA]">
+                      {service.duration} MIN
+                    </span>
+                  </div>
+                  
+                  {/* Service Image Preview */}
+                  <div className="w-full aspect-[16/9] mb-8 bg-[#F9F9F9] overflow-hidden border border-[#EEEEEE] relative group/img">
+                    {service.image_path ? (
+                      <img 
+                        src={`http://localhost:8000/${service.image_path}`} 
+                        alt={service.name}
+                        className="w-full h-full object-cover grayscale opacity-80 group-hover/img:grayscale-0 group-hover/img:opacity-100 group-hover/img:scale-105 transition-all duration-1000"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center opacity-20 grayscale">
+                        <span className="text-2xl">📸</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <h4 className="text-2xl font-serif text-[#1A1A1A] mb-4 group-hover:text-[#C79F68] transition-colors duration-700">{service.name}</h4>
+                  <p className="text-[11px] text-[#777] leading-relaxed mb-10 line-clamp-3 font-medium tracking-wide italic">"{service.description}"</p>
+                </div>
+                
+                <div className="space-y-10">
+                  <div className="flex items-end justify-between border-t border-[#F5F5F5] pt-10">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#BBB] mb-2">Investment / Deposit</p>
+                      <p className="text-2xl font-serif text-[#1A1A1A]">₱{parseFloat(service.price).toLocaleString()}</p>
+                      <p className="text-[10px] text-[#C79F68] font-bold mt-1 uppercase tracking-widest">{service.downpayment_rate}% Downpayment Required</p>
                     </div>
-                    <h4 className="text-lg font-bold text-slate-900">{service.name}</h4>
                   </div>
-                  <span className="text-2xl">📷</span>
-                </div>
-                
-                <p className="text-slate-600 text-sm mb-6 line-clamp-2">{service.description}</p>
-                
-                <div className="flex items-end justify-between mb-6">
-                  <div>
-                    <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider mb-1">Price</p>
-                    <p className="text-3xl font-bold text-amber-600">₱{parseFloat(service.price).toFixed(2)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider mb-1">Duration</p>
-                    <p className="text-lg font-bold text-slate-900">{service.duration} min</p>
-                  </div>
-                </div>
 
-                <div className="flex gap-3">
-                  <button 
-                    onClick={() => handleEdit(service)}
-                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition">
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(service.id)}
-                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => handleEdit(service)}
+                      className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#1A1A1A] border border-[#EEEEEE] py-4 hover:border-[#1A1A1A] transition-all duration-500">
+                      Revise
+                    </button>
+                    <button
+                      onClick={() => handleDelete(service.id)}
+                      className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#999] hover:text-red-600 transition-all duration-500"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

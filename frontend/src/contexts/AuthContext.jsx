@@ -61,8 +61,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const socialAuthComplete = (userData, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, register, logout, socialAuthComplete }}>
       {children}
     </AuthContext.Provider>
   );

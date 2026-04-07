@@ -40,8 +40,6 @@ export default function Register() {
         formData.role
       );
       
-      // If there's a booking intent, redirect to login which will handle the booking redirect
-      // The booking intent is already in localStorage from the Landing page
       const hasBookingIntent = localStorage.getItem('bookingIntent');
       if (hasBookingIntent) {
         navigate('/login?redirect=booking&email=' + encodeURIComponent(formData.email));
@@ -56,257 +54,129 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-slate-50">
-      {/* Luxury Background with animated blobs */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          25% { transform: translateY(-30px) translateX(20px); }
-          50% { transform: translateY(-60px) translateX(-20px); }
-          75% { transform: translateY(-30px) translateX(20px); }
-        }
-        
-        @keyframes float-reverse {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          25% { transform: translateY(30px) translateX(-20px); }
-          50% { transform: translateY(60px) translateX(20px); }
-          75% { transform: translateY(30px) translateX(-20px); }
-        }
-        
-        .register-blob-1 { animation: float 15s infinite ease-in-out; }
-        .register-blob-2 { animation: float-reverse 18s infinite ease-in-out; }
-      `}</style>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F9F9F9] px-6 py-20 selection:bg-[#C79F68] selection:text-white">
+      
+      <div className="w-full max-w-[480px] animate-fadeIn">
+        {/* Navigation Branding - Integrated for better flow */}
+        <div className="text-center mb-10">
+          <Link to="/" className="text-3xl font-serif text-[#333] tracking-[0.25em] hover:text-[#C79F68] transition-colors duration-500">L I G H T</Link>
+        </div>
 
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-amber-50 to-slate-100"></div>
-
-      {/* Animated blobs */}
-      <div className="register-blob-1 absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-amber-300 to-amber-400 opacity-20 rounded-full blur-3xl"></div>
-      <div className="register-blob-2 absolute -bottom-32 -left-32 w-80 h-80 bg-gradient-to-tr from-blue-300 to-blue-400 opacity-15 rounded-full blur-3xl"></div>
-
-      {/* Back Button */}
-      <button
-        onClick={() => {
-          localStorage.removeItem('bookingIntent');
-          navigate('/');
-        }}
-        className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-900 transition font-semibold text-sm uppercase tracking-wider hover:bg-white rounded-lg"
-      >
-        ← Back
-      </button>
-
-      <div className="w-full max-w-6xl relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          {/* Left Side - Premium Branding */}
-          <div className="hidden lg:block">
-            <div className="space-y-8">
-              {/* Logo & Brand */}
-              <div>
-                <div className="inline-block mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-amber-500/30">
-                    <span className="text-4xl">📸</span>
-                  </div>
-                </div>
-                <h1 className="text-5xl font-bold text-slate-900 mb-3">Elite Studio</h1>
-                <p className="text-lg text-slate-600 font-light">Premium Photography Services</p>
-              </div>
-
-              {/* Join Reasons */}
-              <div className="space-y-6 pt-12">
-                <div className="flex gap-4 items-start">
-                  <div className="text-3xl">👥</div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">Community</h3>
-                    <p className="text-slate-600 text-sm">Join thousands of satisfied clients worldwide</p>
-                  </div>
-                </div>
-                <div className="flex gap-4 items-start">
-                  <div className="text-3xl">🎯</div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">Easy Booking</h3>
-                    <p className="text-slate-600 text-sm">Schedule your session in minutes</p>
-                  </div>
-                </div>
-                <div className="flex gap-4 items-start">
-                  <div className="text-3xl">💎</div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">Premium Quality</h3>
-                    <p className="text-slate-600 text-sm">Professional results every time</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 pt-12 border-t border-slate-200">
-                <div>
-                  <p className="text-3xl font-bold text-amber-600">500+</p>
-                  <p className="text-sm text-slate-600">Happy Members</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-amber-600">15+</p>
-                  <p className="text-sm text-slate-600">Years Experience</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-amber-600">4.9★</p>
-                  <p className="text-sm text-slate-600">Average Rating</p>
-                </div>
-              </div>
-            </div>
+        <div className="bg-white p-10 md:p-12 shadow-premium border border-[#EEEEEE]">
+          <div className="text-center mb-10">
+            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68] mb-3">Join the Studio</p>
+            <h2 className="text-3xl font-serif text-[#333] leading-tight">Create Account</h2>
+            <div className="w-12 h-px bg-[#C79F68] mx-auto mt-6 opacity-30"></div>
           </div>
 
-          {/* Right Side - Premium Registration Form */}
-          <div className="w-full max-w-md mx-auto lg:mx-0">
-            {/* Form Card */}
-            <div className="bg-white rounded-3xl shadow-2xl p-12 border border-slate-100">
-              {/* Header */}
-              <div className="mb-10">
-                <h2 className="text-4xl font-bold text-slate-900 mb-2">Create Account</h2>
-                <p className="text-slate-600 text-base font-light">Join our photography community</p>
+          {error && (
+            <div className="mb-8 p-4 bg-red-50 border-l-2 border-red-200 text-center">
+              <p className="text-[10px] text-red-600 font-bold uppercase tracking-widest">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-7">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Full Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="w-full bg-transparent border-b border-[#EEEEEE] py-3 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
+                placeholder="Your Name"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Email Address</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full bg-transparent border-b border-[#EEEEEE] py-3 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
+                placeholder="email@example.com"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-transparent border-b border-[#EEEEEE] py-3 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
+                        placeholder="••••••••"
+                    />
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Confirm</label>
+                    <input
+                        type="password"
+                        name="passwordConfirmation"
+                        value={formData.passwordConfirmation}
+                        onChange={handleChange}
+                        required
+                        className="w-full bg-transparent border-b border-[#EEEEEE] py-3 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
+                        placeholder="••••••••"
+                    />
+                </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#1A1A1A] text-white py-5 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#C79F68] transition-all duration-700 disabled:opacity-50 shadow-sm mt-4 active:scale-[0.98]"
+            >
+              {loading ? 'Creating Account...' : 'Join the Studio'}
+            </button>
+          </form>
+
+          <div className="mt-8">
+            <div className="relative flex items-center justify-center mb-8">
+              <div className="absolute inset-0 flex items-center px-2">
+                <div className="w-full h-px bg-[#EEEEEE]"></div>
               </div>
+              <span className="relative px-4 bg-white text-[9px] font-bold uppercase tracking-[0.3em] text-[#CCC]">Or join via</span>
+            </div>
 
-              {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-8">
-                  <p className="text-red-700 text-sm font-medium flex items-center gap-2">
-                    <span className="text-lg">⚠️</span> {error}
-                  </p>
-                </div>
-              )}
-
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Full Name Field */}
-                <div>
-                  <label className="block text-slate-900 text-sm font-semibold mb-3">Full Name</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-4 text-lg">👤</span>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-medium"
-                      placeholder="John Doe"
-                    />
-                  </div>
-                </div>
-
-                {/* Email Field */}
-                <div>
-                  <label className="block text-slate-900 text-sm font-semibold mb-3">Email Address</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-4 text-lg">✉️</span>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-medium"
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                </div>
-
-                {/* Account Type Field */}
-                <div>
-                  <label className="block text-slate-900 text-sm font-semibold mb-3">Account Type</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-4 text-lg">👨‍💼</span>
-                    <select
-                      name="role"
-                      value={formData.role}
-                      onChange={handleChange}
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-medium appearance-none cursor-pointer"
-                    >
-                      <option value="client" className="bg-white text-slate-900">Client (Book Sessions)</option>
-                      <option value="admin" className="bg-white text-slate-900">Admin (Manage Studio)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Password Field */}
-                <div>
-                  <label className="block text-slate-900 text-sm font-semibold mb-3">Password</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-4 text-lg">🔐</span>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-medium"
-                      placeholder="••••••••"
-                    />
-                  </div>
-                </div>
-
-                {/* Confirm Password Field */}
-                <div>
-                  <label className="block text-slate-900 text-sm font-semibold mb-3">Confirm Password</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-4 text-lg">🔐</span>
-                    <input
-                      type="password"
-                      name="passwordConfirmation"
-                      value={formData.passwordConfirmation}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition font-medium"
-                      placeholder="••••••••"
-                    />
-                  </div>
-                </div>
-
-                {/* Register Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition duration-300 mt-8 shadow-lg shadow-amber-500/20 text-lg uppercase tracking-wider"
-                >
-                  {loading ? '⏳ Creating Account...' : 'Create My Account'}
-                </button>
-              </form>
-
-              {/* Divider */}
-              <div className="relative my-10">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200"></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="px-4 bg-white text-slate-500 text-sm font-medium">Already a member?</span>
-                </div>
-              </div>
-
-              {/* Login Button */}
-              <Link
-                to="/login"
-                className="block w-full text-center border-2 border-slate-300 text-slate-700 hover:border-amber-500 hover:text-amber-600 py-3 rounded-xl font-bold transition duration-300 text-lg"
+            <div className="space-y-4">
+              <button
+                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/auth/google/redirect`}
+                className="w-full flex items-center justify-center gap-3 border border-[#EEEEEE] py-4 hover:bg-[#F9F9F9] transition-all duration-500 group"
               >
-                Back to Login
-              </Link>
-
-              {/* Security Info */}
-              <div className="mt-10 pt-6 border-t border-slate-100">
-                <p className="text-xs text-slate-500 text-center font-light">
-                  🔒 Your data is encrypted and secured with 256-bit SSL encryption
-                </p>
-              </div>
-            </div>
-
-            {/* Mobile Branding - Show on small screens */}
-            <div className="lg:hidden mt-8 text-center space-y-4">
-              <div className="inline-block">
-                <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <span className="text-2xl">📸</span>
-                </div>
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900">Elite Studio</h2>
-              <p className="text-slate-600 text-sm">Premium Photography Services</p>
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#333] group-hover:text-[#C79F68] transition-colors">Join with Google</span>
+              </button>
             </div>
           </div>
+
+          <div className="mt-10 pt-8 border-t border-[#F5F5F5] text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA] mb-5">Already a member?</p>
+            <Link
+              to="/login"
+              className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#333] pb-1 hover:text-[#C79F68] hover:border-[#C79F68] transition-all duration-500"
+            >
+              Back to Login
+            </Link>
+          </div>
+        </div>
+        
+        <div className="mt-10 text-center">
+            <Link to="/" className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#AAA] hover:text-[#333] transition-all duration-500">
+                ← Back to Home
+            </Link>
         </div>
       </div>
     </div>

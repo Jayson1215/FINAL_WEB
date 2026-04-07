@@ -70,161 +70,127 @@ export default function AdminDashboard() {
   }
 
   return (
-    <AdminLayout title="Dashboard">
+    <AdminLayout title="Studio Overview">
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">⚠️</span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-900">Error Loading Data</p>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
-            </div>
-            <button
-              onClick={fetchDashboardData}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
-            >
-              Retry
-            </button>
-          </div>
+        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">System Notice</p>
+          <p className="text-sm text-red-800 font-serif italic">{error}</p>
+          <button
+            onClick={fetchDashboardData}
+            className="mt-4 text-[10px] font-bold uppercase tracking-widest text-red-600 border-b border-red-600 pb-0.5 hover:opacity-70 transition"
+          >
+            Retry Connection
+          </button>
         </div>
       )}
 
-      <div className="space-y-8">
-        {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome back to your studio!</h2>
-          <p className="text-slate-600">Monitor your bookings, revenue, and manage your photography services in real-time.</p>
+      <div className="space-y-16 animate-fadeIn">
+        {/* Editorial Welcome Section */}
+        <div className="relative py-12 px-2 border-b border-[#EEEEEE]">
+          <span className="absolute -top-4 left-0 text-[80px] font-serif text-[#F0F0F0] select-none opacity-50 z-0">Overview</span>
+          <div className="relative z-10">
+            <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">Good day, Studio Manager.</h2>
+            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Curating your studio's performance and bookings.</p>
+          </div>
         </div>
 
-        {/* Stats Grid - Premium Design */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Premium Stats Grid - Balanced and Precise */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border border-[#EEEEEE] divide-y md:divide-y-0 md:divide-x divide-[#EEEEEE]">
           {/* Revenue Card */}
-          <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-8 text-white shadow-lg shadow-amber-500/20 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <p className="text-amber-100 text-sm font-semibold uppercase tracking-widest mb-2">Total Revenue</p>
-                <p className="text-4xl font-bold">₱{(stats?.total_revenue || 0).toLocaleString()}</p>
-              </div>
-              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
-                💰
-              </div>
+          <div className="bg-white p-10 group hover:bg-[#F9F9F9] transition-all duration-700">
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8">Total Revenue</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-[15px] text-[#C79F68] font-serif">₱</span>
+              <span className="text-4xl font-serif text-[#1A1A1A]">{(stats?.total_revenue || 0).toLocaleString()}</span>
             </div>
-            <p className="text-amber-100 text-sm">From confirmed bookings & payments</p>
+            <div className="w-6 h-px bg-[#C79F68] mt-6 transition-all duration-700 group-hover:w-12"></div>
           </div>
 
-          {/* Total Bookings Card */}
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-8 text-white shadow-lg shadow-blue-500/20 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <p className="text-blue-100 text-sm font-semibold uppercase tracking-widest mb-2">Total Bookings</p>
-                <p className="text-4xl font-bold">{stats?.total_bookings || 0}</p>
-              </div>
-              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
-                📅
-              </div>
-            </div>
-            <p className="text-blue-100 text-sm">All time bookings</p>
+          {/* Bookings Card */}
+          <div className="bg-white p-10 group hover:bg-[#F9F9F9] transition-all duration-700">
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8">Total Sessions</p>
+            <span className="text-4xl font-serif text-[#1A1A1A]">{stats?.total_bookings || 0}</span>
+            <div className="w-6 h-px bg-[#C79F68] mt-6 transition-all duration-700 group-hover:w-12"></div>
           </div>
 
-          {/* Confirmed Bookings Card */}
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-8 text-white shadow-lg shadow-green-500/20 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <p className="text-green-100 text-sm font-semibold uppercase tracking-widest mb-2">Confirmed</p>
-                <p className="text-4xl font-bold">{stats?.confirmed_bookings || 0}</p>
-              </div>
-              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
-                ✓
-              </div>
-            </div>
-            <p className="text-green-100 text-sm">Ready for session</p>
+          {/* Confirmed Card */}
+          <div className="bg-white p-10 group hover:bg-[#F9F9F9] transition-all duration-700">
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8">Confirmed</p>
+            <span className="text-4xl font-serif text-[#1A1A1A]">{stats?.confirmed_bookings || 0}</span>
+            <div className="w-6 h-px bg-[#C79F68] mt-6 transition-all duration-700 group-hover:w-12"></div>
           </div>
 
-          {/* Pending Payments Card */}
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-8 text-white shadow-lg shadow-purple-500/20 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <p className="text-purple-100 text-sm font-semibold uppercase tracking-widest mb-2">Pending</p>
-                <p className="text-4xl font-bold">{stats?.pending_payments || 0}</p>
-              </div>
-              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
-                ⏳
-              </div>
-            </div>
-            <p className="text-purple-100 text-sm">Awaiting payment</p>
+          {/* Pending Card */}
+          <div className="bg-white p-10 group hover:bg-[#F9F9F9] transition-all duration-700">
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8">Pending</p>
+            <span className="text-4xl font-serif text-[#1A1A1A]">{stats?.pending_payments || 0}</span>
+            <div className="w-6 h-px bg-[#C79F68] mt-6 transition-all duration-700 group-hover:w-12"></div>
           </div>
         </div>
 
-        {/* Recent Bookings Table */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-8 py-6">
-            <h3 className="text-xl font-bold text-white flex items-center gap-3">
-              <span className="text-2xl">📸</span>
-              Recent Bookings
-            </h3>
-            <p className="text-slate-400 text-sm mt-1">Latest photoshoot reservations and sessions</p>
+        {/* Recent Activity - Runway Style Table */}
+        <div className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#EEEEEE] pb-6">
+            <div>
+              <h3 className="text-2xl font-serif text-[#1A1A1A]">Recent Activity</h3>
+              <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mt-2">The latest studio reservations</p>
+            </div>
+            <button className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#C79F68] border-b border-[#C79F68] pb-1 hover:opacity-70 transition">View All Bookings</button>
           </div>
 
-          {/* Table Content */}
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-left border-separate border-spacing-0">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Client</th>
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Service</th>
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Date</th>
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Time</th>
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Amount</th>
-                  <th className="px-8 py-4 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
+                <tr>
+                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Client</th>
+                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Service</th>
+                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Schedule</th>
+                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Investment</th>
+                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A] text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-[#F5F5F5]">
                 {recentBookings.length > 0 ? (
                   recentBookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-slate-50 transition-colors duration-200 group">
-                      <td className="px-8 py-5 text-sm">
+                    <tr key={booking.id} className="group hover:bg-[#FAFAFA] transition-all duration-500">
+                      <td className="py-8">
                         <div>
-                          <p className="font-semibold text-slate-900">{booking.user?.name || 'N/A'}</p>
-                          <p className="text-xs text-slate-500">{booking.user?.email || 'N/A'}</p>
+                          <p className="text-sm font-serif text-[#1A1A1A] mb-1">{booking.user?.name || 'Guest'}</p>
+                          <p className="text-[10px] text-[#AAA] tracking-widest">{booking.user?.email || 'N/A'}</p>
                         </div>
                       </td>
-                      <td className="px-8 py-5 text-sm text-slate-700 font-medium">{booking.service?.name || 'N/A'}</td>
-                      <td className="px-8 py-5 text-sm text-slate-700">
-                        {new Date(booking.booking_date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                      <td className="py-8">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#777] group-hover:text-[#1A1A1A] transition-colors">{booking.service?.name || 'Custom Session'}</span>
                       </td>
-                      <td className="px-8 py-5 text-sm text-slate-700">{booking.booking_time || '-'}</td>
-                      <td className="px-8 py-5 text-sm font-bold text-amber-600">₱{booking.total_amount}</td>
-                      <td className="px-8 py-5 text-sm">
-                        <span className={`inline-flex px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide ${
-                          booking.status === 'confirmed'
-                            ? 'bg-green-100 text-green-700'
+                      <td className="py-8">
+                        <div className="text-[10px] text-[#777] font-medium tracking-widest">
+                          {new Date(booking.booking_date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
+                          <span className="mx-2 opacity-30">|</span>
+                          {booking.booking_time || 'TBD'}
+                        </div>
+                      </td>
+                      <td className="py-8 font-serif text-sm text-[#1A1A1A]">
+                        ₱{(booking.total_amount || 0).toLocaleString()}
+                      </td>
+                      <td className="py-8 text-right">
+                        <span className={`text-[8px] font-bold uppercase tracking-[0.4em] px-3 py-1.5 border ${
+                          booking.status === 'finished'
+                            ? 'bg-slate-50 text-slate-500 border-slate-100'
+                            : booking.status === 'confirmed'
+                            ? 'bg-[#F0FDF4] text-[#166534] border-[#DCFCE7]'
                             : booking.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : booking.status === 'cancelled'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-slate-100 text-slate-700'
+                            ? 'bg-[#FFFBEB] text-[#92400E] border-[#FEF3C7]'
+                            : 'bg-[#FEF2F2] text-[#991B1B] border-[#FEE2E2]'
                         }`}>
-                          {booking.status === 'confirmed' && '✓ '}
-                          {booking.status === 'pending' && '⏳ '}
-                          {booking.status === 'cancelled' && '✕ '}
-                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                          {booking.status}
                         </span>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="px-8 py-12 text-center">
-                      <div className="flex flex-col items-center gap-3">
-                        <span className="text-4xl">📭</span>
-                        <p className="text-slate-600 font-medium">No bookings yet</p>
-                        <p className="text-slate-500 text-sm">Your booking history will appear here</p>
-                      </div>
+                    <td colSpan="5" className="py-20 text-center">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">No active curation found</p>
                     </td>
                   </tr>
                 )}
@@ -233,38 +199,28 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Footer Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-200">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-xl">
-              📊
-            </div>
-            <div>
-              <p className="text-slate-600 text-sm">Average Booking</p>
-              <p className="text-2xl font-bold text-slate-900">
-                ₱{stats?.total_bookings > 0 ? Math.round((stats?.total_revenue || 0) / stats?.total_bookings) : 0}
-              </p>
-            </div>
+        {/* Footer Metrics - Sophisticated Balance */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-16 border-t border-[#EEEEEE]">
+          <div className="space-y-3">
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Studio Yield</p>
+            <p className="text-2xl font-serif text-[#1A1A1A]">
+              ₱{stats?.total_bookings > 0 ? Math.round((stats?.total_revenue || 0) / stats?.total_bookings).toLocaleString() : 0}
+              <span className="text-[10px] text-[#BBB] uppercase tracking-widest font-sans ml-3">/ avg</span>
+            </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-xl">
-              📈
-            </div>
-            <div>
-              <p className="text-slate-600 text-sm">Completion Rate</p>
-              <p className="text-2xl font-bold text-slate-900">
-                {stats?.total_bookings > 0 ? Math.round((stats?.confirmed_bookings / stats?.total_bookings) * 100) : 0}%
-              </p>
-            </div>
+          <div className="space-y-3">
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Fulfilment</p>
+            <p className="text-2xl font-serif text-[#1A1A1A]">
+              {stats?.total_bookings > 0 ? Math.round((stats?.confirmed_bookings / stats?.total_bookings) * 100) : 0}%
+              <span className="text-[10px] text-[#BBB] uppercase tracking-widest font-sans ml-3">efficiency</span>
+            </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-xl">
-              💳
-            </div>
-            <div>
-              <p className="text-slate-600 text-sm">Pending Revenue</p>
-              <p className="text-2xl font-bold text-slate-900">₱{((stats?.total_bookings - stats?.confirmed_bookings) * 250 || 0).toLocaleString()}</p>
-            </div>
+          <div className="space-y-3">
+            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Pending Liquidity</p>
+            <p className="text-2xl font-serif text-[#1A1A1A]">
+              ₱{((stats?.total_bookings - stats?.confirmed_bookings) * 250 || 0).toLocaleString()}
+              <span className="text-[10px] text-[#BBB] uppercase tracking-widest font-sans ml-3">projected</span>
+            </p>
           </div>
         </div>
       </div>

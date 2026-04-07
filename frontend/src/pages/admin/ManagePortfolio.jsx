@@ -56,69 +56,78 @@ export default function ManagePortfolio() {
   }
 
   return (
-    <AdminLayout title="Manage Portfolio">
+    <AdminLayout title="Studio Gallery">
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">⚠️</span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-900">Error</p>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
-            </div>
-          </div>
+        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">Notice</p>
+          <p className="text-sm text-red-800 font-serif italic">{error}</p>
         </div>
       )}
 
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <p className="text-emerald-600 text-sm font-semibold uppercase tracking-widest">Gallery Management</p>
-          <h2 className="text-2xl font-bold text-slate-900 mt-1">Portfolio Showcase</h2>
+      <div className="space-y-16 animate-fadeIn">
+        {/* Editorial Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#EEEEEE] pb-10 gap-8">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">Portfolio Showcase</h2>
+            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Curating the visual narrative of your studio's finest works.</p>
+          </div>
+          <button className="px-10 py-5 bg-[#1A1A1A] text-white text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#C79F68] transition-all duration-700 shadow-sm active:scale-[0.98]">
+            Add Masterpiece
+          </button>
         </div>
 
-        {/* Portfolio Grid */}
+        {/* Portfolio Grid - Minimalist Gallery Style */}
         {portfolio.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-            <span className="text-5xl mb-4 block">🖼️</span>
-            <p className="text-slate-600 text-lg font-medium">No portfolio items yet</p>
-            <p className="text-slate-500 text-sm mt-2">Add your best work to showcase your photography</p>
+          <div className="py-24 text-center border border-dashed border-[#EEEEEE]">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">The exhibition is currently empty</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-[#EEEEEE] divide-y md:divide-y-0 md:divide-x divide-[#EEEEEE]">
             {portfolio.map(item => (
-              <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                <div className="relative overflow-hidden h-56 bg-gradient-to-br from-slate-200 to-slate-300">
+              <div key={item.id} className="bg-white p-10 group hover:bg-[#FAFAFA] transition-all duration-700 flex flex-col h-full">
+                {/* Image Frame - Sophisticated Padding/Borders */}
+                <div className="relative aspect-[4/5] bg-[#F9F9F9] border border-[#EEEEEE] overflow-hidden mb-8 p-4 transition-all duration-700 group-hover:border-[#C79F68]/30">
                   <img 
-                    src={item.image_url} 
+                    src={`http://localhost:8000/${item.image_url}`} 
                     alt={item.title} 
                     loading="lazy"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                    className="w-full h-full object-cover filter saturate-[0.85] group-hover:saturate-[1.1] transition-all duration-1000 group-hover:scale-105" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
                   />
+                  <div className="absolute inset-0 bg-[#1A1A1A]/0 group-hover:bg-[#1A1A1A]/5 transition-all duration-700"></div>
                 </div>
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-bold text-slate-900 text-lg">
-                      {item.title}
-                    </h3>
-                    <span className="text-xl">📸</span>
-                  </div>
-                  <p className="text-sm text-slate-600 mb-4 line-clamp-2">{item.description}</p>
-                  {item.category && (
-                    <div className="mb-6">
-                      <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full uppercase tracking-wider">
-                        {item.category}
-                      </span>
+
+                <div className="flex-1 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-2xl font-serif text-[#1A1A1A] group-hover:text-[#C79F68] transition-colors duration-700">
+                        {item.title}
+                      </h3>
+                      <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#BBB] mt-1">Exhibit #{item.id}</span>
                     </div>
-                  )}
-                  <div className="flex gap-3 pt-4 border-t border-slate-200">
-                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-semibold transition uppercase">
-                      Edit
+                    
+                    <p className="text-[11px] text-[#777] leading-relaxed italic font-medium tracking-wide">"{item.description}"</p>
+                    
+                    {item.category && (
+                      <div className="pt-2">
+                        <span className="text-[8px] font-bold uppercase tracking-[0.4em] text-[#C79F68] border-b border-[#C79F68]/30 pb-0.5">
+                          {item.category}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-4 pt-10 mt-auto">
+                    <button className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#1A1A1A] border border-[#EEEEEE] py-4 hover:border-[#1A1A1A] transition-all duration-500">
+                      Edit details
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg text-sm font-semibold transition uppercase"
+                      className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#999] hover:text-red-700 transition-all duration-500"
                     >
-                      Delete
+                      Remove
                     </button>
                   </div>
                 </div>

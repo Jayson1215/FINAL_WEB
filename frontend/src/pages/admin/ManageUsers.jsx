@@ -105,230 +105,188 @@ export default function ManageUsers() {
   }
 
   return (
-    <AdminLayout title="Manage Users">
+    <AdminLayout title="Studio Directory">
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div className="flex items-start gap-3">
-            <span className="text-xl mt-0.5">⚠️</span>
-            <div className="flex-1">
-              <p className="font-semibold text-red-900">Error</p>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
-            </div>
-          </div>
+        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">Notice</p>
+          <p className="text-sm text-red-800 font-serif italic">{error}</p>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal - Luxury Styled */}
       {deleteConfirm.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
-            <div className="text-center mb-6">
-              <span className="text-5xl block mb-4">🗑️</span>
-              <h3 className="text-2xl font-bold text-slate-900">Delete User?</h3>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white p-10 max-w-sm w-full shadow-2xl border border-[#EEEEEE] animate-fadeIn">
+            <div className="text-center mb-8">
+              <span className="text-4xl block mb-6 grayscale opacity-50">👤</span>
+              <h3 className="text-2xl font-serif text-[#1A1A1A]">Deactivate Access?</h3>
             </div>
-            <p className="text-slate-600 text-center mb-8">
-              Are you sure you want to delete <strong className="text-slate-900">{deleteConfirm.userName}</strong>? They can be restored from the deleted users tab.
+            <p className="text-[11px] text-[#777] text-center mb-10 leading-relaxed tracking-wide">
+              Are you sure you want to suspend <strong className="text-[#1A1A1A] font-bold">{deleteConfirm.userName}</strong>? Their profile will be archived.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <button
                 onClick={() => setDeleteConfirm({ show: false, userId: null, userName: '' })}
-                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-900 rounded-lg hover:bg-slate-50 font-semibold transition"
+                className="flex-1 px-4 py-4 border border-[#EEEEEE] text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-[#F9F9F9] transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition"
+                className="flex-1 px-4 py-4 bg-[#1A1A1A] text-white text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-red-600 transition-all font-semibold"
               >
-                Delete
+                Deactivate
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <p className="text-purple-600 text-sm font-semibold uppercase tracking-widest">User Administration</p>
-          <h2 className="text-2xl font-bold text-slate-900 mt-1">Manage Users</h2>
+      <div className="space-y-16 animate-fadeIn">
+        {/* Editorial Header */}
+        <div className="border-b border-[#EEEEEE] pb-10">
+          <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">User Management</h2>
+          <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Overseeing the registry of your studio's clientele and staff.</p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-8 border-b border-slate-200">
+        {/* Tabs - Minimalist with Gold Accent */}
+        <div className="flex gap-12 border-b border-[#EEEEEE]">
           <button
             onClick={() => setActiveTab('active')}
-            className={`pb-4 px-2 font-semibold text-sm uppercase tracking-wider transition-all ${
+            className={`pb-6 text-[10px] font-bold uppercase tracking-[0.3em] transition-all relative ${
               activeTab === 'active'
-                ? 'border-b-2 border-purple-600 text-purple-600'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'text-[#1A1A1A]'
+                : 'text-[#BBB] hover:text-[#777]'
             }`}
           >
-            Active Users ({users.length})
+            Active Directory ({users.length})
+            {activeTab === 'active' && <span className="absolute bottom-0 left-0 right-0 h-px bg-[#C79F68]"></span>}
           </button>
           <button
             onClick={() => setActiveTab('deleted')}
-            className={`pb-4 px-2 font-semibold text-sm uppercase tracking-wider transition-all ${
+            className={`pb-6 text-[10px] font-bold uppercase tracking-[0.3em] transition-all relative ${
               activeTab === 'deleted'
-                ? 'border-b-2 border-red-600 text-red-600'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'text-[#1A1A1A]'
+                : 'text-[#BBB] hover:text-[#777]'
             }`}
           >
-            Deleted/Blacklisted ({deletedUsers.length})
+            Archived Registry ({deletedUsers.length})
+            {activeTab === 'deleted' && <span className="absolute bottom-0 left-0 right-0 h-px bg-red-600"></span>}
           </button>
         </div>
 
-        {/* Active Users Table */}
-        {activeTab === 'active' && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-            {users.length === 0 ? (
-              <div className="py-12 text-center">
-                <span className="text-4xl mb-3 block">👥</span>
-                <p className="text-slate-600 font-medium">No active users</p>
-                <p className="text-slate-500 text-sm mt-2">Users will appear here once they register</p>
+        {/* User Content */}
+        <div className="overflow-x-auto">
+          {activeTab === 'active' ? (
+            users.length === 0 ? (
+              <div className="py-24 text-center border border-dashed border-[#EEEEEE]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">The directory is currently empty</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-purple-50 to-purple-100 border-b border-slate-200">
-                      <th className="px-6 py-4 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">Role</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">Joined</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-purple-900 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                              user.role === 'admin'
-                                ? 'bg-gradient-to-br from-purple-400 to-purple-600'
-                                : 'bg-gradient-to-br from-purple-300 to-purple-500'
-                            }`}>
-                              {user.name?.charAt(0).toUpperCase()}
-                            </div>
-                            <p className="font-semibold text-slate-900">{user.name}</p>
+              <table className="w-full text-left border-separate border-spacing-0">
+                <thead>
+                  <tr>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Identify</th>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Contact</th>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Privilege</th>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Joined Date</th>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A] text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F5F5F5]">
+                  {users.map((user) => (
+                    <tr key={user.id} className="group hover:bg-[#FAFAFA] transition-all duration-500">
+                      <td className="py-8">
+                        <div className="flex items-center gap-5">
+                          <div className="w-12 h-12 border border-[#EEEEEE] flex items-center justify-center text-[#999] text-xs font-serif group-hover:border-[#C79F68] group-hover:text-[#C79F68] transition-all duration-700">
+                            {user.name?.charAt(0).toUpperCase()}
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-slate-600 text-sm">{user.email}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                              user.role === 'admin'
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-slate-100 text-slate-700'
-                            }`}
-                          >
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
-                          {new Date(user.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </td>
-                        <td className="px-6 py-4">
+                          <p className="text-sm font-serif text-[#1A1A1A]">{user.name}</p>
+                        </div>
+                      </td>
+                      <td className="py-8">
+                        <p className="text-[11px] text-[#777] tracking-widest lowercase">{user.email}</p>
+                      </td>
+                      <td className="py-8">
+                        <span className={`text-[8px] font-bold uppercase tracking-[0.4em] px-3 py-1.5 border ${
+                          user.role === 'admin'
+                            ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
+                            : 'bg-white text-[#777] border-[#EEEEEE]'
+                        }`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="py-8 text-[11px] text-[#AAA] tracking-widest">
+                        {new Date(user.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="py-8 text-right">
+                        <button
+                          onClick={() => handleDeleteClick(user)}
+                          className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#BBB] hover:text-red-600 transition-colors"
+                        >
+                          Deactivate
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
+          ) : (
+            deletedUsers.length === 0 ? (
+              <div className="py-24 text-center border border-dashed border-[#EEEEEE]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">Registry is pristine</p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-separate border-spacing-0">
+                <thead>
+                  <tr>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-red-600">Identify</th>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-red-600">Contact</th>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-red-600">Archived</th>
+                    <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-red-600 text-right">Restoration</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F5F5F5]">
+                  {deletedUsers.map((user) => (
+                    <tr key={user.id} className="group hover:bg-red-50 transition-all duration-500">
+                      <td className="py-8">
+                        <div className="flex items-center gap-5">
+                          <div className="w-12 h-12 bg-[#F9F9F9] border border-[#EEEEEE] flex items-center justify-center text-[#DDD] text-xs font-serif line-through">
+                            {user.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <p className="text-sm font-serif text-[#999] line-through">{user.name}</p>
+                        </div>
+                      </td>
+                      <td className="py-8">
+                        <p className="text-[11px] text-[#BBB] tracking-widest line-through lowercase">{user.email}</p>
+                      </td>
+                      <td className="py-8 text-[11px] text-[#BBB] tracking-widest">
+                        {new Date(user.deleted_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td className="py-8 text-right">
+                        <div className="flex justify-end gap-6">
                           <button
-                            onClick={() => handleDeleteClick(user)}
-                            className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition"
+                            onClick={() => restoreUser(user.id)}
+                            className="text-[9px] font-bold uppercase tracking-[0.3em] text-green-600 hover:opacity-70 transition-colors"
                           >
-                            Delete
+                            Reactivate
                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Deleted Users Table */}
-        {activeTab === 'deleted' && (
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden">
-            {deletedUsers.length === 0 ? (
-              <div className="py-12 text-center">
-                <span className="text-4xl mb-3 block">✓</span>
-                <p className="text-slate-600 font-medium">No deleted users</p>
-                <p className="text-slate-500 text-sm mt-2">All users are active and in good standing</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-red-50 to-red-100 border-b border-slate-200">
-                      <th className="px-6 py-4 text-left text-xs font-bold text-red-900 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-red-900 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-red-900 uppercase tracking-wider">Role</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-red-900 uppercase tracking-wider">Deleted</th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-red-900 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {deletedUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-red-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-slate-300 rounded-full flex items-center justify-center text-slate-600 font-bold text-sm line-through">
-                              {user.name?.charAt(0).toUpperCase()}
-                            </div>
-                            <p className="font-semibold text-slate-700 line-through">{user.name}</p>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-slate-600 text-sm">{user.email}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase opacity-60 ${
-                              user.role === 'admin'
-                                ? 'bg-purple-100 text-purple-700'
-                                : 'bg-slate-100 text-slate-700'
-                            }`}
+                          <button
+                            onClick={() => forceDeleteUser(user.id)}
+                            className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#BBB] hover:text-red-700 transition-colors"
                           >
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
-                          {new Date(user.deleted_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => restoreUser(user.id)}
-                              className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-semibold transition"
-                            >
-                              Restore
-                            </button>
-                            <button
-                              onClick={() => forceDeleteUser(user.id)}
-                              className="px-3 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg text-xs font-semibold transition"
-                            >
-                              Permanent Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
+                            Purge
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
+          )}
+        </div>
       </div>
     </AdminLayout>
   );

@@ -25,6 +25,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'google_id',
+        'avatar',
     ];
 
     /**
@@ -56,5 +58,20 @@ class User extends Authenticatable
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function notifications()
+    {
+        return $this->allNotifications()->latest();
+    }
+
+    public function allNotifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->allNotifications()->whereNull('read_at');
     }
 }

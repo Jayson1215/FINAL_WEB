@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import NotificationBell from '../common/NotificationBell';
 
 export default function ClientLayout({ children, title }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -26,118 +27,120 @@ export default function ClientLayout({ children, title }) {
     }
   };
 
-  const handleCancelLogout = () => {
-    setShowLogoutModal(false);
-  };
-
   const navLinks = [
-    { path: '/client/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/client/portfolio', label: 'Gallery', icon: '🎨' },
-    { path: '/client/services', label: 'Services', icon: '📸' },
-    { path: '/client/bookings', label: 'Bookings', icon: '📅' },
+    { path: '/client/dashboard', label: 'Dashboard' },
+    { path: '/client/portfolio', label: 'Gallery' },
+    { path: '/client/services', label: 'Services' },
+    { path: '/client/bookings', label: 'My Bookings' },
   ];
 
   return (
-    <div className="flex h-screen bg-white">
-      {/* Client Sidebar - Light for Client Area */}
-      <aside className={`fixed md:static w-64 bg-white border-r-2 border-gray-300 shadow-sm p-6 flex flex-col transition-all duration-300 z-40 h-screen ${
-        sidebarOpen ? 'left-0' : '-left-64 md:left-0'
-      }`}>
-        <Link to="/" className="mb-8 hover:opacity-80 transition duration-300 block">
-          <div>
-            <div className="inline-block bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold mb-2">
-              CLIENT
-            </div>
-            <h2 className="text-2xl font-display font-bold text-black">
+    <div className="min-h-screen bg-[#F9F9F9] font-sans text-[#333333]">
+      {/* Minimalist Top Navigation */}
+      <nav className="bg-white border-b border-[#EEEEEE] py-6 px-8 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          {/* Serif Logo */}
+          <Link to="/" className="hover:opacity-80 transition duration-300">
+            <h2 className="text-3xl font-serif tracking-tight text-[#333]">
               PhotoStudio
             </h2>
-            <p className="text-gray-600 text-xs uppercase tracking-wider">User Portal</p>
-          </div>
-        </Link>
+          </Link>
 
-        <nav className="flex-1 space-y-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              onClick={() => setSidebarOpen(false)}
-              className="block px-4 py-3 text-gray-700 hover:text-black hover:bg-gray-100 rounded-lg transition duration-300 font-semibold text-sm uppercase tracking-wider flex items-center gap-3"
-            >
-              <span className="text-lg">{link.icon}</span>
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="pt-6 border-t-2 border-gray-300 space-y-4">
-          <div className="px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg">
-            <p className="text-gray-600 text-xs uppercase tracking-wider font-semibold mb-1">Logged in as</p>
-            <p className="font-display font-semibold text-black truncate">{user?.name}</p>
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center space-x-10">
+            {navLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative py-2 ${
+                  location.pathname === link.path 
+                    ? 'text-[#C79F68]' 
+                    : 'text-[#777] hover:text-[#333]'
+                }`}
+              >
+                {link.label}
+                {location.pathname === link.path && (
+                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C79F68]"></span>
+                )}
+              </Link>
+            ))}
+            
+            {/* User Dropdown/Logout */}
+            <div className="flex items-center pl-6 border-l border-[#EEEEEE] space-x-6">
+              <NotificationBell />
+              <span className="text-[10px] uppercase tracking-widest font-bold text-[#AAA]">
+                {user?.name}
+              </span>
+              <button
+                onClick={handleLogoutClick}
+                className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#333] hover:text-[#C79F68] transition duration-300"
+              >
+                Logout
+              </button>
+            </div>
           </div>
-          <button
-            onClick={handleLogoutClick}
-            className="w-full bg-green-100 text-green-700 border border-green-300 py-3 px-4 rounded-lg hover:bg-green-200 transition font-semibold text-sm uppercase tracking-wider"
-          >
-            Logout
-          </button>
-        </div>
-      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar - Clean for Client */}
-        <div className="bg-white border-b-2 border-gray-300 shadow-sm p-4 md:p-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-black">{title}</h1>
-            <p className="text-sm text-gray-600">Client Dashboard</p>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition text-black"
-          >
+          {/* Mobile Menu Toggle (Simplified for now) */}
+          <button className="md:hidden text-[#333] text-2xl">
             ☰
           </button>
         </div>
+      </nav>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-white">
-          {children}
+      {/* Page Header (Minimal) */}
+      <header className="py-16 px-8 bg-white border-b border-[#EEEEEE] mb-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-5xl md:text-6xl font-serif text-[#333] mb-4 leading-tight">
+            {title}
+          </h1>
+          <div className="w-12 h-[2px] bg-[#C79F68] mx-auto opacity-60"></div>
         </div>
+      </header>
+
+      {/* Main Content Area (Centered Column) */}
+      <main className="max-w-7xl mx-auto px-8 pb-32">
+        {children}
       </main>
 
-      {/* Logout Confirmation Modal */}
+      {/* Simple Footer */}
+      <footer className="py-20 px-8 border-t border-[#EEEEEE] bg-white">
+        <div className="max-w-7xl mx-auto text-center">
+          <h3 className="text-2xl font-serif text-[#333] mb-6">PhotoStudio</h3>
+          <p className="text-[11px] uppercase tracking-widest text-[#AAA] mb-8">
+            &copy; {new Date().getFullYear()} All Rights Reserved
+          </p>
+          <div className="flex justify-center space-x-8">
+            <a href="#" className="text-[#777] hover:text-[#C79F68] transition tracking-widest text-[10px] uppercase font-bold">Instagram</a>
+            <a href="#" className="text-[#777] hover:text-[#C79F68] transition tracking-widest text-[10px] uppercase font-bold">Facebook</a>
+          </div>
+        </div>
+      </footer>
+
+      {/* Logout Modal (Styled Minimalist) */}
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-8 max-w-sm mx-4">
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-2">Confirm Logout</h2>
-            <p className="text-gray-700 mb-8">Are you sure you want to log out? You'll need to sign in again to access your bookings and account.</p>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+          <div className="bg-white p-12 max-w-md w-full shadow-2xl text-center border border-[#EEE]">
+            <h2 className="text-3xl font-serif text-[#333] mb-4">Confirm Logout</h2>
+            <p className="text-[#777] mb-10 text-sm leading-relaxed">
+              Are you sure you want to end your session? Your booking progress will be saved.
+            </p>
             
-            <div className="flex gap-4">
-              <button
-                onClick={handleCancelLogout}
-                disabled={isLoggingOut}
-                className="flex-1 px-6 py-3 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                No, Stay
-              </button>
+            <div className="flex flex-col space-y-4">
               <button
                 onClick={handleConfirmLogout}
-                disabled={isLoggingOut}
-                className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#333] text-white py-5 text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-[#C79F68] transition duration-500"
               >
-                {isLoggingOut ? 'Logging out...' : 'Yes, Logout'}
+                {isLoggingOut ? 'Logging out...' : 'Sign Out'}
+              </button>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="w-full bg-transparent text-[#333] py-5 text-[11px] font-bold uppercase tracking-[0.25em] border border-[#EEEEEE] hover:border-[#333] transition duration-500"
+              >
+                Go Back
               </button>
             </div>
           </div>
         </div>
-      )}
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 md:hidden z-30"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
       )}
     </div>
   );
