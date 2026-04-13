@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env
+.env.*.php
+storage/logs/*
+database/database.sqlite
+vendor/bin
+.DS_Store

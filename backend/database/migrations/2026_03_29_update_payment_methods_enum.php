@@ -12,8 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Skip for SQLite - it doesn't support ENUM ALTER TYPE
-        if (DB::getDriverName() === 'sqlite') {
+        // Skip for SQLite and MySQL - they don't support ENUM ALTER TYPE like PostgreSQL
+        $driver = DB::getDriverName();
+        if ($driver === 'sqlite' || $driver === 'mysql') {
             return;
         }
 
@@ -32,8 +33,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Skip for SQLite - it doesn't support ENUM ALTER TYPE
-        if (DB::getDriverName() === 'sqlite') {
+        // Skip for SQLite and MySQL - they don't support ENUM ALTER TYPE like PostgreSQL
+        $driver = DB::getDriverName();
+        if ($driver === 'sqlite' || $driver === 'mysql') {
             return;
         }
 

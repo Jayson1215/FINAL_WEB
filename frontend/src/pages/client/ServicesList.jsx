@@ -16,133 +16,114 @@ export default function ServicesList() {
   const fetchServices = async () => {
     try {
       setLoading(true);
-      setError('');
       const response = await serviceService.getServices();
-      
-      if (!Array.isArray(response.data)) {
-        throw new Error('Expected array of services');
-      }
-      
-      const validServices = response.data.filter(service => !!service.id);
-      setServices(validServices);
+      setServices(response.data);
     } catch (err) {
       setError('Failed to load services');
-      console.error('Error fetching services:', err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleBookNow = (serviceId) => {
-    if (!serviceId) return;
     navigate(`/client/booking/${serviceId}`);
   };
 
   return (
-    <ClientLayout title="Available Sessions">
+    <ClientLayout title="Our Services">
       {error && (
-        <div className="mb-12 p-6 bg-red-50 border border-red-100 text-center">
-            <p className="text-sm font-bold uppercase tracking-widest text-red-800 mb-2">Notice</p>
-            <p className="text-sm text-red-600 font-medium">{error}</p>
+        <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-lg mb-6">
+          {error}
         </div>
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="w-8 h-8 border-2 border-[#C79F68] border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex justify-center items-center h-96">
+          <div className="text-gray-700 text-lg">Loading services...</div>
         </div>
       ) : (
-        <div className="max-w-5xl mx-auto">
-          {/* Subtle Introduction */}
-          <div className="text-center mb-20">
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-4">Curated Experiences</p>
-            <h2 className="text-3xl font-serif text-[#333] mb-6">Choose Your Session</h2>
-            <p className="text-sm text-[#777] max-w-xl mx-auto leading-relaxed">
-              Every moment is unique. Select a package that best fits your vision and let's create something beautiful together.
-            </p>
+        <div className="space-y-12">
+          {/* Elegant Header */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-12 shadow-xl">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 opacity-5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+            <div className="relative z-10">
+              <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-2">Photography Services</p>
+              <h1 className="text-6xl font-display font-bold text-white mb-3">Our Services</h1>
+              <p className="text-slate-300 text-lg">Choose the perfect package for your photography session</p>
+            </div>
           </div>
 
-          {services.length === 0 ? (
-            <div className="text-center py-20 border border-dashed border-[#EEE]">
-              <p className="text-sm text-[#777] uppercase tracking-widest">No sessions currently available</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {services.map((service) => {
-                const serviceId = service.id.toString();
-                return (
-                  <div 
-                    key={serviceId}
-                    className="group bg-white border border-[#EEEEEE] p-12 transition-all duration-500 hover:shadow-premium flex flex-col h-full text-center"
-                  >
-                    {/* Category Label */}
-                    {service.category && (
-                      <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C79F68] mb-6">
-                        {service.category}
-                      </p>
-                    )}
+          {/* Services Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((service, index) => (
+              <div 
+                key={service.id} 
+                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 hover:border-blue-200 relative flex flex-col"
+              >
+                {/* Service Header */}
+                <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 relative overflow-hidden">
+                  <div className="absolute -right-10 -top-10 text-7xl opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-300">📸</div>
+                  <h3 className="text-2xl font-display font-bold text-white relative mb-3">{service.name}</h3>
+                  {service.category && (
+                    <span className="inline-block px-4 py-2 bg-blue-500 text-white text-xs font-bold rounded-lg uppercase tracking-wider">
+                      {service.category}
+                    </span>
+                  )}
+                </div>
 
-                    {/* Title */}
-                    <h3 className="text-3xl font-serif text-[#333] mb-8 group-hover:text-[#C79F68] transition-colors duration-300">
-                      {service.name}
-                    </h3>
+                {/* Service Details */}
+                <div className="p-8 flex flex-col flex-1">
+                  {/* Description */}
+                  <p className="text-slate-700 mb-8 min-h-20 leading-relaxed font-medium">{service.description}</p>
 
-                    {/* Service Image Preview */}
-                    <div className="w-full aspect-[16/9] mb-8 bg-[#F9F9F9] overflow-hidden border border-[#EEEEEE] relative">
-                      {service.image_path ? (
-                        <img 
-                          src={`http://localhost:8000/${service.image_path}`} 
-                          alt={service.name}
-                          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center opacity-10">
-                          <span className="text-2xl">📸</span>
-                        </div>
-                      )}
+                  {/* Duration and Price */}
+                  <div className="grid grid-cols-2 gap-6 mb-8 pb-8 border-b border-slate-200">
+                    <div>
+                      <p className="text-slate-600 text-xs uppercase tracking-wider font-bold mb-2">Duration</p>
+                      <p className="text-3xl font-display font-bold text-slate-900">{service.duration}</p>
+                      <p className="text-slate-600 text-sm font-medium">minutes</p>
                     </div>
-
-                    {/* Price & Duration */}
-                    <div className="mb-8 flex flex-col items-center">
-                      <p className="text-4xl font-serif text-[#333] mb-2 leading-none">
-                        ₱{parseFloat(service.price).toLocaleString()}
-                      </p>
-                      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#AAA]">
-                        {service.duration} Minute Session
-                      </p>
+                    <div className="text-right">
+                      <p className="text-slate-600 text-xs uppercase tracking-wider font-bold mb-2">Price</p>
+                      <p className="text-3xl font-display font-bold text-blue-600">${parseFloat(service.price).toFixed(2)}</p>
                     </div>
-
-                    {/* Divider */}
-                    <div className="w-12 h-[1px] bg-[#EEEEEE] mx-auto mb-8"></div>
-
-                    {/* Description */}
-                    <p className="text-sm text-[#777] leading-relaxed mb-10 flex-1">
-                      {service.description}
-                    </p>
-
-                    {/* CTA Button */}
-                    <button
-                      onClick={() => handleBookNow(serviceId)}
-                      className="w-full bg-transparent border border-[#333] py-5 text-[11px] font-bold uppercase tracking-[0.25em] text-[#333] transition-all duration-500 hover:bg-[#333] hover:text-white"
-                    >
-                      Book Session
-                    </button>
                   </div>
-                );
-              })}
+
+                  {/* Features List */}
+                  <div className="mb-8 space-y-3">
+                    <p className="text-slate-600 text-xs uppercase tracking-wider font-bold mb-4">What's Included</p>
+                    {[1, 2, 3].map(i => (
+                      <p key={i} className="text-slate-700 text-sm flex items-center gap-3">
+                        <span className="text-blue-500 font-bold">✓</span>
+                        Premium photos & prints
+                      </p>
+                    ))}
+                  </div>
+
+                  {/* Book Button */}
+                  <button
+                    onClick={() => handleBookNow(service.id)}
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 group-hover:shadow-lg font-display font-bold uppercase tracking-wider transition-all duration-300 text-sm mt-auto flex items-center justify-center gap-2"
+                  >
+                    <span>✨</span> Book Now
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {!loading && services.length === 0 && (
+            <div className="text-center py-16 bg-slate-50 rounded-2xl border border-slate-200">
+              <p className="text-slate-700 text-lg mb-6 font-medium">No services available at the moment.</p>
+              <button 
+                onClick={fetchServices}
+                className="inline-block px-8 py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition uppercase tracking-wider text-sm"
+              >
+                Refresh Page
+              </button>
             </div>
           )}
-          
-          {/* Trust Note */}
-          <div className="mt-32 text-center">
-            <div className="w-px h-16 bg-[#EEEEEE] mx-auto mb-8"></div>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-[#AAA] font-bold">
-              Secure Booking & Satisfaction Guaranteed
-            </p>
-          </div>
         </div>
       )}
     </ClientLayout>

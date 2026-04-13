@@ -19,24 +19,26 @@ export default function ClientDashboard() {
       setLoading(true);
       setError('');
       
-      const [bookingsResponse, statsResponse] = await Promise.allSettled([
-        bookingService.getMyBookings(),
-        paymentService.getReports(),
-      ]);
-
-      if (bookingsResponse.status === 'fulfilled') {
-        setBookings(bookingsResponse.value.data || []);
-      } else {
+      let bookingsResponse, statsResponse;
+      
+      try {
+        bookingsResponse = await bookingService.getMyBookings();
+        setBookings(bookingsResponse.data);
+      } catch (err) {
+        console.error('Failed to fetch bookings:', err);
         setBookings([]);
       }
 
-      if (statsResponse.status === 'fulfilled') {
-        setStats(statsResponse.value.data || null);
-      } else {
+      try {
+        statsResponse = await paymentService.getReports();
+        setStats(statsResponse.data);
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
         setStats(null);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load dashboard data.');
+      setError(err.response?.data?.message || 'Failed to load dashboard data. Please refresh the page.');
+      console.error('Dashboard error:', err);
     } finally {
       setLoading(false);
     }
@@ -47,101 +49,200 @@ export default function ClientDashboard() {
   const pendingBookings = bookings.filter(b => b.status === 'pending').length;
 
   return (
-    <ClientLayout title="Welcome Back">
+    <ClientLayout title="Dashboard">
       {error && (
-        <div className="mb-12 p-6 bg-red-50 border border-red-100 text-center">
-            <p className="text-sm font-bold uppercase tracking-widest text-red-800 mb-2">Notice</p>
-            <p className="text-sm text-red-600 font-medium">{error}</p>
+        <div className="bg-red-100 border-2 border-red-300 text-red-700 p-4 rounded-lg mb-6 shadow-sm">
+          <p className="font-semibold">⚠️ Error Loading Dashboard</p>
+          <p className="text-sm mt-1">{error}</p>
+          <button
+            onClick={fetchDashboardData}
+            className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
+          >
+            Try Again
+          </button>
         </div>
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="w-8 h-8 border-2 border-[#C79F68] border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex justify-center items-center h-96">
+          <div className="text-gray-700 text-lg">Loading your studio...</div>
         </div>
       ) : (
-        <div className="max-w-6xl mx-auto">
-          {/* Dashboard Intro */}
-          <div className="text-center mb-20">
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-4">Account Overview</p>
-            <h2 className="text-3xl font-serif text-[#333] mb-6">Manage Your Story</h2>
-            <div className="w-12 h-[1px] bg-[#C79F68] mx-auto opacity-40"></div>
-          </div>
-
-          {/* Minimalist Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-            <div className="bg-white border border-[#EEEEEE] p-10 text-center">
-              <p className="text-[10px] uppercase tracking-widest text-[#AAA] mb-4 font-bold">Total Sessions</p>
-              <p className="text-5xl font-serif text-[#333] mb-2">{bookings.length}</p>
-              <div className="w-6 h-px bg-[#EEEEEE] mx-auto mt-6"></div>
-            </div>
-            <div className="bg-white border border-[#EEEEEE] p-10 text-center">
-              <p className="text-[10px] uppercase tracking-widest text-[#AAA] mb-4 font-bold">Confirmed</p>
-              <p className="text-5xl font-serif text-[#333] mb-2">{confirmedBookings}</p>
-              <div className="w-6 h-px bg-[#EEEEEE] mx-auto mt-6"></div>
-            </div>
-            <div className="bg-white border border-[#EEEEEE] p-10 text-center">
-              <p className="text-[10px] uppercase tracking-widest text-[#AAA] mb-4 font-bold">Pending Approval</p>
-              <p className="text-5xl font-serif text-[#333] mb-2">{pendingBookings}</p>
-              <div className="w-6 h-px bg-[#EEEEEE] mx-auto mt-6"></div>
+        <div className="space-y-12">
+          {/* Elegant Header */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-12 shadow-xl">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500 opacity-5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+            <div className="relative z-10">
+              <p className="text-emerald-400 text-sm font-semibold uppercase tracking-widest mb-2">Welcome Back</p>
+              <h1 className="text-6xl font-display font-bold text-white mb-3">Your Studio Dashboard</h1>
+              <p className="text-slate-300 text-lg">Manage your photography sessions with elegance</p>
             </div>
           </div>
 
-          {/* Action Links (Clean) */}
-          <div className="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-12 mb-24 border-y border-[#EEEEEE] py-12">
+          {/* Elegant Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Total Bookings */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition">
+                    <span className="text-2xl">📸</span>
+                  </div>
+                  <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider">Total Sessions</p>
+                </div>
+                <p className="text-5xl font-display font-bold text-slate-900 mb-3">{bookings.length}</p>
+                <div className="h-1.5 w-16 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"></div>
+              </div>
+            </div>
+
+            {/* Confirmed */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-emerald-100 rounded-xl group-hover:bg-emerald-200 transition">
+                    <span className="text-2xl">✓</span>
+                  </div>
+                  <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider">Confirmed</p>
+                </div>
+                <p className="text-5xl font-display font-bold text-emerald-700 mb-3">{confirmedBookings}</p>
+                <div className="h-1.5 w-16 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"></div>
+              </div>
+            </div>
+
+            {/* Pending */}
+            <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 bg-amber-100 rounded-xl group-hover:bg-amber-200 transition">
+                    <span className="text-2xl">⏳</span>
+                  </div>
+                  <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider">Pending</p>
+                </div>
+                <p className="text-5xl font-display font-bold text-amber-700 mb-3">{pendingBookings}</p>
+                <div className="h-1.5 w-16 bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Elegant Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Link to="/client/services" className="group">
-              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#333] group-hover:text-[#C79F68] transition">Book New Session</span>
-              <span className="block h-px w-0 group-hover:w-full bg-[#C79F68] transition-all duration-300 mt-1 mx-auto"></span>
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-1 shadow-lg hover:shadow-xl transition-all duration-300">
+                <button className="w-full relative z-10 bg-white text-slate-900 py-5 px-8 rounded-xl font-display font-bold uppercase tracking-widest group-hover:bg-slate-50 transition-all duration-300 text-sm flex items-center justify-center gap-3">
+                  <span className="text-xl">✨</span> Book New Session
+                </button>
+              </div>
             </Link>
             <Link to="/client/portfolio" className="group">
-              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#333] group-hover:text-[#C79F68] transition">Browse Gallery</span>
-              <span className="block h-px w-0 group-hover:w-full bg-[#C79F68] transition-all duration-300 mt-1 mx-auto"></span>
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 p-1 shadow-lg hover:shadow-xl transition-all duration-300">
+                <button className="w-full relative z-10 bg-white text-emerald-700 py-5 px-8 rounded-xl font-display font-bold uppercase tracking-widest group-hover:bg-slate-50 transition-all duration-300 text-sm flex items-center justify-center gap-3">
+                  <span className="text-xl">🎨</span> View Portfolio
+                </button>
+              </div>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-            {/* Upcoming Section */}
-            <div className="lg:col-span-12">
-                <div className="flex justify-between items-center mb-12">
-                    <h3 className="text-2xl font-serif text-[#333]">Upcoming Sessions</h3>
-                    <div className="w-24 h-px bg-[#EEEEEE]"></div>
-                </div>
-
-                {upcomingBookings.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {upcomingBookings.slice(0, 4).map((booking) => (
-                    <div
-                        key={booking.id}
-                        className="bg-white border border-[#EEEEEE] p-10 transition duration-500 hover:shadow-premium"
-                    >
-                        <div className="flex justify-between items-start mb-8">
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C79F68]">
-                                {booking.status}
+          {/* Elegant Upcoming Sessions */}
+          <div>
+            <h2 className="text-3xl font-display font-bold text-slate-900 mb-8">Upcoming Sessions</h2>
+            {upcomingBookings.length > 0 ? (
+              <div className="space-y-5">
+                {upcomingBookings.slice(0, 5).map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-emerald-200 relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-50 rounded-full -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative z-10 flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-display font-bold text-slate-900 mb-3 group-hover:text-emerald-700 transition">
+                          {booking.service?.name}
+                        </h3>
+                        <div className="space-y-2">
+                          <p className="text-slate-700 flex items-center gap-3">
+                            <span className="text-lg">📅</span>
+                            <span className="font-medium">
+                              {new Date(booking.booking_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })}
                             </span>
-                            <span className="text-[11px] font-bold text-[#AAA] tracking-widest">
-                                {new Date(booking.booking_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
-                            </span>
+                            <span className="text-emerald-600 font-semibold">{booking.booking_time}</span>
+                          </p>
+                          {booking.special_requests && (
+                            <p className="text-slate-600 text-sm flex items-center gap-3">
+                              <span>📝</span>
+                              {booking.special_requests}
+                            </p>
+                          )}
                         </div>
-                        <h4 className="text-xl font-serif text-[#333] mb-4">{booking.service?.name}</h4>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#777] mb-8">
-                           Studio • {booking.booking_time}
-                        </p>
-                        <Link to={`/client/bookings`} className="text-[10px] font-bold uppercase tracking-widest text-[#333] border-b border-[#333] pb-1 hover:text-[#C79F68] hover:border-[#C79F68] transition">
-                            Manage Booking
-                        </Link>
+                      </div>
+                      <span
+                        className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap ml-4 border ${booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}
+                      >
+                        {booking.status}
+                      </span>
                     </div>
-                    ))}
-                </div>
-                ) : (
-                <div className="text-center py-20 border border-dashed border-[#EEEEEE]">
-                    <p className="text-[10px] uppercase tracking-widest text-[#AAA] font-bold mb-10">No upcoming sessions</p>
-                    <Link to="/client/services" className="bg-[#333] text-white py-5 px-10 text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-[#C79F68] transition duration-500">
-                        Schedule Your Session
-                    </Link>
-                </div>
-                )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 rounded-2xl bg-slate-50 border border-slate-200">
+                <p className="text-slate-700 text-lg mb-4 font-medium">No upcoming sessions scheduled</p>
+                <Link to="/client/services">
+                  <button className="inline-block px-8 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition uppercase tracking-wider text-sm mt-4">
+                    Book Your First Session
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
+
+          {/* Elegant Recent Sessions */}
+          {bookings.length > 0 && (
+            <div>
+              <h2 className="text-3xl font-display font-bold text-slate-900 mb-8">Recent Sessions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {bookings.slice(0, 4).map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-blue-200 relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative z-10">
+                      <div className="flex items-start justify-between mb-6">
+                        <h3 className="text-lg font-display font-bold text-slate-900 group-hover:text-blue-700 transition">
+                          {booking.service?.name}
+                        </h3>
+                        <span className="text-3xl opacity-15 group-hover:opacity-25 transition">📸</span>
+                      </div>
+                      <p className="text-slate-600 text-sm font-medium mb-4">
+                        {new Date(booking.booking_date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </p>
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+                        <span className="text-2xl font-display font-bold text-slate-900">
+                          ${booking.service?.price || '0.00'}
+                        </span>
+                        <span
+                          className={`text-xs font-bold uppercase px-4 py-2 rounded-lg tracking-wider border ${booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}
+                        >
+                          {booking.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </ClientLayout>

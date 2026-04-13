@@ -19,10 +19,10 @@ class DatabaseSeeder extends Seeder
     {
         // Create default admin account
         User::updateOrCreate(
-            ['email' => 'Admin@gmail.com'],
+            ['email' => 'admin@studio.com'],
             [
-                'name' => 'Admin User',
-                'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+                'name' => 'Studio Admin',
+                'password' => \Illuminate\Support\Facades\Hash::make('Admin@123'),
                 'role' => 'admin',
             ]
         );
