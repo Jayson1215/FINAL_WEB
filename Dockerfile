@@ -29,6 +29,16 @@ RUN npm run build
 
 # Setup Backend
 WORKDIR /app/backend
+# Ensure Laravel required directories exist in container build context.
+RUN mkdir -p bootstrap/cache \
+    storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    database \
+ && touch database/database.sqlite \
+ && chown -R www-data:www-data bootstrap/cache storage database \
+ && chmod -R ug+rwX bootstrap/cache storage database
 RUN composer install --no-dev --optimize-autoloader
 # Copy built frontend to public
 RUN mkdir -p public
