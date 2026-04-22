@@ -54,5 +54,5 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # Start Nginx and PHP-FPM
 # Start PHP-FPM in background, update Nginx port, and start Nginx
-# Clear cache, run migrations, start PHP-FPM, update Nginx port, and start Nginx
-CMD php artisan config:clear && php artisan route:clear && php artisan migrate --force && php artisan db:seed --force && php-fpm -D && sed -i "s/listen 8000;/listen ${PORT:-8000};/g" /etc/nginx/http.d/default.conf && nginx -g 'daemon off;'
+# Setup and Start
+CMD php artisan config:clear; php artisan route:clear; php artisan migrate --force; php artisan db:seed --force; php-fpm -D; sed -i "s/listen 8000;/listen ${PORT:-8000};/g" /etc/nginx/http.d/default.conf; nginx -g 'daemon off;'
