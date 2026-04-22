@@ -26,18 +26,18 @@ class CorsMiddleware
         // Process the request
         $response = $next($request);
 
-        // Add CORS headers to response (check if not already set to avoid duplicates)
+        // Add CORS headers to response (use true as third param to REPLACE, not append)
         if ($isAllowed && $origin) {
-            // Use set() instead of header() to ensure replacement, not appending
-            $response->headers->set('Access-Control-Allow-Origin', $origin, false);
-            $response->headers->set('Access-Control-Allow-Credentials', 'true', false);
-            $response->headers->set('Access-Control-Expose-Headers', 'Content-Length, X-JSON-Response-Body', false);
+            // Use set() with true to replace headers completely
+            $response->headers->set('Access-Control-Allow-Origin', $origin, true);
+            $response->headers->set('Access-Control-Allow-Credentials', 'true', true);
+            $response->headers->set('Access-Control-Expose-Headers', 'Content-Length, X-JSON-Response-Body', true);
         }
 
         // These headers should always be present
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH', false);
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With', false);
-        $response->headers->set('Access-Control-Max-Age', '86400', false);
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH', true);
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With', true);
+        $response->headers->set('Access-Control-Max-Age', '86400', true);
 
         return $response;
     }
