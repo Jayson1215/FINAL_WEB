@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     'https://finalweb-pied.vercel.app',
                     'https://finalweb.vercel.app',
                     'https://final-web-ls8m.onrender.com',
+                    'https://finalweb-ew3vztz1y-jaysons-projects-5e0cbb2a.vercel.app',
                     'http://localhost:5173',
                     'http://localhost:5174',
                     'http://localhost:8000',
