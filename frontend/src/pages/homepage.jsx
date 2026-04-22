@@ -16,6 +16,7 @@ export default function Landing() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [heroVideoFailed, setHeroVideoFailed] = useState(false);
   
   // Booking Modal States
   const [bookingServiceDetail, setBookingServiceDetail] = useState(null);
@@ -300,7 +301,13 @@ export default function Landing() {
       {/* Hero Section */}
       <section id="hero" ref={sectionRefs.hero} className="relative h-[85vh] flex items-center justify-center overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
-          <img src={user ? '/images/studio-hero.png' : '/images/featured-work.png'} className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }} alt="Background" />
+          {heroVideoFailed ? (
+            <img src={user ? '/images/studio-hero.png' : '/images/featured-work.png'} className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }} alt="Background" />
+          ) : (
+            <video autoPlay muted loop playsInline className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.1) translateY(${scrollY * 0.1}px)` }} poster={user ? '/images/studio-hero.png' : '/images/featured-work.png'} onError={() => setHeroVideoFailed(true)}>
+              <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
+            </video>
+          )}
           <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-[#F0F2F5]"></div>
         </div>
         <div className="relative z-10 text-center max-w-4xl px-6 space-y-6">
