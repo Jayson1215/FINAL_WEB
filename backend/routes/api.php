@@ -13,6 +13,19 @@ use App\Http\Controllers\NotificationController;
  * Public Routes (No Authentication Required)
  */
 Route::get('/health', [\App\Http\Controllers\DebugController::class, 'health']);
+Route::get('/images/{filename}', function ($filename) {
+    // Generate placeholder image URL using placeholder service
+    $allowed = ['service_wedding.png', 'service_portrait.png', 'service_editorial.png', 'service_event.png', 
+                 'portfolio_bride.png', 'portfolio_fashion.png', 'portfolio_newborn.png', 'portfolio_corporate.png',
+                 'portfolio_architecture.png', 'portfolio_nature.png'];
+    
+    if (!in_array($filename, $allowed)) {
+        return response()->json(['error' => 'File not found'], 404);
+    }
+    
+    // Return placeholder image from placeholder service
+    return redirect('https://via.placeholder.com/400x300?text=' . urlencode(pathinfo($filename, PATHINFO_FILENAME)));
+});
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 

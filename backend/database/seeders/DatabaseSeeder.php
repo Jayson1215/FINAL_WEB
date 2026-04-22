@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@studio.com'],
             [
                 'name' => 'Studio Admin',
-                'password' => \Illuminate\Support\Facades\Hash::make('Admin@123'),
+                'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
                 'role' => 'admin',
             ]
         );
