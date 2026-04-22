@@ -15,14 +15,14 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'https://finalweb-pied.vercel.app',
-        'https://finalweb.vercel.app',
-        env('FRONTEND_URL', 'https://finalweb-pied.vercel.app'),
-    ],
+    'allowed_origins' => array_values(array_filter(array_map('trim', explode(',', 
+        (string) env('FRONTEND_URLS', 'https://finalweb-pied.vercel.app,http://localhost:5173,http://localhost:5174')
+    )))),
 
     'allowed_origins_patterns' => [
         '#^https://finalweb.*\.vercel\.app$#',
+        '#^http://localhost.*$#',
+        '#^http://127\.0\.0\.1.*$#',
     ],
 
     'allowed_headers' => ['*'],

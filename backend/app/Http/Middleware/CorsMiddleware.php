@@ -13,10 +13,8 @@ class CorsMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedOrigins = [
-            'https://finalweb-pied.vercel.app',
-            'https://finalweb.vercel.app',
-        ];
+        $frontendUrls = env('FRONTEND_URLS', 'https://finalweb-pied.vercel.app,http://localhost:5173,http://localhost:5174');
+        $allowedOrigins = array_values(array_filter(array_map('trim', explode(',', $frontendUrls))));
 
         // Get the origin from the request
         $origin = $request->header('Origin');
