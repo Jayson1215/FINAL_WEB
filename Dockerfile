@@ -53,5 +53,5 @@ EXPOSE 8000
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # Start Nginx and PHP-FPM
-# Start PHP-FPM in background and Nginx in foreground
-CMD php-fpm -D && nginx -g 'daemon off;'
+# Start PHP-FPM in background, update Nginx port, and start Nginx
+CMD php-fpm -D && sed -i "s/listen 8000;/listen ${PORT:-8000};/g" /etc/nginx/http.d/default.conf && nginx -g 'daemon off;'
