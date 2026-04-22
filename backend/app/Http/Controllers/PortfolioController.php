@@ -9,7 +9,15 @@ class PortfolioController extends Controller
 {
     public function index()
     {
-        return response()->json(Portfolio::all());
+        try {
+            $portfolios = Portfolio::all();
+            return response()->json($portfolios);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch portfolio',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show(Portfolio $portfolio)

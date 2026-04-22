@@ -9,7 +9,15 @@ class ServiceController extends Controller
 {
     public function index()
     {
-        return response()->json(Service::all());
+        try {
+            $services = Service::all();
+            return response()->json($services);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch services',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show(Service $service)

@@ -10,14 +10,32 @@ class DebugController extends Controller
 {
     public function health()
     {
-        return response()->json([
-            'status' => 'ok',
-            'timestamp' => now(),
-            'database' => [
-                'connected' => $this->testDatabaseConnection(),
-                'services_count' => Service::count(),
-                'portfolios_count' => Portfolio::count(),
-            ],
+        try {
+            $dbConnected = $this->testDatabaseConnection();
+            $servicesCount = $dbConnected ? Service::count() : 0;
+            $portfoliosCount = $dbConnected ? Portfolio::count() : 0;
+            
+            return response()->json([
+                'status' => 'ok',
+                'timestamp' => now(),
+                'app_url' => config('app.url'),
+                'app_env' => config('app.env'),
+                'database' => [
+                    'connected' => $dbConnected,
+                    'services_count' => $servicesCount,
+                    'portfolios_count' => $portfoliosCount,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'timestamp' => now(),
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }
+    }
             'url' => config('app.url'),
         ]);
     }
