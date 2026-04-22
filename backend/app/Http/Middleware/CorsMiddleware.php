@@ -14,8 +14,6 @@ class CorsMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $origin = $request->header('Origin');
-
-        // Check if origin is allowed
         $isAllowed = $this->isOriginAllowed($origin);
 
         // Handle preflight requests
@@ -23,21 +21,26 @@ class CorsMiddleware
             return $this->handlePreflightRequest($origin, $isAllowed);
         }
 
-        // Process the request
         $response = $next($request);
 
-        // Add CORS headers to response (use true as third param to REPLACE, not append)
+        // Remove any existing CORS headers that might have been added by other code
+        $response->headers->remove('Access-Control-Allow-Origin');
+        $response->headers->remove('Access-Control-Allow-Credentials');
+        $response->headers->remove('Access-Control-Expose-Headers');
+        $response->headers->remove('Access-Control-Allow-Methods');
+        $response->headers->remove('Access-Control-Allow-Headers');
+        $response->headers->remove('Access-Control-Max-Age');
+
+        // Set CORS headers only once, cleanly
         if ($isAllowed && $origin) {
-            // Use set() with true to replace headers completely
-            $response->headers->set('Access-Control-Allow-Origin', $origin, true);
-            $response->headers->set('Access-Control-Allow-Credentials', 'true', true);
-            $response->headers->set('Access-Control-Expose-Headers', 'Content-Length, X-JSON-Response-Body', true);
+            $response->header('Access-Control-Allow-Origin', $origin);
+            $response->header('Access-Control-Allow-Credentials', 'true');
+            $response->header('Access-Control-Expose-Headers', 'Content-Length, X-JSON-Response-Body');
         }
 
-        // These headers should always be present
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH', true);
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With', true);
-        $response->headers->set('Access-Control-Max-Age', '86400', true);
+        $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+        $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        $response->header('Access-Control-Max-Age', '86400');
 
         return $response;
     }
