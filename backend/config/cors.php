@@ -17,9 +17,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => $frontendOrigins,
+    'allowed_origins' => ['https://finalweb-pied.vercel.app'],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ['#^https://finalweb.*\.vercel\.app$#'],
 
     'allowed_headers' => ['*'],
 
