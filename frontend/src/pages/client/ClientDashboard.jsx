@@ -119,9 +119,7 @@ export default function ClientDashboard() {
       {/* Hero Section */}
       <section className="relative h-[95vh] flex items-center justify-center overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
-          <video autoPlay muted loop playsInline className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.1) translateY(${scrollY * 0.1}px)` }}>
-            <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
-          </video>
+          <img src="/images/studio-hero.png" alt="Hero" className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.1) translateY(${scrollY * 0.1}px)` }} />
           <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-transparent to-[#F0F2F5]"></div>
         </div>
         
@@ -249,7 +247,7 @@ export default function ClientDashboard() {
 
       {/* Contact Section (Replacing Global CTA) */}
       <section id="contact" className="py-48 bg-[#1E293B] text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1554048612-b6a482bc67e5?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center bg-fixed scale-110"></div>
+        <div className="absolute inset-0 opacity-40 bg-[url('/images/featured-work.png')] bg-cover bg-center bg-fixed scale-110"></div>
         <div className="absolute inset-0 bg-[#1E293B]/60 backdrop-blur-[2px]"></div>
         <div className="relative z-10 max-w-5xl mx-auto text-center px-6 space-y-12">
             <p className="text-[11px] font-bold uppercase tracking-[0.6em] text-[#E8734A]">Client Support</p>

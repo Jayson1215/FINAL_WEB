@@ -16,12 +16,13 @@ export function resolveImageUrl(value) {
       if (!filename) return raw;
 
       if (parsed.pathname.startsWith('/api/images/')) {
-        return raw;
+        return toApiImageUrl(filename);
       }
 
       if (
         parsed.pathname.startsWith('/images/') ||
-        parsed.pathname.startsWith('/assets/images/')
+        parsed.pathname.startsWith('/assets/images/') ||
+        parsed.pathname.startsWith('/assests/images/')
       ) {
         return toApiImageUrl(filename);
       }
@@ -43,6 +44,7 @@ export function resolveImageUrl(value) {
   if (
     clean.startsWith('images/') ||
     clean.startsWith('assets/images/') ||
+    clean.startsWith('assests/images/') ||
     !clean.includes('/')
   ) {
     return toApiImageUrl(filename);

@@ -293,11 +293,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section id="hero" ref={sectionRefs.hero} className="relative h-[85vh] flex items-center justify-center overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
-          {user ? (
-            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2076&auto=format&fit=crop" className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }} alt="Background" />
-          ) : (
-            <video autoPlay muted loop playsInline className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.1) translateY(${scrollY * 0.1}px)` }}><source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" /></video>
-          )}
+          <img src={user ? '/images/studio-hero.png' : '/images/featured-work.png'} className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }} alt="Background" />
           <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-[#F0F2F5]"></div>
         </div>
         <div className="relative z-10 text-center max-w-4xl px-6 space-y-6">
@@ -321,7 +317,7 @@ export default function Landing() {
       <section id="about" ref={sectionRefs.about} className="py-24 md:py-32 px-6 md:px-12 bg-[#F0F2F5] relative overflow-hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="relative reveal">
-            <div className="bg-white p-3 rounded-[2rem] shadow-premium relative z-10"><img src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop" alt="Photographer" className="w-full h-auto rounded-[1.5rem] grayscale hover:grayscale-0 transition-all duration-1000" /></div>
+            <div className="bg-white p-3 rounded-[2rem] shadow-premium relative z-10"><img src="/images/about-photographer.png" alt="Photographer" className="w-full h-auto rounded-[1.5rem] grayscale hover:grayscale-0 transition-all duration-1000" /></div>
             <div className="absolute -bottom-6 -right-6 bg-[#1E293B] p-8 rounded-[1.5rem] shadow-2xl hidden lg:block z-20"><p className="text-4xl font-serif text-[#E8734A] mb-1">15+</p><p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Years of Masterful Vision</p></div>
           </div>
           <div className="space-y-8 reveal delay-300">

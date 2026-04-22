@@ -81,7 +81,7 @@ export default function ClientLayout({ children, title }) {
       <section className="relative h-[65vh] flex items-center justify-center overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2076&auto=format&fit=crop" 
+            src="/images/studio-hero.png" 
             alt="Hero Background" 
             className="w-full h-full object-cover opacity-80"
             style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }}
