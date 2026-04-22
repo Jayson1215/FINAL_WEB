@@ -1,0 +1,54 @@
+services:
+  - type: web
+    name: finalweb-backend
+    runtime: docker
+    plan: standard
+    region: oregon
+    
+    # Build and start commands
+    dockerfilePath: ./Dockerfile
+    
+    # Environment variables
+    envVars:
+      - key: APP_NAME
+        value: "PhotoStudio Booking"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        scope: CONFIG
+      - key: APP_KEY
+        scope: CONFIG
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        scope: CONFIG
+      - key: DB_PORT
+        value: "20478"
+      - key: DB_DATABASE
+        scope: CONFIG
+      - key: DB_USERNAME
+        scope: CONFIG
+      - key: DB_PASSWORD
+        scope: CONFIG
+      - key: MYSQL_ATTR_SSL_CA
+        value: /app/ca.pem
+      - key: FRONTEND_URL
+        value: "https://finalweb-pied.vercel.app"
+      - key: FRONTEND_URLS
+        value: "https://finalweb-pied.vercel.app,http://localhost:5173,http://localhost:5174"
+      - key: GOOGLE_CLIENT_ID
+        scope: CONFIG
+      - key: GOOGLE_CLIENT_SECRET
+        scope: CONFIG
+      - key: GOOGLE_REDIRECT_URI
+        scope: CONFIG
+
+databases:
+  - name: finalweb-db
+    databaseName: studio_db
+    user: dbuser
+    plan: standard
+    region: oregon
+    postgreSQL: true

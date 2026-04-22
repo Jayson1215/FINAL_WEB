@@ -9,8 +9,10 @@ RUN apk add --no-cache \
     libjpeg-turbo-dev \
     freetype-dev \
     postgresql-dev \
+    mysql-client \
     icu-dev \
-    oniguruma-dev
+    oniguruma-dev \
+    curl
 
 # Install PHP extensions
 RUN install-php-extensions \
@@ -25,28 +27,36 @@ RUN install-php-extensions \
 # Set working directory
 WORKDIR /app
 
-# Set environment variables
-ENV APP_ENV=production
-ENV APP_DEBUG=false
-ENV CADDY_SERVER_ADMIN=off
+# Copy entrypoint script
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Copy application files
 COPY . .
 
 # Set permissions and prepare folders
-RUN mkdir -p storage bootstrap/cache \
-    && chown -R www-data:www-data /app \
-    && chmod -R 775 storage bootstrap/cache
+RUN mkdir -p storage bootstrap/cache storage/logs \
+    && chmod -R 777 storage bootstrap/cache storage/logs
 
 # Install composer dependencies
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && composer install --no-dev --optimize-autoloader --no-scripts
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+    composer install --no-dev --optimize-autoloader
 
-# Run scripts manually after dependencies are loaded
+# Run artisan package discovery
 RUN php artisan package:discover --ansi
 
-# Expose port
-EXPOSE 8080
+# Set environment defaults
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+
+# Expose port (Render uses PORT env variable, but we expose 8000 as default)
+EXPOSE 8000
+
+# Use entrypoint script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# Start PHP built-in server or FrankenPHP
+CMD ["frankenphp", "run", "--bind=0.0.0.0:8000"]
 
 # Use a custom entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

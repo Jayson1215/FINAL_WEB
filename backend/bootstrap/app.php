@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 $allowedOrigins = [
                     'https://finalweb-pied.vercel.app',
                     'https://finalweb.vercel.app',
+                    'https://final-web-ls8m.onrender.com',
                     'http://localhost:5173',
                     'http://localhost:5174',
                     'http://localhost:8000',
