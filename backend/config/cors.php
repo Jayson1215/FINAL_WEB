@@ -1,7 +1,5 @@
 <?php
 
-$frontendOrigins = ['*'];
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -17,13 +15,19 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://finalweb-pied.vercel.app'],
+    'allowed_origins' => [
+        'https://finalweb-pied.vercel.app',
+        'https://finalweb.vercel.app',
+        env('FRONTEND_URL', 'https://finalweb-pied.vercel.app'),
+    ],
 
-    'allowed_origins_patterns' => ['#^https://finalweb.*\.vercel\.app$#'],
+    'allowed_origins_patterns' => [
+        '#^https://finalweb.*\.vercel\.app$#',
+    ],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['*'],
 
     'max_age' => 0,
 
