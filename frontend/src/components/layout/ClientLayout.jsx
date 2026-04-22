@@ -1,148 +1,163 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import NotificationBell from '../common/NotificationBell';
+import Chatbot from '../common/Chatbot';
 
 export default function ClientLayout({ children, title }) {
-  const { user, logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [navScrolled, setNavScrolled] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
 
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+      setNavScrolled(window.scrollY > 80);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const handleConfirmLogout = async () => {
-    setIsLoggingOut(true);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const elements = document.querySelectorAll('.reveal');
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [children]);
+
+  const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
-    } catch (err) {
-      console.error('Logout error:', err);
-    } finally {
-      setIsLoggingOut(false);
-      setShowLogoutModal(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
   };
 
-  const navLinks = [
-    { path: '/client/dashboard', label: 'Dashboard' },
-    { path: '/client/portfolio', label: 'Gallery' },
-    { path: '/client/services', label: 'Services' },
-    { path: '/client/bookings', label: 'My Bookings' },
-  ];
-
   return (
-    <div className="min-h-screen bg-[#F9F9F9] font-sans text-[#333333]">
-      {/* Minimalist Top Navigation */}
-      <nav className="bg-white border-b border-[#EEEEEE] py-6 px-8 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          {/* Serif Logo */}
-          <Link to="/" className="hover:opacity-80 transition duration-300">
-            <h2 className="text-3xl font-serif tracking-tight text-[#333]">
-              PhotoStudio
-            </h2>
-          </Link>
-
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-10">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative py-2 ${
-                  location.pathname === link.path 
-                    ? 'text-[#C79F68]' 
-                    : 'text-[#777] hover:text-[#333]'
-                }`}
-              >
-                {link.label}
-                {location.pathname === link.path && (
-                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C79F68]"></span>
-                )}
-              </Link>
-            ))}
-            
-            {/* User Dropdown/Logout */}
-            <div className="flex items-center pl-6 border-l border-[#EEEEEE] space-x-6">
-              <NotificationBell />
-              <span className="text-[10px] uppercase tracking-widest font-bold text-[#AAA]">
-                {user?.name}
-              </span>
-              <button
-                onClick={handleLogoutClick}
-                className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#333] hover:text-[#C79F68] transition duration-300"
-              >
-                Logout
-              </button>
-            </div>
+    <div className="bg-[#F0F2F5] min-h-screen selection:bg-[#E8734A] selection:text-white font-sans overflow-x-hidden">
+      
+      {/* Navigation - Perfectly Centered Grid (3-column) */}
+      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-6 md:px-12 py-6 ${navScrolled ? 'bg-white/80 backdrop-blur-xl py-4 border-b border-[#F1F5F9] shadow-sm' : ''}`}>
+        <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
+          
+          {/* Left Side Links */}
+          <div className="hidden lg:flex gap-10 items-center justify-start">
+            <Link to="/client/services" className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/services' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</Link>
+            <Link to="/client/portfolio" className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</Link>
           </div>
 
-          {/* Mobile Menu Toggle (Simplified for now) */}
-          <button className="md:hidden text-[#333] text-2xl">
-            ☰
-          </button>
+          {/* Center Logo - Perfectly Centered */}
+          <div className="flex justify-center">
+            <Link to="/" className="text-3xl font-serif text-[#1E293B] tracking-[0.2em] hover:text-[#E8734A] transition-all duration-500">
+              LIGHT
+            </Link>
+          </div>
+
+          {/* Right Side Links */}
+          <div className="flex gap-6 md:gap-8 items-center justify-end">
+             <Link to="/client/bookings" className={`hidden lg:block text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/bookings' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>My Bookings</Link>
+             <Link to="/client/contact" className={`hidden sm:block text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/contact' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Contact</Link>
+             <button onClick={() => setShowLogoutModal(true)} className="bg-[#1E293B] text-white px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] hover:shadow-lg transition-all duration-500 whitespace-nowrap">
+               Logout
+             </button>
+          </div>
         </div>
       </nav>
 
-      {/* Page Header (Minimal) */}
-      <header className="py-16 px-8 bg-white border-b border-[#EEEEEE] mb-12">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-serif text-[#333] mb-4 leading-tight">
+      {/* Hero Section - Homepage Exact Style (Mini Version) */}
+      <section className="relative h-[65vh] flex items-center justify-center overflow-hidden bg-white">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2076&auto=format&fit=crop" 
+            alt="Hero Background" 
+            className="w-full h-full object-cover opacity-80"
+            style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-[#F0F2F5]"></div>
+        </div>
+        
+        <div className="relative z-10 text-center max-w-5xl px-6 space-y-6">
+          <p className="text-[11px] font-bold uppercase tracking-[0.6em] text-[#E8734A] animate-fadeIn">Registry & Management</p>
+          <h1 className="text-5xl md:text-8xl font-serif text-[#1E293B] leading-tight reveal tracking-tight">
             {title}
           </h1>
-          <div className="w-12 h-[2px] bg-[#C79F68] mx-auto opacity-60"></div>
-        </div>
-      </header>
-
-      {/* Main Content Area (Centered Column) */}
-      <main className="max-w-7xl mx-auto px-8 pb-32">
-        {children}
-      </main>
-
-      {/* Simple Footer */}
-      <footer className="py-20 px-8 border-t border-[#EEEEEE] bg-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <h3 className="text-2xl font-serif text-[#333] mb-6">PhotoStudio</h3>
-          <p className="text-[11px] uppercase tracking-widest text-[#AAA] mb-8">
-            &copy; {new Date().getFullYear()} All Rights Reserved
-          </p>
-          <div className="flex justify-center space-x-8">
-            <a href="#" className="text-[#777] hover:text-[#C79F68] transition tracking-widest text-[10px] uppercase font-bold">Instagram</a>
-            <a href="#" className="text-[#777] hover:text-[#C79F68] transition tracking-widest text-[10px] uppercase font-bold">Facebook</a>
+          <div className="flex justify-center reveal delay-300 pt-4">
+             <div className="w-16 h-1 bg-gradient-to-r from-[#E8734A] to-[#FB923C] rounded-full"></div>
           </div>
+        </div>
+      </section>
+
+      {/* Main Content - Styled as a Homepage Section */}
+      <section className="py-24 md:py-48 px-6 md:px-12 bg-[#F0F2F5] relative -mt-32 z-20">
+        <div className="max-w-7xl mx-auto bg-white rounded-[3rem] shadow-premium p-8 md:p-20 reveal border border-[#F1F5F9]">
+           <div className="relative z-10">
+              {children}
+           </div>
+        </div>
+      </section>
+
+      <Chatbot />
+
+      {/* Footer */}
+      <footer className="bg-white py-32 px-6 md:px-12 border-t border-[#F1F5F9]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-20">
+          <div className="lg:col-span-2 space-y-10">
+            <Link to="/" className="text-3xl font-serif text-[#1E293B] tracking-[0.3em]">LIGHT</Link>
+            <p className="text-base text-[#64748B] leading-[1.8] max-w-sm font-medium italic">"A premium on-call photography service dedicated to the art of visual storytelling."</p>
+          </div>
+          <div className="space-y-10">
+            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Concierge</p>
+            <div className="space-y-6 text-sm text-[#64748B] font-medium">
+              <p>Butuan City & Surrounding Areas</p>
+              <p className="text-[#1E293B] font-bold">concierge@lightphotography.com</p>
+            </div>
+          </div>
+          <div className="space-y-10">
+            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Newsletter</p>
+            <p className="text-[10px] text-[#94A3B8] font-bold tracking-wider leading-relaxed uppercase">SUBSCRIBE TO RECEIVE EXCLUSIVE UPDATES.</p>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto mt-32 pt-10 border-t border-[#F1F5F9] text-center">
+            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#94A3B8]">© {new Date().getFullYear()} LIGHT STUDIO EXPERIENCE • ART DIRECTION BY ANTIGRAVITY</p>
         </div>
       </footer>
 
-      {/* Logout Modal (Styled Minimalist) */}
+      {/* Logout Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
-          <div className="bg-white p-12 max-w-md w-full shadow-2xl text-center border border-[#EEE]">
-            <h2 className="text-3xl font-serif text-[#333] mb-4">Confirm Logout</h2>
-            <p className="text-[#777] mb-10 text-sm leading-relaxed">
-              Are you sure you want to end your session? Your booking progress will be saved.
-            </p>
-            
-            <div className="flex flex-col space-y-4">
-              <button
-                onClick={handleConfirmLogout}
-                className="w-full bg-[#333] text-white py-5 text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-[#C79F68] transition duration-500"
-              >
-                {isLoggingOut ? 'Logging out...' : 'Sign Out'}
-              </button>
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                className="w-full bg-transparent text-[#333] py-5 text-[11px] font-bold uppercase tracking-[0.25em] border border-[#EEEEEE] hover:border-[#333] transition duration-500"
-              >
-                Go Back
-              </button>
+        <div className="fixed inset-0 bg-[#1E293B]/90 backdrop-blur-xl z-[1000] flex items-center justify-center p-6 animate-fadeIn">
+          <div className="bg-white max-w-md w-full rounded-[3rem] p-12 text-center shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-[#E8734A]"></div>
+            <div className="w-20 h-20 bg-[#F8F9FB] rounded-full flex items-center justify-center mx-auto mb-8 text-3xl">👋</div>
+            <h3 className="text-3xl font-serif text-[#1E293B] mb-4">Ending Session?</h3>
+            <p className="text-sm text-[#64748B] mb-10 font-medium italic">"We look forward to capturing more of your story soon."</p>
+            <div className="flex flex-col gap-4">
+              <button onClick={handleLogout} className="bg-[#1E293B] text-white py-5 rounded-2xl text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#E8734A] transition-all shadow-lg">Confirm Logout</button>
+              <button onClick={() => setShowLogoutModal(false)} className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] hover:text-[#1E293B] transition-colors py-2">Stay a while</button>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1.2s cubic-bezier(0.2, 1, 0.3, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fadeIn { animation: fadeIn 1.5s ease-out forwards; }
+        .shadow-premium { box-shadow: 0 50px 100px -20px rgba(0,0,0,0.05), 0 30px 60px -30px rgba(0,0,0,0.05); }
+      `}</style>
     </div>
   );
 }
-

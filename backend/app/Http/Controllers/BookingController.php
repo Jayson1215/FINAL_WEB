@@ -40,6 +40,7 @@ class BookingController extends Controller
                 'booking_date' => 'required|date|after:today',
                 'booking_time' => 'required|date_format:H:i',
                 'total_amount' => 'required|numeric|min:0',
+                'location' => 'required|string|max:255',
                 'special_requests' => 'nullable|string',
                 'add_on_ids' => 'nullable|array',
                 'add_on_ids.*' => 'exists:add_ons,id',
@@ -62,6 +63,7 @@ class BookingController extends Controller
                 'total_amount' => $validated['total_amount'],
                 'downpayment_amount' => $downpaymentAmount,
                 'paid_amount' => 0,
+                'location' => $validated['location'],
                 'special_requests' => $validated['special_requests'] ?? null,
                 'status' => 'pending',
                 'refund_status' => 'none',
@@ -147,18 +149,29 @@ class BookingController extends Controller
     public function updateStatus(Request $request, Booking $booking)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,confirmed,cancelled,finished',
+            'status' => 'required|in:pending,approved,awaiting_payment,paid,confirmed,cancelled,finished,rejected',
         ]);
 
         $booking->update(['status' => $validated['status']]);
+
+        // Custom messages based on the new flow
+        $messages = [
+            'approved' => "Availability confirmed! We are ready for your session on " . date('M d', strtotime($booking->booking_date)) . ".",
+            'awaiting_payment' => "Your request is ready. Please proceed to payment to finalize your booking.",
+            'paid' => "Payment received! Your booking ID {$booking->id} is now fully confirmed.",
+            'rejected' => "We're sorry, but we cannot accommodate your request at this time.",
+            'finished' => "Thank you for choosing LIGHT Photography. Your session is now complete."
+        ];
+
+        $message = $messages[$validated['status']] ?? "Your booking status is now " . ucfirst($validated['status']) . ".";
 
         // Notify Client
         Notification::create([
             'user_id' => $booking->user_id,
             'type' => 'booking_status_updated',
-            'title' => 'Booking Status Updated',
-            'message' => "Your booking for {$booking->service->name} is now " . ucfirst($validated['status']) . ".",
-            'link' => '/my-bookings'
+            'title' => 'Booking Update',
+            'message' => $message,
+            'link' => '/client/bookings'
         ]);
 
         return response()->json($booking);

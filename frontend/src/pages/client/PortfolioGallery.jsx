@@ -9,158 +9,88 @@ export default function PortfolioGallery() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchPortfolio();
-  }, []);
-
+  useEffect(() => { fetchPortfolio(); }, []);
   const fetchPortfolio = async () => {
-    try {
-      setLoading(true);
-      const response = await portfolioService.getPortfolio();
-      setPortfolio(response.data);
-    } catch (err) {
-      setError('Failed to load portfolio');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    try { setLoading(true); const r = await portfolioService.getPortfolio(); setPortfolio(r.data); }
+    catch (e) { setError('Failed to load portfolio'); } finally { setLoading(false); }
   };
 
   const categories = ['all', ...new Set(portfolio.map(item => item.category).filter(Boolean))];
-  const filteredPortfolio = selectedCategory === 'all' 
-    ? portfolio 
-    : portfolio.filter(item => item.category === selectedCategory);
+  const filteredPortfolio = selectedCategory === 'all' ? portfolio : portfolio.filter(item => item.category === selectedCategory);
 
   return (
     <ClientLayout title="Our Gallery">
-      {error && (
-        <div className="mb-12 p-6 bg-red-50 border border-red-100 text-center">
-            <p className="text-sm font-bold uppercase tracking-widest text-red-800 mb-2">Notice</p>
-            <p className="text-sm text-red-600 font-medium">{error}</p>
-        </div>
-      )}
+      {error && (<div className="mb-10 p-6 bg-red-50 border border-red-100 rounded-2xl text-center text-red-500 shadow-sm">{error}</div>)}
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="w-8 h-8 border-2 border-[#C79F68] border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <div className="flex justify-center items-center h-96"><div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin"></div></div>
       ) : (
-        <div className="max-w-7xl mx-auto">
-          {/* Subtle Introduction */}
-          <div className="text-center mb-20">
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-4">Visual Stories</p>
-            <h2 className="text-3xl font-serif text-[#333] mb-6">Explore the Moments</h2>
-            <div className="w-12 h-[1px] bg-[#C79F68] mx-auto opacity-40"></div>
-          </div>
+        <div className="max-w-7xl mx-auto space-y-16 animate-fadeIn">
 
-          {/* Minimalist Category Filter */}
-          <div className="flex justify-center gap-10 flex-wrap mb-24 border-b border-[#EEEEEE] pb-10">
+
+          {/* Category Filter */}
+          <div className="flex justify-center gap-2 flex-wrap mb-10 bg-white p-2 rounded-2xl shadow-card border border-[#F1F5F9] w-fit mx-auto">
             {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`text-[11px] font-bold uppercase tracking-[0.25em] transition-all duration-300 relative py-2 ${
-                  selectedCategory === cat
-                    ? 'text-[#C79F68]'
-                    : 'text-[#AAA] hover:text-[#333]'
-                }`}
-              >
+              <button key={cat} onClick={() => setSelectedCategory(cat)}
+                className={`px-6 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] transition-all duration-500 rounded-xl ${
+                  selectedCategory === cat ? 'bg-[#1E293B] text-white shadow-lg' : 'text-[#94A3B8] hover:text-[#1E293B] hover:bg-[#F8F9FB]'
+                }`}>
                 {cat}
-                {selectedCategory === cat && (
-                  <span className="absolute bottom-0 left-0 w-full h-[1px] bg-[#C79F68]"></span>
-                )}
               </button>
             ))}
           </div>
 
-          {/* Spaced Gallery Grid */}
+          {/* Gallery Grid */}
           {filteredPortfolio.length === 0 ? (
-            <div className="text-center py-20 border border-dashed border-[#EEEEEE]">
-              <p className="text-[10px] uppercase tracking-widest text-[#AAA] font-bold">No pieces found in this collection</p>
+            <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-[#E2E8F0] shadow-card">
+              <p className="text-[11px] uppercase tracking-widest text-[#94A3B8] font-bold">No pieces found in this collection</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {filteredPortfolio.map(item => (
-                <div 
-                  key={item.id} 
-                  className="group cursor-pointer"
-                  onClick={() => setSelectedImage(item)}
-                >
-                  <div className="relative overflow-hidden mb-8 aspect-[4/5] bg-[#F9F9F9]">
-                    <img
-                      src={`http://localhost:8000/${item.image_url}`}
-                      alt={item.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div key={item.id} className="group cursor-pointer bg-white rounded-3xl p-4 shadow-card hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-500" onClick={() => setSelectedImage(item)}>
+                  <div className="relative overflow-hidden rounded-2xl aspect-[4/5] bg-[#F8F9FB] mb-6">
+                    <img src={`http://localhost:8000/${item.image_url}`} alt={item.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => { e.target.style.display = 'none'; }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                      <p className="text-white text-[10px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl">View Masterpiece</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C79F68] mb-3">
-                        {item.category || 'Editorial'}
-                    </p>
-                    <h3 className="text-xl font-serif text-[#333] mb-2 group-hover:text-[#C79F68] transition tracking-tight">
-                        {item.title}
-                    </h3>
+                  <div className="text-center px-2 pb-2">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#E8734A] mb-2">{item.category || 'Editorial'}</p>
+                    <h3 className="text-xl font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{item.title}</h3>
                   </div>
                 </div>
               ))}
             </div>
           )}
           
-          <div className="mt-32 text-center">
-            <div className="w-px h-16 bg-[#EEEEEE] mx-auto mb-8"></div>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-[#AAA] font-bold">
-              Art in Every Frame
-            </p>
+          <div className="text-center py-20">
+            <div className="w-px h-20 bg-gradient-to-b from-[#E2E8F0] to-transparent mx-auto mb-6"></div>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-[#94A3B8] font-bold">Art in Every Frame</p>
           </div>
         </div>
       )}
 
-      {/* Lightfolio Modal */}
+      {/* Lightbox Modal */}
       {selectedImage && (
-        <div 
-          className="fixed inset-0 bg-white/95 backdrop-blur-md z-[100] flex items-center justify-center p-8 md:p-20 overflow-y-auto"
-          onClick={() => setSelectedImage(null)}
-        >
-          <button
-            onClick={() => setSelectedImage(null)}
-            className="fixed top-12 right-12 text-[#333] text-2xl hover:text-[#C79F68] transition z-[110]"
-          >
-            ✕
-          </button>
-          
-          <div className="max-w-6xl w-full flex flex-col md:flex-row gap-16 items-center" onClick={e => e.stopPropagation()}>
-            <div className="w-full md:w-3/5">
-              <img
-                src={`http://localhost:8000/${selectedImage.image_url}`}
-                alt={selectedImage.title}
-                className="w-full h-auto shadow-premium"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
+        <div className="fixed inset-0 bg-[#F0F2F5]/98 backdrop-blur-xl z-[100] flex items-center justify-center p-6 md:p-16 overflow-y-auto animate-fadeIn" onClick={() => setSelectedImage(null)}>
+          <button onClick={() => setSelectedImage(null)} className="fixed top-8 right-8 w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#1E293B] text-xl shadow-premium border border-[#E2E8F0] hover:bg-[#E8734A] hover:text-white transition-all z-[110]">✕</button>
+          <div className="max-w-6xl w-full flex flex-col md:flex-row gap-12 lg:gap-20 items-center animate-slideIn" onClick={e => e.stopPropagation()}>
+            <div className="w-full md:w-[55%]">
+              <div className="bg-white p-4 rounded-3xl shadow-premium border border-[#F1F5F9]">
+                <img src={`http://localhost:8000/${selectedImage.image_url}`} alt={selectedImage.title} className="w-full h-auto rounded-2xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; }} />
+              </div>
             </div>
-            <div className="w-full md:w-2/5 text-left">
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-6">
-                    {selectedImage.category || 'Perspective'}
-                </p>
-                <h2 className="text-4xl font-serif text-[#333] mb-8 leading-tight">
-                    {selectedImage.title}
-                </h2>
-                <div className="w-12 h-px bg-[#C79F68] mb-8 opacity-40"></div>
-                <p className="text-sm text-[#777] leading-relaxed mb-12">
-                    {selectedImage.description}
-                </p>
-                <button
-                    onClick={() => setSelectedImage(null)}
-                    className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#333] border-b border-[#333] pb-1 hover:text-[#C79F68] hover:border-[#C79F68] transition"
-                >
-                    Close View
-                </button>
+            <div className="w-full md:w-[45%] text-left space-y-8">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-4">Perspective • {selectedImage.category || 'Series'}</p>
+                  <h2 className="text-5xl font-serif text-[#1E293B] leading-[1.1]">{selectedImage.title}</h2>
+                </div>
+                <div className="w-20 h-1 bg-gradient-to-r from-[#E8734A] to-[#FB923C] rounded-full"></div>
+                <p className="text-base text-[#64748B] leading-relaxed italic font-medium">"{selectedImage.description}"</p>
+                <div className="pt-8">
+                  <button onClick={() => setSelectedImage(null)} className="bg-[#1E293B] text-white px-10 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:shadow-xl transition-all shadow-lg">Close Masterpiece</button>
+                </div>
             </div>
           </div>
         </div>

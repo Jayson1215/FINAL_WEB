@@ -26,6 +26,7 @@ class Booking extends Model
         'downpayment_amount',
         'paid_amount',
         'special_requests',
+        'location',
     ];
 
     protected $casts = [

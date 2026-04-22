@@ -25,6 +25,8 @@ class ServiceController extends Controller
             'category' => 'nullable|string|max:100',
             'price' => 'required|numeric|min:0',
             'duration' => 'required|integer|min:1',
+            'image_path' => 'nullable|string|max:2048',
+            'downpayment_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $service = Service::create($validated);
@@ -40,6 +42,8 @@ class ServiceController extends Controller
             'category' => 'nullable|string|max:100',
             'price' => 'sometimes|numeric|min:0',
             'duration' => 'sometimes|integer|min:1',
+            'image_path' => 'nullable|string|max:2048',
+            'downpayment_rate' => 'nullable|numeric|min:0|max:100',
         ]);
 
         $service->update($validated);

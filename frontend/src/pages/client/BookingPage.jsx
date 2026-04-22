@@ -11,6 +11,7 @@ export default function BookingPage() {
   const [formData, setFormData] = useState({
     bookingDate: '',
     bookingTime: '',
+    location: '',
     specialRequests: '',
   });
   const [loading, setLoading] = useState(true);
@@ -71,6 +72,7 @@ export default function BookingPage() {
         service_id: serviceId,
         booking_date: formData.bookingDate,
         booking_time: formData.bookingTime,
+        location: formData.location,
         special_requests: formData.specialRequests,
         total_amount: typeof service.price === 'string' ? parseFloat(service.price.replace(/,/g, '')) : service.price,
         add_on_ids: [],
@@ -88,9 +90,9 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <ClientLayout title="Reserve Session">
-        <div className="flex justify-center items-center h-64">
-          <div className="w-8 h-8 border-2 border-[#C79F68] border-t-transparent rounded-full animate-spin"></div>
+      <ClientLayout title="Reserve Package">
+        <div className="flex justify-center items-center h-96">
+          <div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin"></div>
         </div>
       </ClientLayout>
     );
@@ -99,13 +101,13 @@ export default function BookingPage() {
   if (!service) {
     return (
       <ClientLayout title="Session Not Found">
-        <div className="text-center py-20 border border-dashed border-[#EEE]">
-          <p className="text-sm text-[#777] uppercase tracking-widest mb-8">This session is no longer available</p>
+        <div className="text-center py-24 bg-white rounded-2xl border border-dashed border-[#E2E8F0] shadow-card">
+          <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#94A3B8] mb-8">This session is no longer available</p>
           <button
             onClick={() => navigate('/client/services')}
-            className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#333] border-b border-[#333] pb-1"
+            className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#E8734A] border-b border-[#E8734A] pb-1 hover:opacity-70 transition"
           >
-            Browse Other Services
+            Browse Other Packages
           </button>
         </div>
       </ClientLayout>
@@ -117,152 +119,194 @@ export default function BookingPage() {
   const minDate = tomorrow.toISOString().split('T')[0];
 
   return (
-    <ClientLayout title="Your Details">
-      <div className="max-w-4xl mx-auto">
+    <ClientLayout title="Reserve Your Package">
+      <div className="max-w-6xl mx-auto">
         {error && (
-            <div className="mb-12 p-6 bg-red-50 border border-red-100 text-center">
-                <p className="text-sm font-bold uppercase tracking-widest text-red-800 mb-2">Notice</p>
-                <p className="text-sm text-red-600 font-medium">{error}</p>
+            <div className="mb-10 p-6 bg-red-50 border border-red-100 rounded-2xl text-center shadow-sm">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-red-600 mb-2">System Notice</p>
+                <p className="text-sm text-red-500 font-medium">{error}</p>
             </div>
         )}
 
-        {/* Multi-step flow indicator (Subtle) */}
-        <div className="flex justify-center items-center space-x-4 mb-20">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C79F68]">1. Package</span>
-            <span className="w-8 h-px bg-[#EEEEEE]"></span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#333]">2. Details</span>
-            <span className="w-8 h-px bg-[#EEEEEE]"></span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">3. Confirmation</span>
+        {/* Multi-step flow indicator */}
+        <div className="flex justify-center items-center gap-6 mb-16">
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full bg-[#E8734A] text-white flex items-center justify-center text-[10px] font-bold">1</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#1E293B]">Package</span>
+            </div>
+            <div className="w-12 h-px bg-[#E2E8F0]"></div>
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full border-2 border-[#E8734A] text-[#E8734A] flex items-center justify-center text-[10px] font-bold">2</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#1E293B]">Details</span>
+            </div>
+            <div className="w-12 h-px bg-[#E2E8F0]"></div>
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 rounded-full bg-[#F0F2F5] text-[#94A3B8] flex items-center justify-center text-[10px] font-bold">3</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#94A3B8]">Confirm</span>
+            </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Booking Form */}
-          <div className="lg:col-span-8">
-            <form onSubmit={handleSubmit} className="space-y-16">
-              {/* Selected Summary (Non-intrusive) */}
-              <div className="pb-16 border-b border-[#EEEEEE]">
-                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C79F68] mb-4">Selected Session</p>
-                <h3 className="text-3xl font-serif text-[#333] mb-4">{service.name}</h3>
-                <p className="text-sm text-[#777] leading-relaxed italic">
+          <div className="lg:col-span-7 xl:col-span-8">
+            <form onSubmit={handleSubmit} className="space-y-10">
+              {/* Selected Summary */}
+              <div className="bg-white rounded-2xl p-8 shadow-card border border-[#F1F5F9] relative overflow-hidden group">
+                <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-[#E8734A]/5 rounded-full blur-2xl"></div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#E8734A] mb-3">Selected Package</p>
+                <h3 className="text-3xl font-serif text-[#1E293B] mb-3 group-hover:text-[#E8734A] transition-colors">{service.name}</h3>
+                <p className="text-sm text-[#64748B] leading-relaxed italic mb-6">
                     "{service.description}"
                 </p>
-              </div>
-
-              {/* Date Selection */}
-              <div className="space-y-8">
-                <div className="flex items-center space-x-6">
-                    <span className="w-8 h-8 rounded-full border border-[#333] flex items-center justify-center text-[10px] font-bold mt-1">01</span>
-                    <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#333]">
-                      Choose Your Date
-                    </label>
-                </div>
-                <input
-                  type="date"
-                  name="bookingDate"
-                  value={formData.bookingDate}
-                  onChange={handleInputChange}
-                  min={minDate}
-                  required
-                  className="w-full bg-white border border-[#EEEEEE] px-8 py-6 text-sm text-[#333] focus:border-[#C79F68] outline-none transition duration-500"
-                />
-              </div>
-
-              {/* Time Selection */}
-              <div className="space-y-8">
-                <div className="flex items-center space-x-6">
-                    <span className="w-8 h-8 rounded-full border border-[#333] flex items-center justify-center text-[10px] font-bold mt-1">02</span>
-                    <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#333]">
-                        Select Time Slot
-                    </label>
-                </div>
-                {formData.bookingDate ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {getAvailableTimeSlots().map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, bookingTime: slot }))}
-                        className={`py-4 text-[11px] font-bold uppercase tracking-widest border transition duration-500 ${
-                          formData.bookingTime === slot 
-                            ? 'bg-[#333] text-white border-[#333]' 
-                            : 'bg-white text-[#777] border-[#EEEEEE] hover:border-[#333]'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
+                {service.inclusions && (
+                  <div className="pt-6 border-t border-[#F1F5F9]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] mb-3">What's Included:</p>
+                    <p className="text-[12px] text-[#1E293B] font-medium leading-relaxed whitespace-pre-line">{service.inclusions}</p>
                   </div>
-                ) : (
-                  <p className="text-[11px] uppercase tracking-widest text-[#AAA] italic py-8 border border-dashed border-[#EEEEEE] text-center">
-                    Please select a date first
-                  </p>
                 )}
               </div>
 
-              {/* Special Requests */}
-              <div className="space-y-8">
-                <div className="flex items-center space-x-6">
-                    <span className="w-8 h-8 rounded-full border border-[#333] flex items-center justify-center text-[10px] font-bold mt-1">03</span>
-                    <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#333]">
-                      Optional Notes
-                    </label>
+              {/* Form Fields Card */}
+              <div className="bg-white rounded-2xl p-8 md:p-10 shadow-card border border-[#F1F5F9] space-y-10">
+                {/* Date Selection */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                      <span className="w-8 h-8 rounded-xl bg-[#F0F2F5] flex items-center justify-center text-[#1E293B] text-xs font-bold shadow-sm">01</span>
+                      <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#1E293B]">
+                        Choose Your Date
+                      </label>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      name="bookingDate"
+                      value={formData.bookingDate}
+                      onChange={handleInputChange}
+                      min={minDate}
+                      required
+                      className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all"
+                    />
+                  </div>
                 </div>
-                <textarea
-                  name="specialRequests"
-                  value={formData.specialRequests}
-                  onChange={handleInputChange}
-                  rows={4}
-                  placeholder="Share any special preferences or vision for your session..."
-                  className="w-full bg-white border border-[#EEEEEE] px-8 py-6 text-sm text-[#333] focus:border-[#C79F68] outline-none transition duration-500 resize-none"
-                />
+
+                {/* Time Selection */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                      <span className="w-8 h-8 rounded-xl bg-[#F0F2F5] flex items-center justify-center text-[#1E293B] text-xs font-bold shadow-sm">02</span>
+                      <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#1E293B]">
+                          Session Start Time
+                      </label>
+                  </div>
+                  <input
+                    type="time"
+                    name="bookingTime"
+                    value={formData.bookingTime}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all"
+                  />
+                </div>
+
+                {/* Event Location */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                      <span className="w-8 h-8 rounded-xl bg-[#F0F2F5] flex items-center justify-center text-[#1E293B] text-xs font-bold shadow-sm">03</span>
+                      <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#1E293B]">
+                        Event Location
+                      </label>
+                  </div>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter the full address or venue name..."
+                    className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all placeholder:text-[#94A3B8]"
+                  />
+                </div>
+
+                {/* Special Requests */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                      <span className="w-8 h-8 rounded-xl bg-[#F0F2F5] flex items-center justify-center text-[#1E293B] text-xs font-bold shadow-sm">04</span>
+                      <label className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#1E293B]">
+                        Additional Notes
+                      </label>
+                  </div>
+                  <textarea
+                    name="specialRequests"
+                    value={formData.specialRequests}
+                    onChange={handleInputChange}
+                    rows={4}
+                    placeholder="Share any special preferences or vision for your session..."
+                    className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all resize-none placeholder:text-[#94A3B8]"
+                  />
+                </div>
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={submitting || !formData.bookingTime}
-                className="w-full bg-[#333] text-white py-6 text-[11px] font-bold uppercase tracking-[0.25em] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#C79F68] transition duration-500"
+                className="w-full bg-gradient-to-r from-[#1E293B] to-[#334155] text-white py-6 rounded-2xl text-[11px] font-bold uppercase tracking-[0.3em] disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-xl hover:translate-y-[-2px] transition-all duration-500 flex items-center justify-center gap-3 shadow-lg"
               >
-                {submitting ? 'Processing Session...' : 'Continue to Checkout'}
+                {submitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Processing...</span>
+                  </>
+                ) : 'Continue to Checkout'}
               </button>
             </form>
           </div>
 
-          {/* Minimalist Summary Sidebar */}
-          <div className="lg:col-span-4">
-            <div className="bg-white border border-[#EEEEEE] p-12 sticky top-32">
-                <h3 className="text-xl font-serif text-[#333] mb-8 pb-6 border-b border-[#EEEEEE]">
-                    Summary
+          {/* Summary Sidebar */}
+          <div className="lg:col-span-5 xl:col-span-4">
+            <div className="bg-white rounded-2xl shadow-premium border border-[#F1F5F9] p-8 md:p-10 sticky top-32 overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-[#E8734A]/5 rounded-full -mr-12 -mt-12"></div>
+                <h3 className="text-xl font-serif text-[#1E293B] mb-8 pb-4 border-b border-[#F1F5F9] flex items-center gap-3">
+                    <span className="text-[#E8734A]">✦</span> Summary
                 </h3>
                 
                 <div className="space-y-8">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA] mb-2">Investment</p>
-                        <p className="text-2xl font-serif text-[#333]">₱{parseFloat(service.price).toLocaleString()}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] mb-3 flex items-center gap-2">
+                          <span className="w-1 h-1 bg-[#E8734A] rounded-full"></span> Investment
+                        </p>
+                        <p className="text-3xl font-serif text-[#1E293B]">₱{parseFloat(service.price).toLocaleString()}</p>
+                        <p className="text-[10px] text-[#E8734A] font-bold mt-1 uppercase tracking-widest">{service.downpayment_rate}% downpayment required</p>
                     </div>
                     
-                    <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA] mb-2">Session</p>
-                        <p className="text-sm text-[#333] font-medium">{service.name}</p>
-                        <p className="text-[11px] text-[#777] mt-1">{service.duration} Minutes</p>
+                    <div className="bg-[#F8F9FB] p-5 rounded-2xl border border-[#F1F5F9]">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] mb-3">Package Details</p>
+                        <p className="text-sm text-[#1E293B] font-bold mb-1">{service.name}</p>
+                        <p className="text-[11px] text-[#64748B] flex items-center gap-2">
+                          <span className="text-[#E8734A]">🕒</span> {service.duration} Minutes Session
+                        </p>
                     </div>
 
                     {formData.bookingDate && (
-                        <div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA] mb-2">Schedule</p>
-                            <p className="text-sm text-[#333] font-medium">
-                                {new Date(formData.bookingDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                            </p>
-                            {formData.bookingTime && (
-                                <p className="text-[11px] text-[#C79F68] mt-1 font-bold">{formData.bookingTime}</p>
-                            )}
+                        <div className="bg-[#FFF7ED] p-5 rounded-2xl border border-[#FFE7CC]">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#E8734A] mb-3">Schedule</p>
+                            <div className="flex items-start gap-3">
+                              <span className="text-xl">📅</span>
+                              <div>
+                                <p className="text-sm text-[#1E293B] font-bold">
+                                    {new Date(formData.bookingDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                </p>
+                                {formData.bookingTime && (
+                                    <p className="text-[11px] text-[#E8734A] mt-1 font-bold tracking-widest uppercase">{formData.bookingTime}</p>
+                                )}
+                              </div>
+                            </div>
                         </div>
                     )}
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-[#EEEEEE]">
-                    <p className="text-[10px] uppercase tracking-widest text-[#AAA] font-bold italic">
-                        Price includes professional editing and digital delivery.
+                <div className="mt-12 pt-8 border-t border-[#F1F5F9] text-center">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-[#94A3B8] font-bold italic leading-relaxed">
+                        Professional editing and digital delivery included in all packages.
                     </p>
                 </div>
             </div>

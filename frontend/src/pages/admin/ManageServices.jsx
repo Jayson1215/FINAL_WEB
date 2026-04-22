@@ -1,322 +1,232 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { serviceService } from '../../services/serviceService';
+import { portfolioService } from '../../services/portfolioService';
 
 export default function ManageServices() {
   const [services, setServices] = useState([]);
+  const [portfolio, setPortfolio] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    price: '',
-    duration: '',
-    image_path: '',
-    downpayment_rate: 20,
-  });
+  const [showPortfolioPicker, setShowPortfolioPicker] = useState(false);
+  const [formData, setFormData] = useState({ name:'', description:'', inclusions:'', category:'', price:'', duration:'', image_path:'', downpayment_rate:20 });
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  useEffect(() => { 
     fetchServices();
+    fetchPortfolio();
   }, []);
 
-  const fetchServices = async () => {
+  const fetchServices = async () => { 
+    try { 
+      setLoading(true); 
+      setError(''); 
+      const r = await serviceService.getAllServices(); 
+      setServices(r.data); 
+    } catch(e){ 
+      setError('Failed to load packages'); 
+      setServices([]); 
+    } finally { 
+      setLoading(false); 
+    } 
+  };
+
+  const fetchPortfolio = async () => {
     try {
-      setLoading(true);
-      setError('');
-      const response = await serviceService.getAllServices();
-      setServices(response.data);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load services');
-      console.error(err);
-      setServices([]);
-    } finally {
-      setLoading(false);
+      const r = await portfolioService.getAllPortfolio();
+      setPortfolio(r.data);
+    } catch(e) {
+      console.error('Failed to load portfolio items');
     }
   };
 
-  const handleEdit = (service) => {
-    setEditingServiceId(service.id);
+  const handleEdit = (s) => { 
+    setEditingServiceId(s.id); 
     setFormData({
-      name: service.name,
-      description: service.description,
-      category: service.category,
-      price: service.price,
-      duration: service.duration,
-      image_path: service.image_path || '',
-      downpayment_rate: service.downpayment_rate || 20,
-    });
-    setShowForm(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      name:s.name,
+      description:s.description,
+      inclusions:s.inclusions||'',
+      category:s.category,
+      price:s.price,
+      duration:s.duration,
+      image_path:s.image_path||'',
+      downpayment_rate:s.downpayment_rate||20
+    }); 
+    setShowForm(true); 
+    window.scrollTo({top:0,behavior:'smooth'}); 
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleInputChange = (e) => { 
+    const {name,value}=e.target; 
+    setFormData(p=>({...p,[name]:value})); 
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingServiceId) {
-        const currentEditId = editingServiceId;
-        
-        setShowForm(false);
+  const handleSubmit = async (e) => { 
+    e.preventDefault(); 
+    try { 
+      if(editingServiceId){ 
+        const id=editingServiceId; 
+        const r=await serviceService.updateService(id,formData); 
+        setServices(s=>s.map(x=>x.id===id?r.data:x)); 
         setEditingServiceId(null);
-        setFormData({ name: '', description: '', category: '', price: '', duration: '', image_path: '', downpayment_rate: 20 });
-
-        const response = await serviceService.updateService(currentEditId, formData);
-        setServices(services => 
-          services.map(s => s.id === currentEditId ? response.data : s)
-        );
-      } else {
-        const response = await serviceService.createService(formData);
-        setServices([...services, response.data]);
-        setFormData({ name: '', description: '', category: '', price: '', duration: '', image_path: '', downpayment_rate: 20 });
-        setShowForm(false);
-      }
-    } catch (err) {
-      setShowForm(true);
-      setError(editingServiceId ? 'Failed to update service' : 'Failed to create service');
-      console.error(err);
-      fetchServices();
-    }
+      } else { 
+        const r=await serviceService.createService(formData); 
+        setServices([...services,r.data]); 
+      } 
+      setFormData({name:'',description:'',inclusions:'',category:'',price:'',duration:'',image_path:'',downpayment_rate:20}); 
+      setShowForm(false); 
+    } catch(e){ 
+      setError('Failed to save package'); 
+    } 
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this service?')) return;
-    try {
-      const previousServices = [...services];
-      setServices(services.filter(s => s.id !== id));
+  const handleDelete = async (id) => { 
+    if(!window.confirm('Delete this package?')) return; 
+    try { 
       await serviceService.deleteService(id);
-    } catch (err) {
-      setServices(previousServices);
-      setError('Failed to delete service');
-    }
+      setServices(services.filter(s=>s.id!==id)); 
+    } catch(e){ 
+      setError('Failed to delete'); 
+    } 
   };
 
-  if (loading && services.length === 0) {
-    return (
-      <AdminLayout title="Manage Services">
-        <div className="flex justify-center items-center h-96">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-slate-600 font-medium">Loading services...</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  const selectFromPortfolio = (item) => {
+    setFormData({
+      ...formData,
+      name: item.title,
+      description: item.description || '',
+      category: item.category || '',
+      image_path: item.image_url || ''
+    });
+    setShowPortfolioPicker(false);
+    setShowForm(true);
+  };
+
+  if (loading && services.length===0) return (<AdminLayout title="Manage Packages"><div className="flex justify-center items-center h-96"><div className="text-center"><div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto mb-4"></div><p className="text-[#64748B]">Loading packages...</p></div></div></AdminLayout>);
 
   return (
-    <AdminLayout title="Studio Curations">
-      {error && (
-        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">Service Notice</p>
-          <p className="text-sm text-red-800 font-serif italic">{error}</p>
-        </div>
-      )}
-
-      <div className="space-y-16 animate-fadeIn">
-        {/* Editorial Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#EEEEEE] pb-10 gap-8">
+    <AdminLayout title="Photography Packages">
+      {error && <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">{error}</div>}
+      
+      <div className="space-y-8 animate-fadeIn">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">Photography Services</h2>
-            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Defining the art and value of your studio sessions.</p>
+            <h2 className="text-2xl font-bold text-[#1E293B] mb-1">On-Call Packages</h2>
+            <p className="text-sm text-[#94A3B8]">Define your on-call photography offerings and pricing.</p>
           </div>
-          <button
-            onClick={() => {
-              if (showForm) {
-                setShowForm(false);
-                setEditingServiceId(null);
-                setFormData({ name: '', description: '', category: '', price: '', duration: '', image_path: '' });
-              } else {
-                setShowForm(true);
-              }
-            }}
-            className={`px-10 py-5 text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-700 shadow-sm active:scale-[0.98] ${
-              showForm
-                ? 'bg-white border border-[#EEEEEE] text-[#999] hover:text-red-600 hover:border-red-600'
-                : 'bg-[#1A1A1A] text-white hover:bg-[#C79F68]'
-            }`}
-          >
-            {showForm ? 'Cancel Creation' : 'Create New Service'}
-          </button>
+          <div className="flex gap-3">
+             <button 
+              onClick={() => setShowPortfolioPicker(true)}
+              className="px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl bg-white text-[#1E293B] border border-[#E2E8F0] shadow-sm hover:bg-[#F8F9FB] transition-all"
+            >
+              From Portfolio
+            </button>
+            <button 
+              onClick={() => { 
+                if(showForm){
+                  setShowForm(false);
+                  setEditingServiceId(null);
+                  setFormData({name:'',description:'',inclusions:'',category:'',price:'',duration:'',image_path:'',downpayment_rate:20});
+                }else{
+                  setShowForm(true);
+                } 
+              }}
+              className={`px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all duration-300 ${showForm?'bg-[#F0F2F5] text-[#64748B] hover:text-red-500 border border-[#E2E8F0]':'bg-gradient-to-r from-[#E8734A] to-[#FB923C] text-white shadow-md hover:shadow-lg'}`}
+            >
+              {showForm ? 'Cancel' : '+ Create New'}
+            </button>
+          </div>
         </div>
 
-        {/* Add Service Form - Minimalist & Precise */}
         {showForm && (
-          <div className="bg-white border border-[#EEEEEE] p-10 md:p-12 animate-slideIn">
-            <h3 className="text-2xl font-serif text-[#1A1A1A] mb-10">{editingServiceId ? 'Edit Collection' : 'New Collection Details'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-10">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Service Nomenclature</label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="e.g., The Signature Portrait"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
-                />
+          <div className="bg-white rounded-2xl shadow-card border border-[#F1F5F9] p-8 animate-fadeIn">
+            <h3 className="text-lg font-bold text-[#1E293B] mb-6">{editingServiceId?'Edit Package':'New Package'}</h3>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Package Name</label><input type="text" name="name" placeholder="e.g., Signature Portrait" value={formData.name} onChange={handleInputChange} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] focus:ring-2 focus:ring-[#E8734A]/10 outline-none transition" /></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Description</label><textarea name="description" placeholder="Describe the package..." value={formData.description} onChange={handleInputChange} rows={4} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition resize-none" /></div>
+                <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Inclusions</label><textarea name="inclusions" placeholder="What is included (e.g., 20 edited photos, 1 hour session)..." value={formData.inclusions} onChange={handleInputChange} rows={4} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition resize-none" /></div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Artistic Description</label>
-                <textarea
-                  name="description"
-                  placeholder="Describe the aesthetic and deliverables..."
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD] resize-none"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Price (₱)</label><input type="number" step="0.01" name="price" value={formData.price} onChange={handleInputChange} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition" /></div>
+                <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Downpayment (%)</label><input type="number" name="downpayment_rate" value={formData.downpayment_rate} onChange={handleInputChange} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition" /></div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Investment (₱)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="price"
-                    placeholder="0.00"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Downpayment Rate (%)</label>
-                  <input
-                    type="number"
-                    step="1"
-                    min="0"
-                    max="100"
-                    name="downpayment_rate"
-                    placeholder="20"
-                    value={formData.downpayment_rate}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500"
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Duration (min)</label><input type="number" name="duration" value={formData.duration} onChange={handleInputChange} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition" /></div>
+                <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Category</label><input type="text" name="category" placeholder="Portraits, Wedding..." value={formData.category} onChange={handleInputChange} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition" /></div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Session Duration (min)</label>
-                  <input
-                    type="number"
-                    name="duration"
-                    placeholder="60"
-                    value={formData.duration}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Curated Category</label>
-                  <input
-                    type="text"
-                    name="category"
-                    placeholder="Portraits, Wedding, Editorial..."
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Image Registry URL</label>
-                <input
-                  type="text"
-                  name="image_path"
-                  placeholder="assets/images/service_wedding.png"
-                  value={formData.image_path}
-                  onChange={handleInputChange}
-                  className="w-full bg-transparent border-b border-[#EEEEEE] py-4 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-[#1A1A1A] text-white py-6 text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#C79F68] transition-all duration-700 shadow-sm"
-              >
-                {editingServiceId ? 'Update Collection' : 'Publish Service'}
-              </button>
+              <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Image Path</label><input type="text" name="image_path" placeholder="assets/images/service.png" value={formData.image_path} onChange={handleInputChange} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition" /></div>
+              <button type="submit" className="w-full bg-gradient-to-r from-[#E8734A] to-[#FB923C] text-white py-3.5 text-xs font-bold uppercase tracking-wider rounded-xl hover:shadow-lg transition">{editingServiceId?'Update Package':'Publish Package'}</button>
             </form>
           </div>
         )}
 
-        {/* Services Grid - Gallery Layout */}
-        {services.length === 0 ? (
-          <div className="py-24 text-center border border-dashed border-[#EEEEEE]">
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">Your studio catalog is empty</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-[#EEEEEE] divide-y md:divide-y-0 md:divide-x divide-[#EEEEEE]">
-            {services.map(service => (
-              <div key={service.id} className="bg-white p-10 group hover:bg-[#FAFAFA] transition-all duration-700 flex flex-col justify-between">
+        {/* Portfolio Picker Modal */}
+        {showPortfolioPicker && (
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden animate-slideUp">
+              <div className="p-6 border-b border-[#F1F5F9] flex justify-between items-center">
                 <div>
-                  <div className="flex justify-between items-start mb-8">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#C79F68] border border-[#C79F68]/20 px-3 py-1">
-                      {service.category || 'Standard'}
-                    </span>
-                    <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA]">
-                      {service.duration} MIN
-                    </span>
-                  </div>
-                  
-                  {/* Service Image Preview */}
-                  <div className="w-full aspect-[16/9] mb-8 bg-[#F9F9F9] overflow-hidden border border-[#EEEEEE] relative group/img">
-                    {service.image_path ? (
-                      <img 
-                        src={`http://localhost:8000/${service.image_path}`} 
-                        alt={service.name}
-                        className="w-full h-full object-cover grayscale opacity-80 group-hover/img:grayscale-0 group-hover/img:opacity-100 group-hover/img:scale-105 transition-all duration-1000"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center opacity-20 grayscale">
-                        <span className="text-2xl">📸</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <h4 className="text-2xl font-serif text-[#1A1A1A] mb-4 group-hover:text-[#C79F68] transition-colors duration-700">{service.name}</h4>
-                  <p className="text-[11px] text-[#777] leading-relaxed mb-10 line-clamp-3 font-medium tracking-wide italic">"{service.description}"</p>
+                  <h3 className="text-xl font-bold text-[#1E293B]">Select from Portfolio</h3>
+                  <p className="text-xs text-[#94A3B8]">Choose a masterpiece to convert into a package.</p>
                 </div>
-                
-                <div className="space-y-10">
-                  <div className="flex items-end justify-between border-t border-[#F5F5F5] pt-10">
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#BBB] mb-2">Investment / Deposit</p>
-                      <p className="text-2xl font-serif text-[#1A1A1A]">₱{parseFloat(service.price).toLocaleString()}</p>
-                      <p className="text-[10px] text-[#C79F68] font-bold mt-1 uppercase tracking-widest">{service.downpayment_rate}% Downpayment Required</p>
+                <button onClick={() => setShowPortfolioPicker(false)} className="text-[#94A3B8] hover:text-[#1E293B] transition">✕</button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {portfolio.length === 0 ? (
+                    <div className="col-span-full py-20 text-center">
+                      <p className="text-sm text-[#94A3B8]">No portfolio items found.</p>
                     </div>
-                  </div>
+                  ) : (
+                    portfolio.map(item => (
+                      <div key={item.id} className="group cursor-pointer bg-[#F8F9FB] rounded-2xl overflow-hidden border border-[#E2E8F0] hover:border-[#E8734A] transition-all" onClick={() => selectFromPortfolio(item)}>
+                        <div className="aspect-square relative overflow-hidden">
+                          <img src={`http://localhost:8000/${item.image_url}`} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e)=>{e.target.style.display='none';}} />
+                        </div>
+                        <div className="p-4">
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-[#E8734A] mb-1">{item.category || 'Series'}</p>
+                          <h4 className="text-sm font-bold text-[#1E293B] truncate">{item.title}</h4>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+              <div className="p-6 border-t border-[#F1F5F9] bg-[#F8F9FB] flex justify-end">
+                <button onClick={() => setShowPortfolioPicker(false)} className="px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-[#64748B] hover:text-[#1E293B] transition">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
 
-                  <div className="flex gap-4">
-                    <button 
-                      onClick={() => handleEdit(service)}
-                      className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#1A1A1A] border border-[#EEEEEE] py-4 hover:border-[#1A1A1A] transition-all duration-500">
-                      Revise
-                    </button>
-                    <button
-                      onClick={() => handleDelete(service.id)}
-                      className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#999] hover:text-red-600 transition-all duration-500"
-                    >
-                      Remove
-                    </button>
+        {services.length===0 ? (
+          <div className="py-16 text-center bg-white rounded-2xl border border-dashed border-[#E2E8F0]"><p className="text-sm text-[#94A3B8]">No packages yet. Create your first one!</p></div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {services.map(s => (
+              <div key={s.id} className="bg-white rounded-2xl shadow-card hover:shadow-card-hover border border-[#F1F5F9] hover:border-[#E8734A]/20 transition-all duration-300 flex flex-col overflow-hidden group">
+                <div className="w-full aspect-[16/9] bg-[#F8F9FB] overflow-hidden relative">
+                  {s.image_path ? (<img src={`http://localhost:8000/${s.image_path}`} alt={s.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e)=>{e.target.style.display='none';}} />) : (<div className="w-full h-full flex items-center justify-center text-[#E2E8F0]"><span className="text-4xl">📸</span></div>)}
+                  <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#E8734A] to-[#FB923C] px-3 py-1 rounded-lg shadow">{s.category||'General'}</span>
+                </div>
+                <div className="p-6 flex flex-col flex-1">
+                  <h4 className="text-lg font-bold text-[#1E293B] mb-2 group-hover:text-[#E8734A] transition-colors">{s.name}</h4>
+                  <p className="text-xs text-[#64748B] leading-relaxed mb-4 line-clamp-2 flex-1">{s.description}</p>
+                  {s.inclusions && (
+                    <div className="mb-4 bg-[#F8F9FB] p-3 rounded-lg border border-[#F1F5F9]">
+                       <p className="text-[9px] font-bold uppercase tracking-widest text-[#94A3B8] mb-1">Inclusions</p>
+                       <p className="text-[10px] text-[#1E293B] font-medium line-clamp-2">{s.inclusions}</p>
+                    </div>
+                  )}
+                  <div className="flex items-end justify-between pt-4 border-t border-[#F1F5F9]">
+                    <div><p className="text-2xl font-bold text-[#1E293B]">₱{parseFloat(s.price).toLocaleString()}</p><p className="text-[10px] text-[#E8734A] font-semibold">{s.downpayment_rate}% deposit</p></div>
+                    <span className="text-[10px] font-semibold text-[#94A3B8] bg-[#F8F9FB] px-2.5 py-1 rounded-lg">{s.duration} min</span>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <button onClick={()=>handleEdit(s)} className="flex-1 text-xs font-semibold text-[#1E293B] bg-[#F0F2F5] py-2.5 rounded-xl hover:bg-[#E2E8F0] transition">Edit</button>
+                    <button onClick={()=>handleDelete(s.id)} className="flex-1 text-xs font-semibold text-[#94A3B8] hover:text-red-500 py-2.5 transition">Remove</button>
                   </div>
                 </div>
               </div>

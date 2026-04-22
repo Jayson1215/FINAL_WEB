@@ -1,15 +1,51 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { serviceService } from '../services/serviceService';
+import { bookingService } from '../services/bookingService';
+import { portfolioService } from '../services/portfolioService';
+import Chatbot from '../components/common/Chatbot';
 
 export default function Landing() {
   const [scrollY, setScrollY] = useState(0);
   const [navScrolled, setNavScrolled] = useState(false);
   const [dbServices, setDbServices] = useState([]);
-  const [loadingServices, setLoadingServices] = useState(true);
-  const { user } = useAuth();
+  const [bookings, setBookings] = useState([]);
+  const [portfolio, setPortfolio] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Booking Modal States
+  const [bookingServiceDetail, setBookingServiceDetail] = useState(null);
+  const [bookingFormData, setBookingFormData] = useState({
+    bookingDate: '',
+    bookingTime: '',
+    location: '',
+    specialRequests: '',
+  });
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState('');
+
+  // Contact Form States
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [selectedBookingDetail, setSelectedBookingDetail] = useState(null);
+
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+  const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
+
+  // Refs for ScrollSpy
+  const sectionRefs = {
+    hero: useRef(null),
+    about: useRef(null),
+    registry: useRef(null),
+    gallery: useRef(null),
+    services: useRef(null),
+    contact: useRef(null),
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,6 +56,67 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Initial Scroll based on URL Path
+  useEffect(() => {
+    if (loading) return;
+
+    const pathToId = {
+      '/client/services': 'services',
+      '/client/portfolio': 'gallery',
+      '/client/bookings': 'registry',
+      '/client/contact': 'contact'
+    };
+
+    const sectionId = pathToId[location.pathname];
+    if (sectionId) {
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          window.scrollTo({
+            top: element.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      }, 500);
+    }
+  }, [loading, location.pathname]);
+
+  // ScrollSpy - Update URL as user scrolls
+  useEffect(() => {
+    if (!user || user.role !== 'client') return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -70% 0px',
+      threshold: 0
+    };
+
+    const idToPath = {
+      'services': '/client/services',
+      'gallery': '/client/portfolio',
+      'registry': '/client/bookings',
+      'contact': '/client/contact',
+      'hero': '/'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const path = idToPath[entry.target.id];
+          if (path && location.pathname !== path) {
+            window.history.replaceState(null, '', path);
+          }
+        }
+      });
+    }, observerOptions);
+
+    Object.values(sectionRefs).forEach((ref) => {
+      if (ref.current) observer.observe(ref.current);
+    });
+
+    return () => observer.disconnect();
+  }, [user, location.pathname]);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -29,278 +126,440 @@ export default function Landing() {
           }
         });
       },
-      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
 
     const elements = document.querySelectorAll('.reveal');
     elements.forEach((el) => observer.observe(el));
-
     return () => observer.disconnect();
-  }, [loadingServices]);
+  }, [loading]);
 
-  useEffect(() => {
-    fetchServices();
-  }, []);
+  useEffect(() => { 
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [servicesRes, bookingsRes, portfolioRes] = await Promise.all([
+          serviceService.getServices(),
+          user?.role === 'client' ? bookingService.getMyBookings() : Promise.resolve({ data: [] }),
+          portfolioService.getPortfolio()
+        ]);
+        setDbServices(servicesRes.data || []);
+        
+        // Sort bookings by date descending (Newest/Latest first)
+        const sortedBookings = (bookingsRes.data || []).sort((a, b) => 
+          new Date(b.booking_date) - new Date(a.booking_date)
+        );
+        setBookings(sortedBookings);
+        
+        setPortfolio(portfolioRes.data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [user]);
 
-  const fetchServices = async () => {
-    try {
-      const response = await serviceService.getServices();
-      setDbServices(response.data || []);
-    } catch (err) {
-      console.error('Failed to fetch services:', err);
-      setDbServices([]);
-    } finally {
-      setLoadingServices(false);
+  const handleBookNow = (service) => {
+    if (user) {
+      setBookingServiceDetail(service);
+      setBookingError('');
+    } else {
+      navigate('/login');
     }
   };
 
-  const handleBookNow = (serviceId, serviceName) => {
-    if (user) {
-      navigate(`/client/booking/${serviceId}`);
-    } else {
-      localStorage.setItem('bookingIntent', JSON.stringify({
-        serviceId,
-        serviceName,
-        timestamp: Date.now()
-      }));
-      navigate('/register?redirect=booking');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault();
+    setBookingError('');
+    if (!bookingFormData.bookingDate || !bookingFormData.bookingTime) {
+      setBookingError('Please select both date and time');
+      return;
+    }
+    setBookingSubmitting(true);
+    try {
+      const payload = {
+        service_id: bookingServiceDetail.id,
+        booking_date: bookingFormData.bookingDate,
+        booking_time: bookingFormData.bookingTime,
+        location: bookingFormData.location,
+        special_requests: bookingFormData.specialRequests,
+        total_amount: typeof bookingServiceDetail.price === 'string' ? parseFloat(bookingServiceDetail.price.replace(/,/g, '')) : bookingServiceDetail.price,
+        add_on_ids: [],
+      };
+      const response = await bookingService.createBooking(payload);
+      sessionStorage.setItem('bookingData', JSON.stringify(response.data));
+      navigate('/client/checkout');
+    } catch (err) {
+      setBookingError(err.response?.data?.message || 'Failed to create booking.');
+    } finally {
+      setBookingSubmitting(false);
+    }
+  };
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    setContactSubmitted(true);
+    setTimeout(() => setContactSubmitted(false), 5000);
+  };
+
+  const getServiceImageUrl = (imagePath) => {
+    if (!imagePath) return '';
+    if (/^https?:\/\//i.test(imagePath)) return imagePath;
+    return `${backendBaseUrl}/${String(imagePath).replace(/^\/+/, '')}`;
+  };
+
+  const getStatusConfig = (status, payment) => {
+    // If there is a pending payment, show a "Verifying" state even if the booking status is still "awaiting_payment"
+    if (payment && payment.payment_status === 'pending') {
+      return { label: 'Verifying Transaction', bg: 'bg-amber-50', text: 'text-amber-600', dot: 'bg-amber-500' };
+    }
+
+    switch (status) {
+      case 'approved': return { label: 'Available', bg: 'bg-blue-50', text: 'text-blue-600', dot: 'bg-blue-500' };
+      case 'awaiting_payment': return { label: 'Payment Required', bg: 'bg-orange-50', text: 'text-orange-600', dot: 'bg-orange-500' };
+      case 'paid': return { label: 'Confirmed & Paid', bg: 'bg-emerald-50', text: 'text-emerald-600', dot: 'bg-emerald-500' };
+      default: return { label: 'Reviewing', bg: 'bg-amber-50', text: 'text-amber-600', dot: 'bg-amber-500' };
+    }
+  };
+
+  const categories = ['all', ...new Set(portfolio.map(item => item.category).filter(Boolean))];
+  const filteredPortfolio = selectedCategory === 'all' ? portfolio : portfolio.filter(item => item.category === selectedCategory);
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split('T')[0];
+
+  const handleNavClick = (e, id) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      window.scrollTo({
+        top: element.offsetTop - 80,
+        behavior: 'smooth'
+      });
+      
+      const idToPath = {
+        'services': '/client/services',
+        'gallery': '/client/portfolio',
+        'registry': '/client/bookings',
+        'contact': '/client/contact',
+        'hero': '/'
+      };
+      const path = idToPath[id];
+      if (path) window.history.replaceState(null, '', path);
     }
   };
 
   return (
-    <div className="bg-[#F9F9F9] min-h-screen selection:bg-[#C79F68] selection:text-white">
+    <div className="bg-[#F0F2F5] min-h-screen selection:bg-[#E8734A] selection:text-white font-sans overflow-x-hidden">
 
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-12 py-8 ${navScrolled ? 'bg-white/80 backdrop-blur-md py-6 border-b border-[#EEEEEE]' : ''}`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="hidden md:flex gap-10 items-center">
-            <a href="#about" className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] hover:text-[#C79F68] transition">About</a>
-            <a href="#services" className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] hover:text-[#C79F68] transition">Services</a>
+      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-6 md:px-12 py-5 ${navScrolled ? 'bg-white/90 backdrop-blur-xl py-3 border-b border-[#F1F5F9] shadow-sm' : ''}`}>
+        <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
+          <div className="hidden lg:flex gap-8 items-center justify-start">
+            <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/services' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</a>
+            <a href="#gallery" onClick={(e) => handleNavClick(e, 'gallery')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</a>
           </div>
-
-          <Link to="/" className="text-3xl font-serif text-[#333] tracking-[0.15em] hover:text-[#C79F68] transition-colors duration-500">
-            L I G H T
-          </Link>
-
-          <div className="flex gap-8 items-center">
-            <Link to="/client/portfolio" className="hidden md:block text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] hover:text-[#C79F68] transition">Gallery</Link>
+          <div className="flex justify-center">
+            <Link to="/" onClick={(e) => handleNavClick(e, 'hero')} className="text-2xl font-serif text-[#1E293B] tracking-[0.2em] hover:text-[#E8734A] transition-all duration-500">LIGHT</Link>
+          </div>
+          <div className="flex gap-4 md:gap-6 items-center justify-end">
             {user ? (
-               <Link to={user.role === 'admin' ? '/admin/dashboard' : '/client/dashboard'} className="bg-[#333] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#C79F68] transition duration-500">
-                 Dashboard
-               </Link>
+              <>
+                <a href="#registry" onClick={(e) => handleNavClick(e, 'registry')} className={`hidden lg:block text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/bookings' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>My Bookings</a>
+                <a href="#contact" onClick={(e) => handleNavClick(e, 'contact')} className={`hidden sm:block text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/contact' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Contact</a>
+                <button onClick={handleLogout} className="bg-[#1E293B] text-white px-6 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all whitespace-nowrap">Logout</button>
+              </>
             ) : (
-                <Link to="/login" className="bg-[#333] text-white px-8 py-3 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#C79F68] transition duration-500">
-                  Login
-                </Link>
+              <>
+                <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="hidden lg:block text-[9px] font-bold uppercase tracking-[0.3em] text-[#1E293B] hover:text-[#E8734A] transition-all">Atelier</a>
+                <Link to="/login" className="bg-[#1E293B] text-white px-6 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all whitespace-nowrap">Join</Link>
+              </>
             )}
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden bg-[#F9F9F9]">
+      <section id="hero" ref={sectionRefs.hero} className="relative h-[85vh] flex items-center justify-center overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="w-full h-full object-cover opacity-60 grayscale-[0.3]"
-            style={{ transform: `scale(1.05) translateY(${scrollY * 0.05}px)` }}
-          >
-            <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          {/* Subtle overlay for better text contrast */}
-          <div className="absolute inset-0 bg-white/10 backdrop-blur-[1px]"></div>
+          {user ? (
+            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=2076&auto=format&fit=crop" className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }} alt="Background" />
+          ) : (
+            <video autoPlay muted loop playsInline className="w-full h-full object-cover opacity-80" style={{ transform: `scale(1.1) translateY(${scrollY * 0.1}px)` }}><source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" /></video>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-[#F0F2F5]"></div>
         </div>
-        
-        <div className="relative z-10 text-center max-w-4xl px-6">
-          <p className="text-[11px] font-bold uppercase tracking-[0.5em] text-[#333] mb-8 animate-fade-in-up">Light Photography Studio</p>
-          <h1 className="text-6xl md:text-8xl font-serif text-[#333] mb-12 leading-tight reveal">
-            Artistry in <br /> Every Frame
-          </h1>
-          <div className="flex justify-center reveal delay-300">
-            <Link to="/register" className="bg-[#333] text-white py-6 px-12 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#C79F68] transition duration-700 shadow-premium">
-              Book Your Session
-            </Link>
-          </div>
-        </div>
-        
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 reveal delay-1000">
-            <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#777]">Scroll</span>
-            <div className="w-[1px] h-12 bg-[#333] opacity-20"></div>
+        <div className="relative z-10 text-center max-w-4xl px-6 space-y-6">
+          {user ? (
+            <>
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] animate-fadeIn">WELCOME BACK, {user.name.toUpperCase()}</p>
+              <h1 className="text-5xl md:text-7xl font-serif leading-[1.2] reveal tracking-tight"><span className="text-[#1E293B]">Manage Your</span> <br /><span className="text-[#E8734A]">Visual Story.</span></h1>
+              <div className="flex justify-center reveal delay-300 pt-6"><button onClick={(e) => handleNavClick(e, 'registry')} className="bg-[#1E293B] text-white py-4 px-12 rounded-2xl text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#E8734A] hover:translate-y-[-2px] transition-all duration-700 shadow-xl">ACCESS REGISTRY</button></div>
+            </>
+          ) : (
+            <>
+              <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#E8734A] animate-fadeIn">Premium On-Call Photography</p>
+              <h1 className="text-4xl md:text-7xl font-serif text-[#1E293B] leading-[1.2] reveal tracking-tight">Capturing Life <br /><span className="text-[#E8734A]">At Your Place.</span></h1>
+              <div className="flex justify-center reveal delay-300 pt-6"><button onClick={(e) => handleNavClick(e, 'services')} className="bg-[#1E293B] text-white py-5 px-12 rounded-2xl text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#E8734A] transition-all shadow-xl">RESERVE A SESSION</button></div>
+            </>
+          )}
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-40 px-12 bg-white">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-24 items-center">
-          <div className="w-full md:w-1/2 reveal">
-            <div className="relative">
-                <img
-                    src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop"
-                    alt="Photographer at work"
-                    className="w-full h-auto grayscale hover:grayscale-0 transition-all duration-1000 shadow-premium"
-                />
-                <div className="absolute -bottom-8 -right-8 bg-[#F9F9F9] p-12 hidden lg:block">
-                    <p className="text-3xl font-serif text-[#333] mb-2">15+</p>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA]">Years of Vision</p>
-                </div>
-            </div>
+      <section id="about" ref={sectionRefs.about} className="py-24 md:py-32 px-6 md:px-12 bg-[#F0F2F5] relative overflow-hidden">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="relative reveal">
+            <div className="bg-white p-3 rounded-[2rem] shadow-premium relative z-10"><img src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop" alt="Photographer" className="w-full h-auto rounded-[1.5rem] grayscale hover:grayscale-0 transition-all duration-1000" /></div>
+            <div className="absolute -bottom-6 -right-6 bg-[#1E293B] p-8 rounded-[1.5rem] shadow-2xl hidden lg:block z-20"><p className="text-4xl font-serif text-[#E8734A] mb-1">15+</p><p className="text-[9px] font-bold uppercase tracking-widest text-white/60">Years of Masterful Vision</p></div>
           </div>
-          <div className="w-full md:w-1/2 reveal delay-300">
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-6">About Our Studio</p>
-            <h2 className="text-4xl font-serif text-[#333] mb-8 leading-tight">We Capture the <br /> Poetry of Reality</h2>
-            <p className="text-sm text-[#777] leading-[2] mb-12 max-w-md">
-              At LIGHT Studio, we believe every moment is unique. Our mission is to preserve the subtle emotions and raw beauty of life through high-end photography that stands the test of time.
-            </p>
-            <Link to="/client/portfolio" className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#333] border-b border-[#333] pb-1 hover:text-[#C79F68] hover:border-[#C79F68] transition duration-500">
-                Explore the Portfolio
-            </Link>
+          <div className="space-y-8 reveal delay-300">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">On-Call Excellence</p>
+            <h2 className="text-4xl md:text-5xl font-serif text-[#1E293B] leading-tight">We Bring the Studio <br /><span className="italic">To Your Location.</span></h2>
+            <p className="text-sm text-[#64748B] leading-[1.8] max-w-md font-medium italic">"At LIGHT Photography, we believe every moment is unique. We specialize in on-call services, bringing our masterful vision directly to your chosen venue or home."</p>
           </div>
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-40 px-12 bg-[#F9F9F9]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-6">Curated Packages</p>
-            <h2 className="text-4xl font-serif text-[#333]">Our Professional Services</h2>
-            <div className="w-12 h-px bg-[#C79F68] mx-auto mt-8 opacity-40"></div>
-          </div>
+      {/* Registry Section */}
+      {user && (
+        <section id="registry" ref={sectionRefs.registry} className="py-24 md:py-32 px-6 md:px-12 bg-white relative overflow-hidden rounded-[3rem] shadow-premium z-20">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-20 space-y-4 reveal">
+              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Your Registry</p>
+              <h2 className="text-4xl font-serif text-[#1E293B]">Active Sessions</h2>
+              <div className="w-12 h-0.5 bg-[#E8734A] mx-auto rounded-full"></div>
+            </div>
+            <div className="grid grid-cols-1 gap-8">
+              {bookings.length > 0 ? bookings.map((booking, idx) => {
+                const status = getStatusConfig(booking.status, booking.payment);
+                const hasPendingPayment = booking.payment && booking.payment.payment_status === 'pending';
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {loadingServices ? (
-                Array(3).fill(0).map((_, i) => (
-                    <div key={i} className="bg-white p-12 h-[400px] animate-pulse border border-[#EEEEEE]"></div>
-                ))
-            ) : dbServices.map((service, index) => (
-              <div
-                key={service.id}
-                className="bg-white border border-[#EEEEEE] p-12 transition-all duration-700 hover:shadow-premium group flex flex-col reveal"
-                style={{ transitionDelay: `${index * 100}ms` }}
-              >
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8 group-hover:text-[#C79F68] transition">
-                    {service.category || 'Package'}
-                </p>
-                <h3 className="text-2xl font-serif text-[#333] mb-8">{service.name}</h3>
-
-                {/* Service Image Preview */}
-                <div className="w-full aspect-[16/9] mb-10 bg-[#F9F9F9] overflow-hidden border border-[#EEEEEE] relative">
-                  {service.image_path ? (
-                    <img 
-                      src={`http://localhost:8000/${service.image_path}`} 
-                      alt={service.name}
-                      className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center opacity-10">
-                      <span className="text-2xl">📸</span>
+                return (
+                  <div key={booking.id} className="reveal bg-[#F8F9FB] rounded-[2.5rem] p-8 md:p-12 border border-[#F1F5F9] flex flex-col lg:flex-row gap-10 items-center" style={{ transitionDelay: `${idx * 100}ms` }}>
+                    <div className="w-full lg:w-1/4 aspect-video lg:aspect-square rounded-2xl overflow-hidden bg-white shadow-sm"><img src={getServiceImageUrl(booking.service?.image_path)} alt="Service" className="w-full h-full object-cover" /></div>
+                    <div className="flex-1 space-y-6">
+                      <div className="flex justify-between items-start">
+                        <div><h3 className="text-2xl font-serif text-[#1E293B] mb-1">{booking.service?.name}</h3><p className="text-[12px] text-[#64748B] italic">Session on {new Date(booking.booking_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p></div>
+                        <div className={`px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest ${status.bg} ${status.text} flex items-center gap-2`}><span className={`w-1.5 h-1.5 rounded-full ${status.dot}`}></span>{status.label}</div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+                         <div className="space-y-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Time</p><p className="text-xs font-bold text-[#1E293B]">{booking.booking_time}</p></div>
+                         <div className="space-y-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Investment</p><p className="text-xs font-bold text-[#1E293B]">₱{parseFloat(booking.total_amount).toLocaleString()}</p></div>
+                         <div className="space-y-1 col-span-2 md:col-span-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Location</p><p className="text-xs font-bold text-[#1E293B] truncate">📍 {booking.location}</p></div>
+                      </div>
+                      <div className="pt-6 border-t border-[#F1F5F9] flex gap-3">
+                         {booking.status === 'awaiting_payment' && !hasPendingPayment && (
+                            <button onClick={() => navigate('/client/checkout', { state: { booking } })} className="bg-[#E8734A] text-white px-8 py-3 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:shadow-lg transition-all shadow-md">Proceed to Payment</button>
+                         )}
+                         <button onClick={() => setSelectedBookingDetail(booking)} className="bg-[#1E293B] text-white px-8 py-3 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] shadow-sm hover:bg-[#E8734A] transition-all">Details</button>
+                      </div>
                     </div>
-                  )}
-                </div>
-                <p className="text-sm text-[#777] mb-12 line-clamp-3 leading-relaxed flex-grow">
-                    {service.description}
-                </p>
-                
-                <div className="flex justify-between items-center mb-10 pt-8 border-t border-[#EEEEEE]">
-                  <span className="text-3xl font-serif text-[#333]">₱{parseFloat(service.price).toLocaleString()}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#AAA]">{service.duration} MIN</span>
-                </div>
-                
-                <button
-                  onClick={() => handleBookNow(service.id, service.name)}
-                  className="w-full bg-[#333] text-white py-5 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#C79F68] transition duration-500 shadow-sm"
-                >
-                  Reserve Session
-                </button>
+                  </div>
+                );
+              }) : (
+                <div className="reveal py-24 text-center bg-[#F8F9FB] rounded-[2.5rem] border border-[#E2E8F0]"><p className="text-base font-serif italic text-[#94A3B8]">Your session registry is currently empty.</p></div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Gallery Section */}
+      <section id="gallery" ref={sectionRefs.gallery} className="py-24 md:py-32 px-6 md:px-12 bg-[#F0F2F5] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20 space-y-4 reveal">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">The Collection</p>
+            <h2 className="text-4xl font-serif text-[#1E293B]">Masterpiece Gallery</h2>
+            <div className="w-12 h-0.5 bg-[#E8734A] mx-auto rounded-full mb-8"></div>
+            <div className="flex justify-center gap-2 flex-wrap bg-white p-1.5 rounded-xl shadow-sm border border-[#F1F5F9] w-fit mx-auto mt-6 reveal">
+              {categories.map(cat => (
+                <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-5 py-2 text-[9px] font-bold uppercase tracking-[0.1em] transition-all rounded-lg ${selectedCategory === cat ? 'bg-[#1E293B] text-white shadow-md' : 'text-[#94A3B8] hover:text-[#1E293B] hover:bg-[#F8F9FB]'}`}>{cat}</button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredPortfolio.map((item, idx) => (
+              <div key={item.id} className="group cursor-pointer bg-white rounded-2xl p-3 shadow-sm hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-700 reveal" style={{ transitionDelay: `${idx * 100}ms` }} onClick={() => setSelectedImage(item)}>
+                <div className="relative overflow-hidden rounded-xl aspect-[4/5] bg-[#F8F9FB] mb-5"><img src={`${backendBaseUrl}/${item.image_url}`} alt="Art" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg">View Masterpiece</p></div></div>
+                <div className="text-center px-2 pb-1"><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#E8734A] mb-1">{item.category || 'Editorial'}</p><h3 className="text-lg font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{item.title}</h3></div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured CTA */}
-      <section className="py-40 bg-[#333] text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1554048612-b6a482bc67e5?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-fixed"></div>
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-6">
-            <p className="text-[11px] font-bold uppercase tracking-[0.5em] text-[#C79F68] mb-10">Start Your Story</p>
-            <h2 className="text-5xl md:text-6xl font-serif mb-12 leading-tight">Ready to Capture Memories?</h2>
-            <div className="flex flex-col md:flex-row justify-center gap-8 items-center">
-                <Link to="/register" className="bg-[#C79F68] text-white py-6 px-12 text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-white hover:text-[#333] transition duration-700">
-                    Get Started Today
-                </Link>
-                <Link to="/client/portfolio" className="text-[11px] font-bold uppercase tracking-[0.3em] hover:text-[#C79F68] transition">
-                    View Recent Work →
-                </Link>
-            </div>
+      {/* Packages Section */}
+      <section id="services" ref={sectionRefs.services} className="py-24 md:py-32 px-6 md:px-12 bg-white rounded-[3rem] shadow-premium relative z-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20 space-y-4 reveal">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Signature Collections</p>
+            <h2 className="text-4xl font-serif text-[#1E293B]">Available Packages</h2>
+            <div className="w-12 h-0.5 bg-[#E8734A] mx-auto rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {dbServices.map((service, index) => {
+              const serviceImageUrl = getServiceImageUrl(service.image_path);
+              return (
+              <div key={service.id} className="group bg-white border border-[#F1F5F9] rounded-[2rem] p-3.5 transition-all duration-700 hover:shadow-card-hover flex flex-col reveal" style={{ transitionDelay: `${index * 150}ms` }}>
+                <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] mb-6 bg-[#F8F9FB]"><img src={serviceImageUrl} alt="Pkg" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-5 py-2.5 rounded-xl">Book Now</p></div></div>
+                <div className="px-5 pb-5 flex-1 flex flex-col space-y-5">
+                  <div><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#E8734A] mb-2">{service.category}</p><h3 className="text-xl font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{service.name}</h3></div>
+                  <p className="text-xs text-[#64748B] leading-relaxed line-clamp-2 italic font-medium">"{service.description}"</p>
+                  <div className="flex justify-between items-center pt-5 border-t border-[#F1F5F9] mt-auto"><span className="text-xl font-serif font-bold text-[#1E293B]">₱{parseFloat(service.price).toLocaleString()}</span><button onClick={() => handleBookNow(service)} className="bg-[#1E293B] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#E8734A] transition-all duration-500 shadow-md">→</button></div>
+                </div>
+              </div>
+            );})}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" ref={sectionRefs.contact} className="py-24 md:py-32 px-6 md:px-12 bg-[#F0F2F5] relative overflow-hidden">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+           <div className="space-y-8 reveal">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-3">Connect With Us</p>
+                <h2 className="text-4xl font-serif text-[#1E293B] leading-tight">Masterful Vision, <br /><span className="italic">Delivered Anywhere.</span></h2>
+              </div>
+              <div className="space-y-8">
+                  <div className="flex items-center gap-5 group">
+                      <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl group-hover:bg-[#E8734A] group-hover:text-white transition-all duration-500">📍</div>
+                      <div><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] mb-0.5">Service Area</p><p className="text-sm font-bold text-[#1E293B]">Butuan City & Surrounding Regions</p></div>
+                  </div>
+                  <div className="flex items-center gap-5 group">
+                      <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center text-xl group-hover:bg-[#E8734A] group-hover:text-white transition-all duration-500">✉️</div>
+                      <div><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] mb-0.5">Inquiries</p><p className="text-sm font-bold text-[#1E293B]">concierge@lightphotography.com</p></div>
+                  </div>
+              </div>
+           </div>
+           <div className="bg-white rounded-[2rem] shadow-premium p-8 md:p-12 border border-[#F1F5F9] reveal delay-300">
+              {contactSubmitted ? (
+                <div className="text-center py-16 space-y-4">
+                  <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-2xl mx-auto animate-bounce">✓</div>
+                  <h3 className="text-2xl font-serif text-[#1E293B]">Message Received</h3>
+                  <p className="text-xs text-[#64748B] italic">Our team will reach out within 24 hours.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleContactSubmit} className="space-y-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Name</label>
+                        <input type="text" required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-5 py-3.5 text-xs outline-none focus:border-[#E8734A] transition-all" placeholder="Full Name" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Email</label>
+                        <input type="email" required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-5 py-3.5 text-xs outline-none focus:border-[#E8734A] transition-all" placeholder="email@address.com" />
+                      </div>
+                   </div>
+                   <div className="space-y-1.5">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Message</label>
+                      <textarea rows={4} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-5 py-3.5 text-xs outline-none focus:border-[#E8734A] transition-all resize-none" placeholder="How can we help capture your story?"></textarea>
+                   </div>
+                   <button type="submit" className="w-full bg-[#1E293B] text-white py-4.5 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] shadow-lg transition-all">Send Message →</button>
+                </form>
+              )}
+           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white py-32 px-12 border-t border-[#EEEEEE]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-24">
-          <div className="flex flex-col max-w-xs">
-            <p className="text-2xl font-serif text-[#333] mb-8 tracking-widest">L I G H T</p>
-            <p className="text-sm text-[#777] leading-relaxed mb-8">
-              A boutique photography studio specializing in high-end visuals and authentic storytelling.
-            </p>
-            <div className="flex gap-6">
-                <a href="#" className="text-[#333] hover:text-[#C79F68] transition text-[10px] font-bold uppercase">IG</a>
-                <a href="#" className="text-[#333] hover:text-[#C79F68] transition text-[10px] font-bold uppercase">FB</a>
-                <a href="#" className="text-[#333] hover:text-[#C79F68] transition text-[10px] font-bold uppercase">PT</a>
-            </div>
+      <footer className="bg-white py-24 px-6 md:px-12 border-t border-[#F1F5F9]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-16 text-center lg:text-left">
+          <div className="lg:col-span-2 space-y-8"><Link to="/" onClick={(e) => handleNavClick(e, 'hero')} className="text-2xl font-serif text-[#1E293B] tracking-[0.2em]">LIGHT</Link><p className="text-sm text-[#64748B] leading-[1.6] max-w-xs mx-auto lg:mx-0 font-medium italic">"A premium on-call photography service dedicated to the art of visual storytelling."</p></div>
+          <div className="space-y-8">
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E8734A]">Concierge</p>
+            <div className="space-y-4 text-xs text-[#64748B] font-medium"><p>Butuan City & Regions</p><p className="text-[#1E293B] font-bold">concierge@lightphotography.com</p></div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-10">Studio</p>
-              <div className="space-y-4 text-sm text-[#777]">
-                <p>Butuan City, Agusan Del Norte</p>
-                <p>Mon – Sat / 9:00 – 18:00</p>
-                <p>jayson@lightstudio.com</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-10">Newsletter</p>
-              <div className="flex border-b border-[#333] pb-2">
-                <input type="email" placeholder="Email Address" className="bg-transparent text-sm w-full outline-none" />
-                <button className="text-[10px] font-bold uppercase tracking-widest hover:text-[#C79F68] transition">Join</button>
-              </div>
-            </div>
-          </div>
+          <div className="space-y-8"><p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E8734A]">Newsletter</p><p className="text-[9px] text-[#94A3B8] font-bold tracking-widest uppercase">SUBSCRIBE FOR EXCLUSIVE UPDATES.</p></div>
         </div>
-        <div className="max-w-7xl mx-auto mt-32 pt-8 border-t border-[#EEEEEE] flex justify-between items-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA]">© {new Date().getFullYear()} LIGHT STUDIO</p>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#AAA]">DEVELOPED BY JAYSON</p>
-        </div>
+        <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-[#F1F5F9] text-center"><p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#94A3B8]">© {new Date().getFullYear()} LIGHT STUDIO EXPERIENCE • ART DIRECTION BY ANTIGRAVITY</p></div>
       </footer>
 
-      {/* Global Transition Styles */}
+      {/* Modals */}
+      {selectedImage && (
+        <div className="fixed inset-0 bg-[#F0F2F5]/98 backdrop-blur-xl z-[200] flex items-center justify-center p-6 md:p-12 overflow-y-auto animate-fadeIn" onClick={() => setSelectedImage(null)}>
+          <button onClick={() => setSelectedImage(null)} className="fixed top-6 right-6 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#1E293B] text-lg shadow-premium border border-[#E2E8F0] hover:bg-[#E8734A] hover:text-white transition-all z-[210]">✕</button>
+          <div className="max-w-5xl w-full flex flex-col md:flex-row gap-10 lg:gap-16 items-center" onClick={e => e.stopPropagation()}>
+            <div className="w-full md:w-[50%]"><div className="bg-white p-3 rounded-2xl shadow-premium border border-[#F1F5F9]"><img src={`${backendBaseUrl}/${selectedImage.image_url}`} alt="P" className="w-full h-auto rounded-xl" /></div></div>
+            <div className="w-full md:w-[50%] text-left space-y-6">
+                <div><p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E8734A] mb-3">Perspective • {selectedImage.category}</p><h2 className="text-4xl font-serif text-[#1E293B] leading-[1.2]">{selectedImage.title}</h2></div>
+                <div className="w-16 h-0.5 bg-[#E8734A] rounded-full"></div>
+                <p className="text-sm text-[#64748B] leading-relaxed italic font-medium">"{selectedImage.description}"</p>
+                <div className="pt-6"><button onClick={() => setSelectedImage(null)} className="bg-[#1E293B] text-white px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:shadow-lg transition-all shadow-md">Close Masterpiece</button></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedBookingDetail && (
+        <div className="fixed inset-0 bg-[#F0F2F5]/98 backdrop-blur-xl z-[300] flex items-center justify-center p-4 md:p-8 overflow-y-auto animate-fadeIn" onClick={() => setSelectedBookingDetail(null)}>
+          <div className="max-w-3xl w-full bg-white rounded-[2.5rem] shadow-premium border border-[#F1F5F9] p-8 md:p-12 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedBookingDetail(null)} className="absolute top-6 right-6 w-9 h-9 bg-[#F8F9FB] rounded-full flex items-center justify-center text-[#1E293B] hover:bg-[#E8734A] hover:text-white transition-all">✕</button>
+            <div className="flex flex-col md:flex-row gap-10">
+              <div className="w-full md:w-1/3 aspect-square rounded-2xl overflow-hidden shadow-sm"><img src={getServiceImageUrl(selectedBookingDetail.service?.image_path)} alt="S" className="w-full h-full object-cover" /></div>
+              <div className="flex-1 space-y-6">
+                <div><p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-2">Registry Details</p><h2 className="text-3xl font-serif text-[#1E293B] leading-tight">{selectedBookingDetail.service?.name}</h2></div>
+                <div className="grid grid-cols-2 gap-6 pt-4 border-t border-[#F1F5F9]">
+                    <div className="space-y-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Status</p><p className="text-xs font-bold text-[#1E293B] capitalize">{selectedBookingDetail.status.replace('_', ' ')}</p></div>
+                    <div className="space-y-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Investment</p><p className="text-xs font-bold text-[#1E293B]">₱{parseFloat(selectedBookingDetail.total_amount).toLocaleString()}</p></div>
+                    <div className="space-y-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Date</p><p className="text-xs font-bold text-[#1E293B]">{new Date(selectedBookingDetail.booking_date).toLocaleDateString()}</p></div>
+                    <div className="space-y-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Time</p><p className="text-xs font-bold text-[#1E293B]">{selectedBookingDetail.booking_time}</p></div>
+                </div>
+                <div className="space-y-1 pt-4 border-t border-[#F1F5F9]"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Venue / Location</p><p className="text-xs font-medium text-[#1E293B] leading-relaxed">📍 {selectedBookingDetail.location}</p></div>
+                {selectedBookingDetail.special_requests && (<div className="space-y-1 pt-4 border-t border-[#F1F5F9]"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Special Requests</p><p className="text-xs text-[#64748B] italic leading-relaxed">"{selectedBookingDetail.special_requests}"</p></div>)}
+                <div className="pt-6"><button onClick={() => setSelectedBookingDetail(null)} className="w-full bg-[#1E293B] text-white py-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all">Close Registry</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bookingServiceDetail && (
+        <div className="fixed inset-0 bg-[#F0F2F5]/98 backdrop-blur-xl z-[300] flex items-center justify-center p-4 md:p-8 overflow-y-auto animate-fadeIn" onClick={() => setBookingServiceDetail(null)}>
+          <div className="max-w-3xl w-full bg-white rounded-[2.5rem] shadow-premium border border-[#F1F5F9] p-8 md:p-10 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setBookingServiceDetail(null)} className="absolute top-6 right-6 w-9 h-9 bg-[#F8F9FB] rounded-full flex items-center justify-center text-[#1E293B] hover:bg-[#E8734A] hover:text-white transition-all">✕</button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+              <div className="space-y-6">
+                <div><p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#E8734A] mb-2">Concierge Registry</p><h2 className="text-3xl font-serif text-[#1E293B] leading-tight">Reserve <br /> {bookingServiceDetail.name}</h2></div>
+                <div className="bg-[#F8F9FB] p-5 rounded-xl border border-[#F1F5F9]">
+                  <p className="text-[10px] text-[#64748B] leading-relaxed italic">"{bookingServiceDetail.description}"</p>
+                  <p className="text-xl font-serif text-[#1E293B] mt-4">₱{parseFloat(bookingServiceDetail.price).toLocaleString()}</p>
+                </div>
+                {bookingError && <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest bg-red-50 p-3 rounded-lg border border-red-100">{bookingError}</p>}
+              </div>
+              <form onSubmit={handleBookingSubmit} className="space-y-5">
+                <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Preferred Date</label><input type="date" min={minDate} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all" value={bookingFormData.bookingDate} onChange={e => setBookingFormData({...bookingFormData, bookingDate: e.target.value})} /></div>
+                <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Session Time</label><input type="time" required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all" value={bookingFormData.bookingTime} onChange={e => setBookingFormData({...bookingFormData, bookingTime: e.target.value})} /></div>
+                <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Event Location</label><input type="text" placeholder="Venue or Address" required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all" value={bookingFormData.location} onChange={e => setBookingFormData({...bookingFormData, location: e.target.value})} /></div>
+                <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Special Requests</label><textarea rows={2} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all resize-none" placeholder="Notes for the photographer..." value={bookingFormData.specialRequests} onChange={e => setBookingFormData({...bookingFormData, specialRequests: e.target.value})}></textarea></div>
+                <button type="submit" disabled={bookingSubmitting} className="w-full bg-[#1E293B] text-white py-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all">{bookingSubmitting ? 'Processing...' : 'Request Session →'}</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Chatbot />
+
       <style>{`
-        .reveal {
-          opacity: 0;
-          transform: translateY(30px);
-          transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .reveal.visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 1.5s ease forwards;
-        }
-        .delay-300 { transition-delay: 300ms; }
-        .delay-1000 { transition-delay: 1000ms; }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 1s cubic-bezier(0.2, 1, 0.3, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fadeIn { animation: fadeIn 1.2s ease-out forwards; }
+        .shadow-premium { box-shadow: 0 40px 80px -15px rgba(0,0,0,0.04), 0 20px 40px -20px rgba(0,0,0,0.04); }
       `}</style>
     </div>
   );

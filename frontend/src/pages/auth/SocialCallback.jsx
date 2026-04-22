@@ -10,17 +10,13 @@ export default function SocialCallback() {
   useEffect(() => {
     const token = searchParams.get('token');
     const userDataStr = searchParams.get('user');
-
     if (token && userDataStr) {
       try {
         const userData = JSON.parse(decodeURIComponent(userDataStr));
         socialAuthComplete(userData, token);
-        
-        // Redirect based on role
         if (userData.role === 'admin') {
           navigate('/admin/dashboard');
         } else {
-          // Check for booking intent
           const bookingIntent = localStorage.getItem('bookingIntent');
           if (bookingIntent) {
             const { serviceId } = JSON.parse(bookingIntent);
@@ -31,7 +27,6 @@ export default function SocialCallback() {
           }
         }
       } catch (err) {
-        console.error('Failed to parse user data:', err);
         navigate('/login?error=Authentication failed');
       }
     } else {
@@ -40,10 +35,13 @@ export default function SocialCallback() {
   }, [searchParams, navigate, socialAuthComplete]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F9F9F9]">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C79F68] mx-auto mb-4"></div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Completing Authentication...</p>
+    <div className="min-h-screen flex items-center justify-center bg-[#F0F2F5]">
+      <div className="text-center space-y-6">
+        <div className="w-16 h-16 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto"></div>
+        <div className="space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#1E293B]">LIGHT Studio</p>
+          <p className="text-[9px] uppercase tracking-[0.4em] text-[#94A3B8]">Finalizing your session...</p>
+        </div>
       </div>
     </div>
   );

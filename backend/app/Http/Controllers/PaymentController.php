@@ -63,9 +63,9 @@ class PaymentController extends Controller
             $booking = $payment->booking;
             $booking->paid_amount += $payment->amount;
             
-            // If downpayment is paid, mark booking as confirmed
+            // If downpayment or full is paid, mark booking as paid (Ready for Session)
             if ($payment->type === 'downpayment' || $payment->type === 'full') {
-                $booking->status = 'confirmed';
+                $booking->status = 'paid';
             }
             
             $booking->save();

@@ -4,132 +4,57 @@ import { portfolioService } from '../../services/portfolioService';
 
 export default function ManagePortfolio() {
   const [portfolio, setPortfolio] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ title:'', description:'', category:'', image:null });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchPortfolio();
-  }, []);
+  useEffect(() => { fetchPortfolio(); }, []);
+  const fetchPortfolio = async () => { try { setLoading(true); const r = await portfolioService.getPortfolio(); setPortfolio(r.data); } catch(e){ setError('Failed to load portfolio'); } finally { setLoading(false); } };
+  const handleSubmit = async (e) => { e.preventDefault(); try { const fd = new FormData(); fd.append('title',formData.title); fd.append('description',formData.description); fd.append('category',formData.category); if(formData.image) fd.append('image',formData.image); await portfolioService.createPortfolio(fd); setFormData({title:'',description:'',category:'',image:null}); setShowForm(false); fetchPortfolio(); } catch(e){ setError('Failed to upload'); } };
+  const handleDelete = async (id) => { if(!window.confirm('Delete this item?')) return; try { await portfolioService.deletePortfolio(id); setPortfolio(portfolio.filter(p=>p.id!==id)); } catch(e){ setError('Failed to delete'); } };
 
-  const fetchPortfolio = async () => {
-    try {
-      setLoading(true);
-      const response = await portfolioService.getAllPortfolio();
-      setPortfolio(response.data);
-    } catch (err) {
-      setError('Failed to load portfolio');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure?')) return;
-    try {
-      // Optimistic delete
-      const previousPortfolio = portfolio;
-      setPortfolio(portfolio.filter(item => item.id !== id));
-      
-      // Then sync with backend
-      await portfolioService.deletePortfolioItem(id);
-      // Success, UI already updated
-      setError('');
-    } catch (err) {
-      // Revert on error
-      setPortfolio(previousPortfolio);
-      setError('Failed to delete portfolio item');
-    }
-  };
-
-  if (loading && portfolio.length === 0) {
-    return (
-      <AdminLayout title="Manage Portfolio">
-        <div className="flex justify-center items-center h-96">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-slate-600 font-medium">Loading portfolio...</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  if(loading) return (<AdminLayout title="Manage Portfolio"><div className="flex justify-center items-center h-96"><div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto"></div></div></AdminLayout>);
 
   return (
-    <AdminLayout title="Studio Gallery">
-      {error && (
-        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">Notice</p>
-          <p className="text-sm text-red-800 font-serif italic">{error}</p>
-        </div>
-      )}
-
-      <div className="space-y-16 animate-fadeIn">
-        {/* Editorial Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#EEEEEE] pb-10 gap-8">
-          <div>
-            <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">Portfolio Showcase</h2>
-            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Curating the visual narrative of your studio's finest works.</p>
-          </div>
-          <button className="px-10 py-5 bg-[#1A1A1A] text-white text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#C79F68] transition-all duration-700 shadow-sm active:scale-[0.98]">
-            Add Masterpiece
+    <AdminLayout title="Portfolio Gallery">
+      {error && <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">{error}</div>}
+      <div className="space-y-8 animate-fadeIn">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div><h2 className="text-2xl font-bold text-[#1E293B] mb-1">Portfolio Gallery</h2><p className="text-sm text-[#94A3B8]">Showcase your best work to clients.</p></div>
+          <button onClick={()=>setShowForm(!showForm)} className={`px-6 py-3 text-xs font-bold uppercase tracking-wider rounded-xl transition-all ${showForm?'bg-[#F0F2F5] text-[#64748B] border border-[#E2E8F0]':'bg-gradient-to-r from-[#E8734A] to-[#FB923C] text-white shadow-md'}`}>
+            {showForm?'Cancel':'+ Add Work'}
           </button>
         </div>
 
-        {/* Portfolio Grid - Minimalist Gallery Style */}
-        {portfolio.length === 0 ? (
-          <div className="py-24 text-center border border-dashed border-[#EEEEEE]">
-            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">The exhibition is currently empty</p>
+        {showForm && (
+          <div className="bg-white rounded-2xl shadow-card border border-[#F1F5F9] p-8 animate-fadeIn">
+            <h3 className="text-lg font-bold text-[#1E293B] mb-6">Upload New Work</h3>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Title</label><input type="text" value={formData.title} onChange={e=>setFormData({...formData,title:e.target.value})} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition" /></div>
+              <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Description</label><textarea value={formData.description} onChange={e=>setFormData({...formData,description:e.target.value})} rows={3} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition resize-none" /></div>
+              <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Category</label><input type="text" value={formData.category} onChange={e=>setFormData({...formData,category:e.target.value})} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm focus:border-[#E8734A] outline-none transition" /></div>
+              <div><label className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8] block mb-1.5">Image File</label><input type="file" accept="image/*" onChange={e=>setFormData({...formData,image:e.target.files[0]})} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#E8734A] file:text-white" /></div>
+              <button type="submit" className="w-full bg-gradient-to-r from-[#E8734A] to-[#FB923C] text-white py-3.5 text-xs font-bold uppercase tracking-wider rounded-xl hover:shadow-lg transition">Upload to Gallery</button>
+            </form>
           </div>
+        )}
+
+        {portfolio.length===0 ? (
+          <div className="py-16 text-center bg-white rounded-2xl border border-dashed border-[#E2E8F0]"><p className="text-sm text-[#94A3B8]">Gallery is empty. Upload your first piece!</p></div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-[#EEEEEE] divide-y md:divide-y-0 md:divide-x divide-[#EEEEEE]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {portfolio.map(item => (
-              <div key={item.id} className="bg-white p-10 group hover:bg-[#FAFAFA] transition-all duration-700 flex flex-col h-full">
-                {/* Image Frame - Sophisticated Padding/Borders */}
-                <div className="relative aspect-[4/5] bg-[#F9F9F9] border border-[#EEEEEE] overflow-hidden mb-8 p-4 transition-all duration-700 group-hover:border-[#C79F68]/30">
-                  <img 
-                    src={`http://localhost:8000/${item.image_url}`} 
-                    alt={item.title} 
-                    loading="lazy"
-                    className="w-full h-full object-cover filter saturate-[0.85] group-hover:saturate-[1.1] transition-all duration-1000 group-hover:scale-105" 
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-[#1A1A1A]/0 group-hover:bg-[#1A1A1A]/5 transition-all duration-700"></div>
+              <div key={item.id} className="bg-white rounded-2xl shadow-card hover:shadow-card-hover border border-[#F1F5F9] overflow-hidden group transition-all duration-300">
+                <div className="aspect-[4/3] overflow-hidden bg-[#F8F9FB] relative">
+                  <img src={`http://localhost:8000/${item.image_url}`} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={e=>{e.target.style.display='none';}} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-wider text-white bg-[#1E293B]/70 backdrop-blur px-2.5 py-1 rounded-lg">{item.category||'General'}</span>
                 </div>
-
-                <div className="flex-1 flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-2xl font-serif text-[#1A1A1A] group-hover:text-[#C79F68] transition-colors duration-700">
-                        {item.title}
-                      </h3>
-                      <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#BBB] mt-1">Exhibit #{item.id}</span>
-                    </div>
-                    
-                    <p className="text-[11px] text-[#777] leading-relaxed italic font-medium tracking-wide">"{item.description}"</p>
-                    
-                    {item.category && (
-                      <div className="pt-2">
-                        <span className="text-[8px] font-bold uppercase tracking-[0.4em] text-[#C79F68] border-b border-[#C79F68]/30 pb-0.5">
-                          {item.category}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex gap-4 pt-10 mt-auto">
-                    <button className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#1A1A1A] border border-[#EEEEEE] py-4 hover:border-[#1A1A1A] transition-all duration-500">
-                      Edit details
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="flex-1 text-[9px] font-bold uppercase tracking-[0.3em] text-[#999] hover:text-red-700 transition-all duration-500"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                <div className="p-5">
+                  <h4 className="text-base font-bold text-[#1E293B] mb-1 group-hover:text-[#E8734A] transition-colors">{item.title}</h4>
+                  <p className="text-xs text-[#64748B] line-clamp-2 mb-4">{item.description}</p>
+                  <button onClick={()=>handleDelete(item.id)} className="text-[10px] font-semibold text-[#94A3B8] hover:text-red-500 transition uppercase tracking-wider">Delete</button>
                 </div>
               </div>
             ))}

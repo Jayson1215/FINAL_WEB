@@ -8,120 +8,91 @@ export default function ServicesList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+  const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
 
-  useEffect(() => {
-    fetchServices();
-  }, []);
-
+  useEffect(() => { fetchServices(); }, []);
   const fetchServices = async () => {
-    try {
-      setLoading(true);
-      const response = await serviceService.getServices();
-      setServices(response.data);
-    } catch (err) {
-      setError('Failed to load services');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    try { setLoading(true); const r = await serviceService.getServices(); setServices(r.data); }
+    catch (e) { setError('Failed to load packages'); } finally { setLoading(false); }
   };
 
-  const handleBookNow = (serviceId) => {
-    navigate(`/client/booking/${serviceId}`);
+  const handleBookNow = (id) => navigate(`/client/booking/${id}`);
+  const getServiceImageUrl = (path) => {
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    return `${backendBaseUrl}/${String(path).replace(/^\/+/, '')}`;
   };
 
   return (
-    <ClientLayout title="Our Services">
-      {error && (
-        <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-lg mb-6">
-          {error}
-        </div>
-      )}
+    <ClientLayout title="Our Packages">
+      {error && (<div className="mb-10 p-6 bg-red-50 border border-red-100 rounded-2xl text-center text-red-500 shadow-sm">{error}</div>)}
 
       {loading ? (
-        <div className="flex justify-center items-center h-96">
-          <div className="text-gray-700 text-lg">Loading services...</div>
-        </div>
+        <div className="flex justify-center items-center h-96"><div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin"></div></div>
       ) : (
-        <div className="space-y-12">
-          {/* Elegant Header */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-12 shadow-xl">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 opacity-5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            <div className="relative z-10">
-              <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-2">Photography Services</p>
-              <h1 className="text-6xl font-display font-bold text-white mb-3">Our Services</h1>
-              <p className="text-slate-300 text-lg">Choose the perfect package for your photography session</p>
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto space-y-16 animate-fadeIn">
+
 
           {/* Services Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <div 
-                key={service.id} 
-                className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 hover:border-blue-200 relative flex flex-col"
-              >
-                {/* Service Header */}
-                <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 relative overflow-hidden">
-                  <div className="absolute -right-10 -top-10 text-7xl opacity-10 group-hover:opacity-20 group-hover:scale-110 transition-all duration-300">📸</div>
-                  <h3 className="text-2xl font-display font-bold text-white relative mb-3">{service.name}</h3>
-                  {service.category && (
-                    <span className="inline-block px-4 py-2 bg-blue-500 text-white text-xs font-bold rounded-lg uppercase tracking-wider">
-                      {service.category}
-                    </span>
-                  )}
-                </div>
-
-                {/* Service Details */}
-                <div className="p-8 flex flex-col flex-1">
-                  {/* Description */}
-                  <p className="text-slate-700 mb-8 min-h-20 leading-relaxed font-medium">{service.description}</p>
-
-                  {/* Duration and Price */}
-                  <div className="grid grid-cols-2 gap-6 mb-8 pb-8 border-b border-slate-200">
-                    <div>
-                      <p className="text-slate-600 text-xs uppercase tracking-wider font-bold mb-2">Duration</p>
-                      <p className="text-3xl font-display font-bold text-slate-900">{service.duration}</p>
-                      <p className="text-slate-600 text-sm font-medium">minutes</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {services.map((service) => {
+              const serviceImageUrl = getServiceImageUrl(service.image_path);
+              return (
+                <div key={service.id} className="group bg-white rounded-[2rem] overflow-hidden shadow-card hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-500 flex flex-col hover:border-[#E8734A]/20">
+                  {/* Image Area */}
+                  <div className="relative h-72 bg-[#F8F9FB] overflow-hidden">
+                    {serviceImageUrl ? (
+                      <img src={serviceImageUrl} alt={service.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#E2E8F0] text-6xl">📸</div>
+                    )}
+                    <div className="absolute top-6 left-6">
+                      <span className="px-4 py-2 bg-white/95 backdrop-blur rounded-xl shadow-md text-[10px] font-bold uppercase tracking-wider text-[#1E293B] border border-[#F1F5F9]">
+                        {service.category || 'Package'}
+                      </span>
                     </div>
-                    <div className="text-right">
-                      <p className="text-slate-600 text-xs uppercase tracking-wider font-bold mb-2">Price</p>
-                      <p className="text-3xl font-display font-bold text-blue-600">${parseFloat(service.price).toFixed(2)}</p>
+                    <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/60 to-transparent">
+                       <h3 className="text-2xl font-serif text-white">{service.name}</h3>
                     </div>
                   </div>
 
-                  {/* Features List */}
-                  <div className="mb-8 space-y-3">
-                    <p className="text-slate-600 text-xs uppercase tracking-wider font-bold mb-4">What's Included</p>
-                    {[1, 2, 3].map(i => (
-                      <p key={i} className="text-slate-700 text-sm flex items-center gap-3">
-                        <span className="text-blue-500 font-bold">✓</span>
-                        Premium photos & prints
-                      </p>
-                    ))}
-                  </div>
+                  {/* Details Area */}
+                  <div className="p-8 flex flex-col flex-1 space-y-6">
+                    <p className="text-[#64748B] text-sm leading-relaxed line-clamp-2 italic">"{service.description}"</p>
+                    
+                    {service.inclusions && (
+                       <div className="p-5 bg-[#F8F9FB] rounded-2xl border border-[#F1F5F9]">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#E8734A] mb-2">Inclusions:</p>
+                          <p className="text-[11px] text-[#64748B] leading-relaxed line-clamp-3 whitespace-pre-line">{service.inclusions}</p>
+                       </div>
+                    )}
 
-                  {/* Book Button */}
-                  <button
-                    onClick={() => handleBookNow(service.id)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 group-hover:shadow-lg font-display font-bold uppercase tracking-wider transition-all duration-300 text-sm mt-auto flex items-center justify-center gap-2"
-                  >
-                    <span>✨</span> Book Now
-                  </button>
+                    <div className="grid grid-cols-2 gap-6 py-6 border-y border-[#F1F5F9] mt-auto">
+                      <div className="space-y-1">
+                        <p className="text-[#94A3B8] text-[9px] font-bold uppercase tracking-widest">Duration</p>
+                        <p className="text-xl font-bold text-[#1E293B] flex items-baseline gap-1">{service.duration} <span className="text-[10px] font-normal text-[#94A3B8] uppercase">min</span></p>
+                      </div>
+                      <div className="space-y-1 text-right">
+                        <p className="text-[#94A3B8] text-[9px] font-bold uppercase tracking-widest">Investment</p>
+                        <p className="text-2xl font-serif font-bold text-[#E8734A]">₱{parseFloat(service.price).toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    <button onClick={() => handleBookNow(service.id)} className="w-full bg-gradient-to-r from-[#1E293B] to-[#334155] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all duration-500 flex items-center justify-center gap-3 group/btn">
+                      Request This Package
+                      <span className="transition-transform duration-300 group-hover/btn:translate-x-2">→</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {!loading && services.length === 0 && (
-            <div className="text-center py-16 bg-slate-50 rounded-2xl border border-slate-200">
-              <p className="text-slate-700 text-lg mb-6 font-medium">No services available at the moment.</p>
-              <button 
-                onClick={fetchServices}
-                className="inline-block px-8 py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition uppercase tracking-wider text-sm"
-              >
-                Refresh Page
-              </button>
+            <div className="text-center py-24 bg-white rounded-[2rem] border border-dashed border-[#E2E8F0] shadow-card">
+              <p className="text-[#64748B] mb-8 font-serif italic text-lg">No packages available at the moment.</p>
+              <button onClick={fetchServices} className="bg-[#1E293B] text-white px-10 py-4 rounded-2xl font-bold uppercase tracking-widest hover:shadow-xl transition shadow-lg text-[11px]">Refresh Collection</button>
             </div>
           )}
         </div>

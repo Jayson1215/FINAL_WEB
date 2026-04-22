@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Register() {
@@ -14,37 +14,24 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
     if (formData.password !== formData.passwordConfirmation) {
       setError('Passwords do not match');
       return;
     }
-
     setLoading(true);
-
     try {
-      const user = await register(
-        formData.name,
-        formData.email,
-        formData.password,
-        formData.passwordConfirmation,
-        formData.role
-      );
-      
+      const user = await register(formData.name, formData.email, formData.password, formData.passwordConfirmation, formData.role);
       const hasBookingIntent = localStorage.getItem('bookingIntent');
       if (hasBookingIntent) {
         navigate('/login?redirect=booking&email=' + encodeURIComponent(formData.email));
       } else {
-        navigate(user.role === 'admin' ? '/admin/dashboard' : '/client/dashboard');
+        navigate(user.role === 'admin' ? '/admin/dashboard' : '/');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
@@ -54,130 +41,137 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F9F9F9] px-6 py-20 selection:bg-[#C79F68] selection:text-white">
-      
-      <div className="w-full max-w-[480px] animate-fadeIn">
-        {/* Navigation Branding - Integrated for better flow */}
-        <div className="text-center mb-10">
-          <Link to="/" className="text-3xl font-serif text-[#333] tracking-[0.25em] hover:text-[#C79F68] transition-colors duration-500">L I G H T</Link>
-        </div>
+    <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center p-6 selection:bg-[#E8734A] selection:text-white relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#6366F1]/5 blur-3xl"></div>
+      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#E8734A]/5 blur-3xl"></div>
 
-        <div className="bg-white p-10 md:p-12 shadow-premium border border-[#EEEEEE]">
-          <div className="text-center mb-10">
-            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68] mb-3">Join the Studio</p>
-            <h2 className="text-3xl font-serif text-[#333] leading-tight">Create Account</h2>
-            <div className="w-12 h-px bg-[#C79F68] mx-auto mt-6 opacity-30"></div>
+      <div className="relative w-full max-w-5xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-[#F1F5F9] grid grid-cols-1 lg:grid-cols-2">
+        
+        {/* Visual Sidebar */}
+        <aside className="hidden lg:flex flex-col justify-between p-16 bg-[#1E293B] text-white relative overflow-hidden order-last">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tl from-[#1E293B] to-[#334155]"></div>
+          <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-[#E8734A]/10 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10 text-right">
+            <Link to="/" className="text-4xl font-serif tracking-[0.25em] hover:text-[#E8734A] transition-all duration-500">LIGHT</Link>
+            <div className="mt-20 space-y-6">
+              <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Join Our Community</p>
+              <h1 className="text-5xl font-serif leading-[1.2]">A Legacy in Every Frame.</h1>
+              <p className="text-[#94A3B8] text-sm leading-relaxed max-w-xs font-medium ml-auto">
+                Create your account to start your journey with LIGHT. Reserve signature sessions and manage your visual assets seamlessly.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative z-10 pt-10 flex justify-end">
+             <div className="flex items-center gap-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">Excellence captured daily</p>
+                <div className="w-12 h-px bg-[#E8734A]"></div>
+             </div>
+          </div>
+        </aside>
+
+        {/* Form Section */}
+        <section className="p-8 md:p-16 flex flex-col justify-center bg-white">
+          <div className="lg:hidden text-center mb-10">
+            <Link to="/" className="text-4xl font-serif text-[#1E293B] tracking-[0.25em] hover:text-[#E8734A] transition-colors">LIGHT</Link>
+          </div>
+
+          <div className="mb-10">
+            <h2 className="text-4xl font-serif text-[#1E293B] mb-2 tracking-tight">Create Account</h2>
+            <p className="text-sm text-[#94A3B8] font-medium">Become a member of our exclusive photography community.</p>
           </div>
 
           {error && (
-            <div className="mb-8 p-4 bg-red-50 border-l-2 border-red-200 text-center">
+            <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-center">
               <p className="text-[10px] text-red-600 font-bold uppercase tracking-widest">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-7">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Full Name</label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#1E293B] flex items-center gap-2">
+                <span className="w-1 h-1 bg-[#E8734A] rounded-full"></span> Full Name
+              </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full bg-transparent border-b border-[#EEEEEE] py-3 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
-                placeholder="Your Name"
+                className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-2xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all duration-500 placeholder:text-[#94A3B8]"
+                placeholder="John Doe"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Email Address</label>
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#1E293B] flex items-center gap-2">
+                <span className="w-1 h-1 bg-[#E8734A] rounded-full"></span> Email Address
+              </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full bg-transparent border-b border-[#EEEEEE] py-3 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
+                className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-2xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all duration-500 placeholder:text-[#94A3B8]"
                 placeholder="email@example.com"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        className="w-full bg-transparent border-b border-[#EEEEEE] py-3 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
-                        placeholder="••••••••"
-                    />
-                </div>
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA]">Confirm</label>
-                    <input
-                        type="password"
-                        name="passwordConfirmation"
-                        value={formData.passwordConfirmation}
-                        onChange={handleChange}
-                        required
-                        className="w-full bg-transparent border-b border-[#EEEEEE] py-3 text-sm focus:border-[#C79F68] outline-none transition-all duration-500 placeholder:text-[#DDD]"
-                        placeholder="••••••••"
-                    />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#1E293B] flex items-center gap-2">
+                  <span className="w-1 h-1 bg-[#E8734A] rounded-full"></span> Password
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-2xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all duration-500 placeholder:text-[#94A3B8]"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#1E293B] flex items-center gap-2">
+                  <span className="w-1 h-1 bg-[#E8734A] rounded-full"></span> Confirm
+                </label>
+                <input
+                  type="password"
+                  name="passwordConfirmation"
+                  value={formData.passwordConfirmation}
+                  onChange={handleChange}
+                  required
+                  className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-2xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all duration-500 placeholder:text-[#94A3B8]"
+                  placeholder="••••••••"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#1A1A1A] text-white py-5 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#C79F68] transition-all duration-700 disabled:opacity-50 shadow-sm mt-4 active:scale-[0.98]"
+              className="w-full bg-gradient-to-r from-[#1E293B] to-[#334155] text-white py-5 rounded-2xl text-[11px] font-bold uppercase tracking-[0.3em] hover:shadow-2xl hover:translate-y-[-2px] transition-all duration-500 disabled:opacity-50 shadow-lg mt-4"
             >
-              {loading ? 'Creating Account...' : 'Join the Studio'}
+              {loading ? (
+                 <div className="flex items-center justify-center gap-2">
+                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                   <span>Creating Account...</span>
+                 </div>
+              ) : 'Start Your Journey'}
             </button>
           </form>
 
-          <div className="mt-8">
-            <div className="relative flex items-center justify-center mb-8">
-              <div className="absolute inset-0 flex items-center px-2">
-                <div className="w-full h-px bg-[#EEEEEE]"></div>
-              </div>
-              <span className="relative px-4 bg-white text-[9px] font-bold uppercase tracking-[0.3em] text-[#CCC]">Or join via</span>
-            </div>
-
-            <div className="space-y-4">
-              <button
-                onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/auth/google/redirect`}
-                className="w-full flex items-center justify-center gap-3 border border-[#EEEEEE] py-4 hover:bg-[#F9F9F9] transition-all duration-500 group"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#333] group-hover:text-[#C79F68] transition-colors">Join with Google</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-10 pt-8 border-t border-[#F5F5F5] text-center">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#AAA] mb-5">Already a member?</p>
-            <Link
-              to="/login"
-              className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#333] pb-1 hover:text-[#C79F68] hover:border-[#C79F68] transition-all duration-500"
-            >
-              Back to Login
+          <div className="mt-12 text-center border-t border-[#F1F5F9] pt-8">
+            <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#94A3B8] mb-4">Already a member?</p>
+            <Link to="/login" className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#1E293B] border-b-2 border-[#E8734A] pb-1 hover:text-[#E8734A] transition-all duration-500">
+              Sign In to Account
             </Link>
           </div>
-        </div>
-        
-        <div className="mt-10 text-center">
-            <Link to="/" className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#AAA] hover:text-[#333] transition-all duration-500">
-                ← Back to Home
-            </Link>
-        </div>
+        </section>
       </div>
     </div>
   );

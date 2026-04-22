@@ -7,184 +7,130 @@ export default function BookingManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-      const response = await bookingService.getAllBookings();
-      setBookings(response.data);
-    } catch (err) {
-      setError('Failed to load bookings');
-      console.error(err);
-    } finally {
-      setLoading(false);
+  useEffect(() => { fetchBookings(); }, []);
+  const fetchBookings = async () => { try { setLoading(true); const r = await bookingService.getAllBookings(); setBookings(r.data); } catch(e){ setError('Failed to load bookings'); } finally { setLoading(false); } };
+  const handleStatusChange = async (id, s) => { try { setBookings(bookings.map(b=>b.id===id?{...b,status:s}:b)); await bookingService.updateBookingStatus(id,s); } catch(e){ setError('Failed to update status'); } };
+  
+  const getStatusStyle = (s) => {
+    switch(s) {
+      case 'finished': return 'bg-[#F1F5F9] text-[#64748B]';
+      case 'paid': return 'bg-[#ECFDF5] text-[#10B981]';
+      case 'approved': return 'bg-[#F0F9FF] text-[#0EA5E9]';
+      case 'awaiting_payment': return 'bg-[#FFF7ED] text-[#EA580C]';
+      case 'confirmed': return 'bg-[#ECFDF5] text-[#10B981]';
+      case 'rejected': return 'bg-[#FEF2F2] text-[#EF4444]';
+      case 'cancelled': return 'bg-[#FEF2F2] text-[#EF4444]';
+      default: return 'bg-[#FFFBEB] text-[#F59E0B]';
     }
   };
 
-  const handleStatusChange = async (bookingId, newStatus) => {
-    try {
-      const previousBookings = [...bookings];
-      setBookings(bookings.map(b => 
-        b.id === bookingId ? { ...b, status: newStatus } : b
-      ));
-      
-      await bookingService.updateBookingStatus(bookingId, newStatus);
-    } catch (err) {
-      setError('Failed to update booking status');
-    }
-  };
-
-  const handleProcessRefund = async (bookingId) => {
-    if (!window.confirm('Confirm refund processing? This will mark the transaction as refunded in the system.')) return;
-    
-    try {
-      await bookingService.processRefund(bookingId);
-      setBookings(bookings.map(b => 
-        b.id === bookingId ? { ...b, refund_status: 'refunded' } : b
-      ));
-    } catch (err) {
-      setError('Failed to process refund');
-    }
-  };
-
-  const getStatusStyle = (status) => {
-    switch(status) {
-      case 'finished': return 'text-slate-500 border-slate-500/20 bg-slate-50';
-      case 'confirmed': return 'text-emerald-600 border-emerald-600/20 bg-emerald-50';
-      case 'cancelled': return 'text-red-500 border-red-500/20 bg-red-50';
-      default: return 'text-amber-500 border-amber-500/20 bg-amber-50';
-    }
-  };
-
-  if (loading && bookings.length === 0) {
-    return (
-      <AdminLayout title="Manage Bookings">
-        <div className="flex justify-center items-center h-96">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-slate-600 font-medium">Loading bookings...</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  if(loading&&bookings.length===0) return (<AdminLayout title="Manage Requests"><div className="flex justify-center items-center h-96"><div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto"></div></div></AdminLayout>);
 
   return (
-    <AdminLayout title="Studio Log">
-      {error && (
-        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">Notice</p>
-          <p className="text-sm text-red-800 font-serif italic">{error}</p>
-        </div>
-      )}
-
-      <div className="space-y-16 animate-fadeIn">
-        {/* Editorial Header */}
-        <div className="border-b border-[#EEEEEE] pb-10">
-          <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">Client Sessions</h2>
-          <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Orchestrating the schedule and fulfillment of studio reservations.</p>
+    <AdminLayout title="Booking Requests">
+      {error && <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">{error}</div>}
+      <div className="space-y-8 animate-fadeIn">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div><h2 className="text-2xl font-bold text-[#1E293B] mb-1">On-Call Requests</h2><p className="text-sm text-[#94A3B8]">Review and manage incoming photography service requests.</p></div>
+          <div className="flex gap-3">
+             <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-[#F1F5F9] shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#EA580C]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#64748B]">New Workflow Active</span>
+             </div>
+          </div>
         </div>
 
-        {/* Bookings Table - Runway Style */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-separate border-spacing-0">
-            <thead>
-              <tr>
-                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Patron</th>
-                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Schedule</th>
-                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Investment</th>
-                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Accounting</th>
-                <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A] text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F5F5F5]">
-              {bookings.length > 0 ? (
-                bookings.map((booking) => (
-                  <tr key={booking.id} className="group hover:bg-[#FAFAFA] transition-all duration-500">
-                    <td className="py-8">
-                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 border border-[#EEEEEE] flex items-center justify-center text-[#999] text-xs font-serif group-hover:border-[#C79F68] group-hover:text-[#C79F68] transition-all duration-700">
-                          {booking.user?.name?.charAt(0).toUpperCase()}
-                        </div>
+        <div className="bg-white rounded-3xl shadow-card border border-[#F1F5F9] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-[#F8F9FB] border-b border-[#F1F5F9]">
+                <tr>
+                  {['Client','Schedule','Location','Investment','Status & Action'].map(h=>(
+                    <th key={h} className={`px-6 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#94A3B8] ${h.includes('Status')?'text-right':''}`}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F8F9FB]">
+                {bookings.length>0 ? bookings.map(b=>(
+                  <tr key={b.id} className="hover:bg-[#FAFBFC] transition-colors group">
+                    <td className="px-6 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#1E293B] to-[#334155] flex items-center justify-center text-white text-base font-serif shadow-sm">{b.user?.name?.charAt(0).toUpperCase()}</div>
                         <div>
-                          <p className="text-sm font-serif text-[#1A1A1A] mb-1">{booking.user?.name || 'Guest'}</p>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C79F68]">{booking.service?.name}</p>
+                          <p className="text-sm font-bold text-[#1E293B]">{b.user?.name||'Guest User'}</p>
+                          <p className="text-[10px] text-[#E8734A] font-bold uppercase tracking-[0.1em]">{b.service?.name}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-8">
-                      <div className="text-[10px] text-[#777] font-medium tracking-widest">
-                        {new Date(booking.booking_date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        <span className="block mt-1 font-bold text-[#1A1A1A]">{booking.booking_time || 'TBD'}</span>
-                      </div>
+                    <td className="px-6 py-6">
+                      <p className="text-sm font-bold text-[#1E293B]">{new Date(b.booking_date).toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'})}</p>
+                      <p className="text-[11px] text-[#94A3B8] font-medium tracking-widest uppercase">{b.booking_time||'TBD'}</p>
                     </td>
-                    <td className="py-8">
-                      <div className="space-y-1">
-                          <p className="font-serif text-sm text-[#1A1A1A]">₱{parseFloat(booking.total_amount).toLocaleString()}</p>
-                          <div className="flex items-center gap-2">
-                              <span className="text-[8px] font-bold uppercase tracking-widest text-[#AAA]">Paid: ₱{parseFloat(booking.paid_amount || 0).toLocaleString()}</span>
-                          </div>
-                      </div>
+                    <td className="px-6 py-6">
+                       <p className="text-xs text-[#64748B] max-w-[150px] truncate leading-relaxed" title={b.location}>📍 {b.location || 'Not Specified'}</p>
                     </td>
-                    <td className="py-8">
-                      {booking.status === 'cancelled' ? (
-                        <div className="space-y-2">
-                             <span className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1 border ${
-                                 booking.refund_status === 'refunded' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
-                             }`}>
-                                 {booking.refund_status === 'requested' ? 'Refund Due' : booking.refund_status}
-                             </span>
-                             {booking.refund_status === 'requested' && (
-                                <button 
-                                    onClick={() => handleProcessRefund(booking.id)}
-                                    className="block text-[8px] font-bold uppercase tracking-widest text-[#333] border-b border-[#333] hover:text-[#C79F68] transition"
-                                >
-                                    Fulfill Refund
-                                </button>
-                             )}
-                        </div>
-                      ) : (
-                        <span className="text-[8px] font-bold uppercase tracking-widest text-[#BBB]">Internal Records</span>
-                      )}
+                    <td className="px-6 py-6">
+                      <p className="text-base font-bold text-[#1E293B]">₱{parseFloat(b.total_amount).toLocaleString()}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">Paid: <span className={b.status === 'paid' ? 'text-emerald-500' : ''}>₱{parseFloat(b.paid_amount||0).toLocaleString()}</span></p>
                     </td>
-                    <td className="py-8 text-right">
+                    <td className="px-6 py-6 text-right">
                       <div className="flex flex-col items-end gap-3">
-                        <select
-                            value={booking.status}
-                            onChange={(e) => handleStatusChange(booking.id, e.target.value)}
-                            className={`text-[9px] font-bold uppercase tracking-[0.3em] px-4 py-2 border bg-transparent cursor-pointer transition-all duration-500 outline-none ${getStatusStyle(booking.status)}`}
-                        >
+                        <div className="flex items-center gap-2">
+                           {b.status === 'pending' && (
+                              <button 
+                                onClick={() => handleStatusChange(b.id, 'approved')}
+                                className="bg-[#E0F2FE] text-[#0369A1] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#0EA5E9] hover:text-white transition-all shadow-sm"
+                              >
+                                Confirm Availability
+                              </button>
+                           )}
+                           {b.status === 'approved' && (
+                              <button 
+                                onClick={() => handleStatusChange(b.id, 'awaiting_payment')}
+                                className="bg-[#FFEDD5] text-[#9A3412] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#EA580C] hover:text-white transition-all shadow-sm"
+                              >
+                                Request Payment
+                              </button>
+                           )}
+                            {b.status === 'awaiting_payment' && (
+                              <button 
+                                onClick={() => handleStatusChange(b.id, 'paid')}
+                                className="bg-[#DCFCE7] text-[#15803D] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#10B981] hover:text-white transition-all shadow-sm"
+                              >
+                                Confirm Payment
+                              </button>
+                           )}
+                           <select value={b.status} onChange={(e)=>handleStatusChange(b.id,e.target.value)}
+                            className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg cursor-pointer outline-none transition-all shadow-sm border border-transparent focus:border-[#E8734A] ${getStatusStyle(b.status)}`}>
                             <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="awaiting_payment">Wait Payment</option>
+                            <option value="paid">Paid</option>
                             <option value="confirmed">Confirmed</option>
+                            <option value="rejected">Rejected</option>
                             <option value="finished">Finished</option>
                             <option value="cancelled">Cancelled</option>
-                        </select>
-                        
-                        {booking.status === 'cancelled' && booking.cancellation_reason && (
-                            <div className="group/note relative">
-                                <span className="text-[8px] font-bold uppercase tracking-widest text-[#AAA] cursor-help border-b border-dashed border-[#AAA]">View Reason</span>
-                                <div className="absolute right-0 bottom-full mb-4 w-64 p-6 bg-white border border-[#EEEEEE] shadow-premium opacity-0 group-hover/note:opacity-100 transition-opacity z-50 pointer-events-none">
-                                    <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-[#C79F68] mb-3">Client Testimony</p>
-                                    <p className="text-[10px] text-[#777] italic leading-relaxed">"{booking.cancellation_reason}"</p>
-                                </div>
-                            </div>
+                          </select>
+                        </div>
+                        {b.special_requests && (
+                           <div className="group/note relative">
+                             <span className="text-[9px] font-bold uppercase tracking-widest text-[#94A3B8] cursor-help border-b border-dashed border-[#94A3B8] hover:text-[#E8734A] transition-colors">View Client Brief</span>
+                             <div className="absolute right-0 bottom-full mb-3 w-64 p-6 bg-[#1E293B] text-white shadow-2xl rounded-[1.5rem] opacity-0 group-hover/note:opacity-100 transition-all duration-500 z-50 pointer-events-none scale-95 group-hover/note:scale-100">
+                               <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#E8734A] mb-3">Service Inquiries</p>
+                               <p className="text-xs italic leading-relaxed text-[#CBD5E1]">"{b.special_requests}"</p>
+                             </div>
+                           </div>
                         )}
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="py-24 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">No sessions currently curated</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )) : (<tr><td colSpan="5" className="py-24 text-center">
+                    <div className="opacity-20 text-5xl mb-4">📸</div>
+                    <p className="text-sm font-serif italic text-[#94A3B8]">No sessions scheduled in the registry.</p>
+                </td></tr>)}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </AdminLayout>

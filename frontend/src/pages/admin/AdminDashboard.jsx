@@ -9,222 +9,110 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  useEffect(() => { fetchDashboardData(); }, []);
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
-      setError('');
-      
-      const [statsResponse, bookingsResponse] = await Promise.allSettled([
-        paymentService.getReports(),
-        bookingService.getAllBookings(),
-      ]);
-
-      if (statsResponse.status === 'fulfilled') {
-        setStats(statsResponse.value.data);
-      } else {
-        console.error('Failed to fetch reports:', statsResponse.reason);
-        setStats({
-          total_revenue: 0,
-          total_bookings: 0,
-          confirmed_bookings: 0,
-          pending_payments: 0,
-        });
-      }
-
-      if (bookingsResponse.status === 'fulfilled') {
-        setRecentBookings((bookingsResponse.value.data || []).slice(0, 8));
-      } else {
-        console.error('Failed to fetch bookings:', bookingsResponse.reason);
-        setRecentBookings([]);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load dashboard data');
-      console.error('Dashboard error:', err);
-      setStats({
-        total_revenue: 0,
-        total_bookings: 0,
-        confirmed_bookings: 0,
-        pending_payments: 0,
-      });
-      setRecentBookings([]);
-    } finally {
-      setLoading(false);
-    }
+      setLoading(true); setError('');
+      const [sr, br] = await Promise.allSettled([paymentService.getReports(), bookingService.getAllBookings()]);
+      setStats(sr.status === 'fulfilled' ? sr.value.data : { total_revenue:0, total_bookings:0, confirmed_bookings:0, pending_payments:0 });
+      setRecentBookings(br.status === 'fulfilled' ? (br.value.data || []).slice(0,8) : []);
+    } catch (err) { setError('Failed to load dashboard'); setStats({ total_revenue:0, total_bookings:0, confirmed_bookings:0, pending_payments:0 }); setRecentBookings([]); }
+    finally { setLoading(false); }
   };
 
-  if (loading) {
-    return (
-      <AdminLayout title="Dashboard">
-        <div className="flex justify-center items-center h-96">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-slate-600 font-medium">Loading your studio data...</p>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  if (loading) return (<AdminLayout title="Dashboard"><div className="flex justify-center items-center h-96"><div className="text-center"><div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto mb-4"></div><p className="text-[#64748B]">Loading studio data...</p></div></div></AdminLayout>);
+
+  const statCards = [
+    { label:'Total Revenue', value:`₱${(stats?.total_revenue||0).toLocaleString()}`, gradient:'from-[#E8734A] to-[#FB923C]', bg:'bg-[#FFF7ED]', text:'text-[#E8734A]' },
+    { label:'Total Sessions', value:stats?.total_bookings||0, gradient:'from-[#6366F1] to-[#8B5CF6]', bg:'bg-[#EEF2FF]', text:'text-[#6366F1]' },
+    { label:'Confirmed', value:stats?.confirmed_bookings||0, gradient:'from-[#10B981] to-[#34D399]', bg:'bg-[#ECFDF5]', text:'text-[#10B981]' },
+    { label:'Pending', value:stats?.pending_payments||0, gradient:'from-[#F59E0B] to-[#FBBF24]', bg:'bg-[#FFFBEB]', text:'text-[#F59E0B]' },
+  ];
 
   return (
     <AdminLayout title="Studio Overview">
-      {error && (
-        <div className="mb-10 p-6 bg-red-50 border-l-2 border-red-200">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-red-600 mb-2">System Notice</p>
-          <p className="text-sm text-red-800 font-serif italic">{error}</p>
-          <button
-            onClick={fetchDashboardData}
-            className="mt-4 text-[10px] font-bold uppercase tracking-widest text-red-600 border-b border-red-600 pb-0.5 hover:opacity-70 transition"
-          >
-            Retry Connection
-          </button>
-        </div>
-      )}
-
-      <div className="space-y-16 animate-fadeIn">
-        {/* Editorial Welcome Section */}
-        <div className="relative py-12 px-2 border-b border-[#EEEEEE]">
-          <span className="absolute -top-4 left-0 text-[80px] font-serif text-[#F0F0F0] select-none opacity-50 z-0">Overview</span>
+      {error && (<div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl"><p className="text-xs font-semibold text-red-600 mb-1">Error</p><p className="text-sm text-red-500">{error}</p><button onClick={fetchDashboardData} className="mt-2 text-xs font-semibold text-red-600 underline">Retry</button></div>)}
+      <div className="space-y-8 animate-fadeIn">
+        {/* Welcome */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#1E293B] to-[#334155] rounded-2xl p-8 md:p-10 shadow-lg">
+          <div className="absolute top-[-50px] right-[-30px] w-[200px] h-[200px] bg-[#E8734A]/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-[-50px] left-[-30px] w-[180px] h-[180px] bg-[#6366F1]/15 rounded-full blur-3xl"></div>
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-5xl font-serif text-[#1A1A1A] leading-tight mb-4">Good day, Studio Manager.</h2>
-            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#C79F68]">Curating your studio's performance and bookings.</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#E8734A] mb-2">Welcome Back</p>
+            <h2 className="text-3xl font-serif text-white leading-tight mb-2">Good day, Studio Manager.</h2>
+            <p className="text-sm text-white/60">Here's what's happening with your studio today.</p>
           </div>
         </div>
 
-        {/* Premium Stats Grid - Balanced and Precise */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border border-[#EEEEEE] divide-y md:divide-y-0 md:divide-x divide-[#EEEEEE]">
-          {/* Revenue Card */}
-          <div className="bg-white p-10 group hover:bg-[#F9F9F9] transition-all duration-700">
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8">Total Revenue</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-[15px] text-[#C79F68] font-serif">₱</span>
-              <span className="text-4xl font-serif text-[#1A1A1A]">{(stats?.total_revenue || 0).toLocaleString()}</span>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {statCards.map((s,i) => (
+            <div key={i} className="bg-white rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#F1F5F9] group">
+              <div className="flex items-center justify-between mb-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8]">{s.label}</p>
+                <div className={`w-8 h-8 ${s.bg} rounded-lg flex items-center justify-center`}>
+                  <div className={`w-2.5 h-2.5 rounded-full bg-gradient-to-r ${s.gradient}`}></div>
+                </div>
+              </div>
+              <span className={`text-3xl font-bold ${s.text}`}>{s.value}</span>
+              <div className={`w-full h-1 ${s.bg} rounded-full mt-4`}>
+                <div className={`h-1 rounded-full bg-gradient-to-r ${s.gradient} w-3/4 group-hover:w-full transition-all duration-700`}></div>
+              </div>
             </div>
-            <div className="w-6 h-px bg-[#C79F68] mt-6 transition-all duration-700 group-hover:w-12"></div>
-          </div>
-
-          {/* Bookings Card */}
-          <div className="bg-white p-10 group hover:bg-[#F9F9F9] transition-all duration-700">
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8">Total Sessions</p>
-            <span className="text-4xl font-serif text-[#1A1A1A]">{stats?.total_bookings || 0}</span>
-            <div className="w-6 h-px bg-[#C79F68] mt-6 transition-all duration-700 group-hover:w-12"></div>
-          </div>
-
-          {/* Confirmed Card */}
-          <div className="bg-white p-10 group hover:bg-[#F9F9F9] transition-all duration-700">
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8">Confirmed</p>
-            <span className="text-4xl font-serif text-[#1A1A1A]">{stats?.confirmed_bookings || 0}</span>
-            <div className="w-6 h-px bg-[#C79F68] mt-6 transition-all duration-700 group-hover:w-12"></div>
-          </div>
-
-          {/* Pending Card */}
-          <div className="bg-white p-10 group hover:bg-[#F9F9F9] transition-all duration-700">
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mb-8">Pending</p>
-            <span className="text-4xl font-serif text-[#1A1A1A]">{stats?.pending_payments || 0}</span>
-            <div className="w-6 h-px bg-[#C79F68] mt-6 transition-all duration-700 group-hover:w-12"></div>
-          </div>
+          ))}
         </div>
 
-        {/* Recent Activity - Runway Style Table */}
-        <div className="space-y-8">
-          <div className="flex items-center justify-between border-b border-[#EEEEEE] pb-6">
+        {/* Recent Activity */}
+        <div className="bg-white rounded-2xl shadow-card border border-[#F1F5F9] overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[#F1F5F9]">
             <div>
-              <h3 className="text-2xl font-serif text-[#1A1A1A]">Recent Activity</h3>
-              <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA] mt-2">The latest studio reservations</p>
+              <h3 className="text-lg font-bold text-[#1E293B]">Recent Activity</h3>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8] mt-0.5">Latest reservations</p>
             </div>
-            <button className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#C79F68] border-b border-[#C79F68] pb-1 hover:opacity-70 transition">View All Bookings</button>
           </div>
-
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-separate border-spacing-0">
-              <thead>
+            <table className="w-full text-left">
+              <thead className="bg-[#F8F9FB]">
                 <tr>
-                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Client</th>
-                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Service</th>
-                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Schedule</th>
-                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A]">Investment</th>
-                  <th className="pb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-[#333] border-b border-[#1A1A1A] text-right">Status</th>
+                  {['Client','Service','Schedule','Amount','Status'].map(h => (
+                    <th key={h} className={`px-6 py-3.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8] ${h==='Status'?'text-right':''}`}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F5F5F5]">
-                {recentBookings.length > 0 ? (
-                  recentBookings.map((booking) => (
-                    <tr key={booking.id} className="group hover:bg-[#FAFAFA] transition-all duration-500">
-                      <td className="py-8">
-                        <div>
-                          <p className="text-sm font-serif text-[#1A1A1A] mb-1">{booking.user?.name || 'Guest'}</p>
-                          <p className="text-[10px] text-[#AAA] tracking-widest">{booking.user?.email || 'N/A'}</p>
-                        </div>
-                      </td>
-                      <td className="py-8">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#777] group-hover:text-[#1A1A1A] transition-colors">{booking.service?.name || 'Custom Session'}</span>
-                      </td>
-                      <td className="py-8">
-                        <div className="text-[10px] text-[#777] font-medium tracking-widest">
-                          {new Date(booking.booking_date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
-                          <span className="mx-2 opacity-30">|</span>
-                          {booking.booking_time || 'TBD'}
-                        </div>
-                      </td>
-                      <td className="py-8 font-serif text-sm text-[#1A1A1A]">
-                        ₱{(booking.total_amount || 0).toLocaleString()}
-                      </td>
-                      <td className="py-8 text-right">
-                        <span className={`text-[8px] font-bold uppercase tracking-[0.4em] px-3 py-1.5 border ${
-                          booking.status === 'finished'
-                            ? 'bg-slate-50 text-slate-500 border-slate-100'
-                            : booking.status === 'confirmed'
-                            ? 'bg-[#F0FDF4] text-[#166534] border-[#DCFCE7]'
-                            : booking.status === 'pending'
-                            ? 'bg-[#FFFBEB] text-[#92400E] border-[#FEF3C7]'
-                            : 'bg-[#FEF2F2] text-[#991B1B] border-[#FEE2E2]'
-                        }`}>
-                          {booking.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="py-20 text-center">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#BBB]">No active curation found</p>
+              <tbody>
+                {recentBookings.length > 0 ? recentBookings.map((b) => (
+                  <tr key={b.id} className="border-b border-[#F8F9FB] hover:bg-[#FAFBFC] transition-colors">
+                    <td className="px-6 py-4"><p className="text-sm font-semibold text-[#1E293B]">{b.user?.name||'Guest'}</p><p className="text-[10px] text-[#94A3B8]">{b.user?.email||'N/A'}</p></td>
+                    <td className="px-6 py-4"><span className="text-[10px] font-semibold uppercase tracking-wider text-[#6366F1] bg-[#EEF2FF] px-2.5 py-1 rounded-md">{b.service?.name||'Session'}</span></td>
+                    <td className="px-6 py-4 text-xs text-[#64748B]">{new Date(b.booking_date).toLocaleDateString('en-US',{day:'2-digit',month:'short'})} · {b.booking_time||'TBD'}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-[#1E293B]">₱{(b.total_amount||0).toLocaleString()}</td>
+                    <td className="px-6 py-4 text-right">
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg ${
+                        b.status==='finished'?'bg-[#F1F5F9] text-[#64748B]':b.status==='confirmed'?'bg-[#ECFDF5] text-[#10B981]':b.status==='pending'?'bg-[#FFFBEB] text-[#F59E0B]':'bg-[#FEF2F2] text-[#EF4444]'
+                      }`}>{b.status}</span>
                     </td>
                   </tr>
-                )}
+                )) : (<tr><td colSpan="5" className="py-12 text-center text-sm text-[#94A3B8]">No active sessions found</td></tr>)}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Footer Metrics - Sophisticated Balance */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-16 border-t border-[#EEEEEE]">
-          <div className="space-y-3">
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Studio Yield</p>
-            <p className="text-2xl font-serif text-[#1A1A1A]">
-              ₱{stats?.total_bookings > 0 ? Math.round((stats?.total_revenue || 0) / stats?.total_bookings).toLocaleString() : 0}
-              <span className="text-[10px] text-[#BBB] uppercase tracking-widest font-sans ml-3">/ avg</span>
-            </p>
-          </div>
-          <div className="space-y-3">
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Fulfilment</p>
-            <p className="text-2xl font-serif text-[#1A1A1A]">
-              {stats?.total_bookings > 0 ? Math.round((stats?.confirmed_bookings / stats?.total_bookings) * 100) : 0}%
-              <span className="text-[10px] text-[#BBB] uppercase tracking-widest font-sans ml-3">efficiency</span>
-            </p>
-          </div>
-          <div className="space-y-3">
-            <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#AAA]">Pending Liquidity</p>
-            <p className="text-2xl font-serif text-[#1A1A1A]">
-              ₱{((stats?.total_bookings - stats?.confirmed_bookings) * 250 || 0).toLocaleString()}
-              <span className="text-[10px] text-[#BBB] uppercase tracking-widest font-sans ml-3">projected</span>
-            </p>
-          </div>
+        {/* Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            {label:'Studio Yield', val:`₱${stats?.total_bookings>0?Math.round((stats?.total_revenue||0)/stats.total_bookings).toLocaleString():0}`, sub:'/ avg'},
+            {label:'Fulfilment', val:`${stats?.total_bookings>0?Math.round((stats.confirmed_bookings/stats.total_bookings)*100):0}%`, sub:'rate'},
+            {label:'Pending Value', val:`₱${((stats?.total_bookings-stats?.confirmed_bookings)*250||0).toLocaleString()}`, sub:'projected'},
+          ].map((m,i)=>(
+            <div key={i} className="bg-white rounded-2xl p-6 shadow-card border border-[#F1F5F9]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#94A3B8] mb-2">{m.label}</p>
+              <p className="text-2xl font-bold text-[#1E293B]">{m.val} <span className="text-xs text-[#94A3B8] font-normal">{m.sub}</span></p>
+            </div>
+          ))}
         </div>
       </div>
     </AdminLayout>
   );
 }
-

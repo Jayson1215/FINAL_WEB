@@ -10,233 +10,89 @@ export default function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
+  useEffect(() => { fetchDashboardData(); }, []);
   const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      let bookingsResponse, statsResponse;
-      
-      try {
-        bookingsResponse = await bookingService.getMyBookings();
-        setBookings(bookingsResponse.data);
-      } catch (err) {
-        console.error('Failed to fetch bookings:', err);
-        setBookings([]);
-      }
-
-      try {
-        statsResponse = await paymentService.getReports();
-        setStats(statsResponse.data);
-      } catch (err) {
-        console.error('Failed to fetch stats:', err);
-        setStats(null);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load dashboard data. Please refresh the page.');
-      console.error('Dashboard error:', err);
-    } finally {
-      setLoading(false);
-    }
+    try { setLoading(true); setError('');
+      try { const r = await bookingService.getMyBookings(); setBookings(r.data); } catch(e){ setBookings([]); }
+      try { const r = await paymentService.getReports(); setStats(r.data); } catch(e){ setStats(null); }
+    } catch(e){ setError('Failed to load dashboard'); } finally { setLoading(false); }
   };
 
-  const upcomingBookings = bookings.filter(b => new Date(b.booking_date) > new Date());
-  const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
-  const pendingBookings = bookings.filter(b => b.status === 'pending').length;
+  const confirmedBookingsCount = bookings.filter(b=>b.status==='confirmed').length;
+  const pendingBookingsCount = bookings.filter(b=>b.status==='pending').length;
 
   return (
     <ClientLayout title="Dashboard">
-      {error && (
-        <div className="bg-red-100 border-2 border-red-300 text-red-700 p-4 rounded-lg mb-6 shadow-sm">
-          <p className="font-semibold">⚠️ Error Loading Dashboard</p>
-          <p className="text-sm mt-1">{error}</p>
-          <button
-            onClick={fetchDashboardData}
-            className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
-          >
-            Try Again
-          </button>
-        </div>
-      )}
+      {error && (<div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600"><p className="font-semibold mb-1">Error</p><p>{error}</p><button onClick={fetchDashboardData} className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-semibold">Try Again</button></div>)}
 
       {loading ? (
-        <div className="flex justify-center items-center h-96">
-          <div className="text-gray-700 text-lg">Loading your studio...</div>
-        </div>
+        <div className="flex justify-center items-center h-96"><div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto"></div></div>
       ) : (
-        <div className="space-y-12">
-          {/* Elegant Header */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-12 shadow-xl">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500 opacity-5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        <div className="space-y-8 animate-fadeIn">
+          {/* Welcome Banner */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-[#1E293B] to-[#334155] rounded-2xl p-10 shadow-lg">
+            <div className="absolute top-[-50px] right-[-30px] w-[200px] h-[200px] bg-[#E8734A]/20 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-[-50px] left-[-30px] w-[180px] h-[180px] bg-[#6366F1]/15 rounded-full blur-3xl"></div>
             <div className="relative z-10">
-              <p className="text-emerald-400 text-sm font-semibold uppercase tracking-widest mb-2">Welcome Back</p>
-              <h1 className="text-6xl font-display font-bold text-white mb-3">Your Studio Dashboard</h1>
-              <p className="text-slate-300 text-lg">Manage your photography sessions with elegance</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#E8734A] mb-2">Welcome Back</p>
+              <h1 className="text-3xl md:text-4xl font-serif text-white mb-2">Your Photography Dashboard</h1>
+              <p className="text-sm text-white/60">Manage your on-call service requests with elegance</p>
             </div>
           </div>
 
-          {/* Elegant Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Total Bookings */}
-            <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-blue-100 rounded-xl group-hover:bg-blue-200 transition">
-                    <span className="text-2xl">📸</span>
-                  </div>
-                  <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider">Total Sessions</p>
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              { label:'Total Requests', value:bookings.length, icon:'📸', gradient:'from-[#6366F1] to-[#818CF8]', bg:'bg-[#EEF2FF]', color:'text-[#6366F1]' },
+              { label:'Approved', value:confirmedBookingsCount, icon:'✓', gradient:'from-[#10B981] to-[#34D399]', bg:'bg-[#ECFDF5]', color:'text-[#10B981]' },
+              { label:'Pending', value:pendingBookingsCount, icon:'⏳', gradient:'from-[#F59E0B] to-[#FBBF24]', bg:'bg-[#FFFBEB]', color:'text-[#F59E0B]' },
+            ].map((s,i)=>(
+              <div key={i} className="bg-white rounded-2xl p-7 shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#F1F5F9] group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center text-lg`}>{s.icon}</div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8]">{s.label}</p>
                 </div>
-                <p className="text-5xl font-display font-bold text-slate-900 mb-3">{bookings.length}</p>
-                <div className="h-1.5 w-16 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"></div>
+                <p className={`text-4xl font-bold ${s.color} mb-2`}>{s.value}</p>
+                <div className={`w-full h-1 bg-[#F0F2F5] rounded-full`}><div className={`h-1 rounded-full bg-gradient-to-r ${s.gradient} w-3/4 group-hover:w-full transition-all duration-700`}></div></div>
               </div>
-            </div>
-
-            {/* Confirmed */}
-            <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-100 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-emerald-100 rounded-xl group-hover:bg-emerald-200 transition">
-                    <span className="text-2xl">✓</span>
-                  </div>
-                  <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider">Confirmed</p>
-                </div>
-                <p className="text-5xl font-display font-bold text-emerald-700 mb-3">{confirmedBookings}</p>
-                <div className="h-1.5 w-16 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"></div>
-              </div>
-            </div>
-
-            {/* Pending */}
-            <div className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 bg-amber-100 rounded-xl group-hover:bg-amber-200 transition">
-                    <span className="text-2xl">⏳</span>
-                  </div>
-                  <p className="text-slate-600 text-xs font-semibold uppercase tracking-wider">Pending</p>
-                </div>
-                <p className="text-5xl font-display font-bold text-amber-700 mb-3">{pendingBookings}</p>
-                <div className="h-1.5 w-16 bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"></div>
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* Elegant Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Link to="/client/services" className="group">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-1 shadow-lg hover:shadow-xl transition-all duration-300">
-                <button className="w-full relative z-10 bg-white text-slate-900 py-5 px-8 rounded-xl font-display font-bold uppercase tracking-widest group-hover:bg-slate-50 transition-all duration-300 text-sm flex items-center justify-center gap-3">
-                  <span className="text-xl">✨</span> Book New Session
-                </button>
+              <div className="bg-white rounded-2xl p-6 shadow-card hover:shadow-card-hover border border-[#F1F5F9] hover:border-[#E8734A]/30 transition-all duration-300 flex items-center gap-5">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#E8734A] to-[#FB923C] rounded-2xl flex items-center justify-center text-white text-xl shadow-md">✨</div>
+                <div><h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#E8734A] transition">Request New Package</h3><p className="text-xs text-[#94A3B8]">Browse our on-call photography packages</p></div>
               </div>
             </Link>
             <Link to="/client/portfolio" className="group">
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 p-1 shadow-lg hover:shadow-xl transition-all duration-300">
-                <button className="w-full relative z-10 bg-white text-emerald-700 py-5 px-8 rounded-xl font-display font-bold uppercase tracking-widest group-hover:bg-slate-50 transition-all duration-300 text-sm flex items-center justify-center gap-3">
-                  <span className="text-xl">🎨</span> View Portfolio
-                </button>
+              <div className="bg-white rounded-2xl p-6 shadow-card hover:shadow-card-hover border border-[#F1F5F9] hover:border-[#6366F1]/30 transition-all duration-300 flex items-center gap-5">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] rounded-2xl flex items-center justify-center text-white text-xl shadow-md">🎨</div>
+                <div><h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#6366F1] transition">View Gallery</h3><p className="text-xs text-[#94A3B8]">Explore our collection of work</p></div>
               </div>
             </Link>
           </div>
 
-          {/* Elegant Upcoming Sessions */}
-          <div>
-            <h2 className="text-3xl font-display font-bold text-slate-900 mb-8">Upcoming Sessions</h2>
-            {upcomingBookings.length > 0 ? (
-              <div className="space-y-5">
-                {upcomingBookings.slice(0, 5).map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-emerald-200 relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-50 rounded-full -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative z-10 flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="text-xl font-display font-bold text-slate-900 mb-3 group-hover:text-emerald-700 transition">
-                          {booking.service?.name}
-                        </h3>
-                        <div className="space-y-2">
-                          <p className="text-slate-700 flex items-center gap-3">
-                            <span className="text-lg">📅</span>
-                            <span className="font-medium">
-                              {new Date(booking.booking_date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              })}
-                            </span>
-                            <span className="text-emerald-600 font-semibold">{booking.booking_time}</span>
-                          </p>
-                          {booking.special_requests && (
-                            <p className="text-slate-600 text-sm flex items-center gap-3">
-                              <span>📝</span>
-                              {booking.special_requests}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <span
-                        className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap ml-4 border ${booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}
-                      >
-                        {booking.status}
+          {/* Recent */}
+          {bookings.length>0 && (
+            <div>
+              <h2 className="text-xl font-bold text-[#1E293B] mb-5">Recent Requests</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {bookings.slice(0,4).map(b=>(
+                  <div key={b.id} className="bg-white rounded-2xl p-6 shadow-card hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-300 group">
+                    <div className="flex items-start justify-between mb-4">
+                      <h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#E8734A] transition">{b.service?.name}</h3>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-lg ${b.status==='confirmed'?'bg-[#ECFDF5] text-[#10B981]':b.status==='pending'?'bg-[#FFFBEB] text-[#F59E0B]':b.status==='rejected'?'bg-[#FEF2F2] text-[#EF4444]':'bg-[#F1F5F9] text-[#64748B]'}`}>
+                        {b.status === 'confirmed' ? 'Approved' : b.status === 'rejected' ? 'Rejected' : b.status}
                       </span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 rounded-2xl bg-slate-50 border border-slate-200">
-                <p className="text-slate-700 text-lg mb-4 font-medium">No upcoming sessions scheduled</p>
-                <Link to="/client/services">
-                  <button className="inline-block px-8 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition uppercase tracking-wider text-sm mt-4">
-                    Book Your First Session
-                  </button>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Elegant Recent Sessions */}
-          {bookings.length > 0 && (
-            <div>
-              <h2 className="text-3xl font-display font-bold text-slate-900 mb-8">Recent Sessions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {bookings.slice(0, 4).map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-blue-200 relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative z-10">
-                      <div className="flex items-start justify-between mb-6">
-                        <h3 className="text-lg font-display font-bold text-slate-900 group-hover:text-blue-700 transition">
-                          {booking.service?.name}
-                        </h3>
-                        <span className="text-3xl opacity-15 group-hover:opacity-25 transition">📸</span>
-                      </div>
-                      <p className="text-slate-600 text-sm font-medium mb-4">
-                        {new Date(booking.booking_date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </p>
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                        <span className="text-2xl font-display font-bold text-slate-900">
-                          ${booking.service?.price || '0.00'}
-                        </span>
-                        <span
-                          className={`text-xs font-bold uppercase px-4 py-2 rounded-lg tracking-wider border ${booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}
-                        >
-                          {booking.status}
-                        </span>
-                      </div>
+                    <div className="space-y-2 mb-4">
+                       <p className="text-sm text-[#64748B] flex items-center gap-2"><span>📅</span>{new Date(b.booking_date).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</p>
+                       <p className="text-[11px] text-[#94A3B8] flex items-center gap-2 truncate"><span>📍</span>{b.location || 'Location Not Specified'}</p>
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-[#F1F5F9]">
+                      <span className="text-xl font-bold text-[#1E293B]">₱{parseFloat(b.total_amount||0).toLocaleString()}</span>
                     </div>
                   </div>
                 ))}

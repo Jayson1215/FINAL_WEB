@@ -5,18 +5,18 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 // Public pages
 import Landing from './pages/homepage';
 
-// Auth pages - eager load (needed before user logs in)
+// Auth pages - eager load
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import SocialCallback from './pages/auth/SocialCallback';
 
 // Client pages - lazy loaded
-const ClientDashboard = React.lazy(() => import('./pages/client/Dashboard'));
 const PortfolioGallery = React.lazy(() => import('./pages/client/PortfolioGallery'));
 const ServicesList = React.lazy(() => import('./pages/client/ServicesList'));
 const BookingPage = React.lazy(() => import('./pages/client/BookingPage'));
 const MyBookings = React.lazy(() => import('./pages/client/MyBookings'));
 const CheckoutPage = React.lazy(() => import('./pages/client/CheckoutPage'));
+const Contact = React.lazy(() => import('./pages/client/Contact'));
 
 // Admin pages - lazy loaded
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
@@ -28,10 +28,11 @@ const RevenueReports = React.lazy(() => import('./pages/admin/RevenueReports'));
 
 // Loading fallback component
 const PageLoader = () => (
-  <div className="flex justify-center items-center h-screen bg-[#F9F9F9]">
+  <div className="flex justify-center items-center h-screen bg-[#F0F2F5]">
     <div className="text-center">
-      <div className="w-12 h-12 border-2 border-[#C79F68] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-      <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#333]">PhotoStudio</p>
+      <div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto mb-6"></div>
+      <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#1E293B]">LIGHT Photography</p>
+      <p className="text-[9px] uppercase tracking-[0.4em] text-[#94A3B8] mt-2">On-Call Service</p>
     </div>
   </div>
 );
@@ -41,17 +42,15 @@ const PrivateRoute = ({ children, requiredRole }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <PageLoader />;
   }
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Strict role checking - redirect if role doesn't match
   if (requiredRole && user.role !== requiredRole) {
-    console.warn(`Access denied: User role '${user.role}' does not match required role '${requiredRole}'`);
-    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/client/dashboard'} replace />;
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/'} replace />;
   }
 
   return children;
@@ -65,14 +64,12 @@ function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/auth/callback" element={<SocialCallback />} />
 
-      {/* Client Routes */}
+      {/* Client Routes - All mapped to the Universal Single Page */}
       <Route
-        path="/client/dashboard"
+        path="/client/services"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <ClientDashboard />
-            </Suspense>
+            <Landing />
           </PrivateRoute>
         }
       />
@@ -80,19 +77,23 @@ function AppRoutes() {
         path="/client/portfolio"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <PortfolioGallery />
-            </Suspense>
+            <Landing />
           </PrivateRoute>
         }
       />
       <Route
-        path="/client/services"
+        path="/client/bookings"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <ServicesList />
-            </Suspense>
+            <Landing />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/client/contact"
+        element={
+          <PrivateRoute requiredRole="client">
+            <Landing />
           </PrivateRoute>
         }
       />
@@ -102,16 +103,6 @@ function AppRoutes() {
           <PrivateRoute requiredRole="client">
             <Suspense fallback={<PageLoader />}>
               <BookingPage />
-            </Suspense>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/client/bookings"
-        element={
-          <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <MyBookings />
             </Suspense>
           </PrivateRoute>
         }
@@ -189,8 +180,9 @@ function AppRoutes() {
         }
       />
 
-      {/* Default redirect */}
+      {/* Main Entry Point */}
       <Route path="/" element={<Landing />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
