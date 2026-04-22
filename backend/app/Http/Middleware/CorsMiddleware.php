@@ -26,17 +26,30 @@ class CorsMiddleware
         // Process the request
         $response = $next($request);
 
-        // Add CORS headers to response
+        // Add CORS headers to response (check if not already set to avoid duplicates)
         if ($isAllowed && $origin) {
-            $response->header('Access-Control-Allow-Origin', $origin);
-            $response->header('Access-Control-Allow-Credentials', 'true');
-            $response->header('Access-Control-Expose-Headers', 'Content-Length, X-JSON-Response-Body');
+            // Only set if not already set
+            if (!$response->headers->has('Access-Control-Allow-Origin')) {
+                $response->header('Access-Control-Allow-Origin', $origin);
+            }
+            if (!$response->headers->has('Access-Control-Allow-Credentials')) {
+                $response->header('Access-Control-Allow-Credentials', 'true');
+            }
+            if (!$response->headers->has('Access-Control-Expose-Headers')) {
+                $response->header('Access-Control-Expose-Headers', 'Content-Length, X-JSON-Response-Body');
+            }
         }
 
-        // These headers should always be present
-        $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-        $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        $response->header('Access-Control-Max-Age', '86400');
+        // These headers should always be present (check to avoid duplicates)
+        if (!$response->headers->has('Access-Control-Allow-Methods')) {
+            $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+        }
+        if (!$response->headers->has('Access-Control-Allow-Headers')) {
+            $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        }
+        if (!$response->headers->has('Access-Control-Max-Age')) {
+            $response->header('Access-Control-Max-Age', '86400');
+        }
 
         return $response;
     }
