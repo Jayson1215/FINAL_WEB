@@ -218,6 +218,13 @@ export default function Landing() {
 
   const getPortfolioImageUrl = (imagePath) => resolveImageUrl(imagePath);
 
+  const setImageFallback = (event, fallbackSrc) => {
+    const target = event.currentTarget;
+    if (target.dataset.fallbackApplied === '1') return;
+    target.dataset.fallbackApplied = '1';
+    target.src = fallbackSrc;
+  };
+
   const getStatusConfig = (status, payment) => {
     // If there is a pending payment, show a "Verifying" state even if the booking status is still "awaiting_payment"
     if (payment && payment.payment_status === 'pending') {
@@ -344,7 +351,7 @@ export default function Landing() {
 
                 return (
                   <div key={booking.id} className="reveal bg-[#F8F9FB] rounded-[2.5rem] p-8 md:p-12 border border-[#F1F5F9] flex flex-col lg:flex-row gap-10 items-center" style={{ transitionDelay: `${idx * 100}ms` }}>
-                    <div className="w-full lg:w-1/4 aspect-video lg:aspect-square rounded-2xl overflow-hidden bg-white shadow-sm"><img src={getServiceImageUrl(booking.service?.image_path)} alt="Service" className="w-full h-full object-cover" /></div>
+                    <div className="w-full lg:w-1/4 aspect-video lg:aspect-square rounded-2xl overflow-hidden bg-white shadow-sm"><img src={getServiceImageUrl(booking.service?.image_path)} alt="Service" className="w-full h-full object-cover" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /></div>
                     <div className="flex-1 space-y-6">
                       <div className="flex justify-between items-start">
                         <div><h3 className="text-2xl font-serif text-[#1E293B] mb-1">{booking.service?.name}</h3><p className="text-[12px] text-[#64748B] italic">Session on {new Date(booking.booking_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p></div>
@@ -388,7 +395,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPortfolio.map((item, idx) => (
               <div key={item.id} className="group cursor-pointer bg-white rounded-2xl p-3 shadow-sm hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-700 reveal" style={{ transitionDelay: `${idx * 100}ms` }} onClick={() => setSelectedImage(item)}>
-                <div className="relative overflow-hidden rounded-xl aspect-[4/5] bg-[#F8F9FB] mb-5"><img src={getPortfolioImageUrl(item.image_url)} alt="Art" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg">View Masterpiece</p></div></div>
+                <div className="relative overflow-hidden rounded-xl aspect-[4/5] bg-[#F8F9FB] mb-5"><img src={getPortfolioImageUrl(item.image_url)} alt="Art" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => setImageFallback(e, '/images/featured-work.png')} /><div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg">View Masterpiece</p></div></div>
                 <div className="text-center px-2 pb-1"><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#E8734A] mb-1">{item.category || 'Editorial'}</p><h3 className="text-lg font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{item.title}</h3></div>
               </div>
             ))}
@@ -409,7 +416,7 @@ export default function Landing() {
               const serviceImageUrl = getServiceImageUrl(service.image_path);
               return (
               <div key={service.id} className="group bg-white border border-[#F1F5F9] rounded-[2rem] p-3.5 transition-all duration-700 hover:shadow-card-hover flex flex-col reveal" style={{ transitionDelay: `${index * 150}ms` }}>
-                <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] mb-6 bg-[#F8F9FB]"><img src={serviceImageUrl} alt="Pkg" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-5 py-2.5 rounded-xl">Book Now</p></div></div>
+                <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] mb-6 bg-[#F8F9FB]"><img src={serviceImageUrl} alt="Pkg" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /><div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-5 py-2.5 rounded-xl">Book Now</p></div></div>
                 <div className="px-5 pb-5 flex-1 flex flex-col space-y-5">
                   <div><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#E8734A] mb-2">{service.category}</p><h3 className="text-xl font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{service.name}</h3></div>
                   <p className="text-xs text-[#64748B] leading-relaxed line-clamp-2 italic font-medium">"{service.description}"</p>
@@ -488,7 +495,7 @@ export default function Landing() {
         <div className="fixed inset-0 bg-[#F0F2F5]/98 backdrop-blur-xl z-[200] flex items-center justify-center p-6 md:p-12 overflow-y-auto animate-fadeIn" onClick={() => setSelectedImage(null)}>
           <button onClick={() => setSelectedImage(null)} className="fixed top-6 right-6 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#1E293B] text-lg shadow-premium border border-[#E2E8F0] hover:bg-[#E8734A] hover:text-white transition-all z-[210]">✕</button>
           <div className="max-w-5xl w-full flex flex-col md:flex-row gap-10 lg:gap-16 items-center" onClick={e => e.stopPropagation()}>
-            <div className="w-full md:w-[50%]"><div className="bg-white p-3 rounded-2xl shadow-premium border border-[#F1F5F9]"><img src={getPortfolioImageUrl(selectedImage.image_url)} alt="P" className="w-full h-auto rounded-xl" /></div></div>
+            <div className="w-full md:w-[50%]"><div className="bg-white p-3 rounded-2xl shadow-premium border border-[#F1F5F9]"><img src={getPortfolioImageUrl(selectedImage.image_url)} alt="P" className="w-full h-auto rounded-xl" onError={(e) => setImageFallback(e, '/images/featured-work.png')} /></div></div>
             <div className="w-full md:w-[50%] text-left space-y-6">
                 <div><p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E8734A] mb-3">Perspective • {selectedImage.category}</p><h2 className="text-4xl font-serif text-[#1E293B] leading-[1.2]">{selectedImage.title}</h2></div>
                 <div className="w-16 h-0.5 bg-[#E8734A] rounded-full"></div>
@@ -504,7 +511,7 @@ export default function Landing() {
           <div className="max-w-3xl w-full bg-white rounded-[2.5rem] shadow-premium border border-[#F1F5F9] p-8 md:p-12 relative overflow-hidden" onClick={e => e.stopPropagation()}>
             <button onClick={() => setSelectedBookingDetail(null)} className="absolute top-6 right-6 w-9 h-9 bg-[#F8F9FB] rounded-full flex items-center justify-center text-[#1E293B] hover:bg-[#E8734A] hover:text-white transition-all">✕</button>
             <div className="flex flex-col md:flex-row gap-10">
-              <div className="w-full md:w-1/3 aspect-square rounded-2xl overflow-hidden shadow-sm"><img src={getServiceImageUrl(selectedBookingDetail.service?.image_path)} alt="S" className="w-full h-full object-cover" /></div>
+              <div className="w-full md:w-1/3 aspect-square rounded-2xl overflow-hidden shadow-sm"><img src={getServiceImageUrl(selectedBookingDetail.service?.image_path)} alt="S" className="w-full h-full object-cover" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /></div>
               <div className="flex-1 space-y-6">
                 <div><p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-2">Registry Details</p><h2 className="text-3xl font-serif text-[#1E293B] leading-tight">{selectedBookingDetail.service?.name}</h2></div>
                 <div className="grid grid-cols-2 gap-6 pt-4 border-t border-[#F1F5F9]">

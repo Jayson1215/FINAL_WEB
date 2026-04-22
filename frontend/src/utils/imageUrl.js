@@ -1,6 +1,16 @@
 const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
 
+function isLocalHostname(hostname) {
+  if (!hostname) return false;
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname.endsWith('.local')
+  );
+}
+
 export function resolveImageUrl(value) {
   if (!value) return '';
 
@@ -16,6 +26,9 @@ export function resolveImageUrl(value) {
       if (!filename) return raw;
 
       if (parsed.pathname.startsWith('/api/images/')) {
+        if (!isLocalHostname(parsed.hostname)) {
+          return raw;
+        }
         return toApiImageUrl(filename);
       }
 
