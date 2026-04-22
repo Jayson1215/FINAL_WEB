@@ -14,13 +14,9 @@ use App\Http\Controllers\NotificationController;
  */
 Route::get('/health', [\App\Http\Controllers\DebugController::class, 'health']);
 Route::get('/images/{filename}', function ($filename) {
-    $allowed = ['service_wedding.png', 'service_portrait.png', 'service_editorial.png', 'service_event.png', 
-                 'portfolio_bride.png', 'portfolio_fashion.png', 'portfolio_newborn.png', 'portfolio_corporate.png',
-                 'portfolio_architecture.png', 'portfolio_nature.png'];
-
     $filename = basename($filename);
 
-    if (!in_array($filename, $allowed, true)) {
+    if (!preg_match('/^[A-Za-z0-9._-]+\.(png|jpe?g|webp|gif)$/i', $filename)) {
         return response()->json(['error' => 'File not found'], 404);
     }
 
