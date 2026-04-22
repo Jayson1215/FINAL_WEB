@@ -12,6 +12,7 @@ use App\Http\Controllers\NotificationController;
 /**
  * Public Routes (No Authentication Required)
  */
+Route::get('/health', [\App\Http\Controllers\DebugController::class, 'health']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 

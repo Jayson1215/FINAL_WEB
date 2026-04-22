@@ -12,24 +12,56 @@ class StudioContentSeeder extends Seeder
      */
     public function run(): void
     {
+        echo "\n=== Starting StudioContentSeeder ===\n";
+        
         // Disable foreign key checks for multiple DB types (SQLite or MySQL)
-        if (config('database.default') === 'sqlite') {
-            \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys = OFF;');
-        } else {
-            \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        try {
+            if (config('database.default') === 'sqlite') {
+                \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys = OFF;');
+            } else {
+                \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            }
+            echo "Foreign key checks disabled\n";
+        } catch (\Exception $e) {
+            echo "Warning: Could not disable foreign keys: {$e->getMessage()}\n";
         }
         
-        \App\Models\Service::truncate();
-        \App\Models\Portfolio::truncate();
-        \App\Models\Booking::truncate();
+        // Truncate tables safely
+        try {
+            \App\Models\Booking::truncate();
+            echo "Bookings table truncated\n";
+        } catch (\Exception $e) {
+            echo "Warning: Could not truncate bookings: {$e->getMessage()}\n";
+        }
+        
+        try {
+            \App\Models\Service::truncate();
+            echo "Services table truncated\n";
+        } catch (\Exception $e) {
+            echo "Warning: Could not truncate services: {$e->getMessage()}\n";
+        }
+        
+        try {
+            \App\Models\Portfolio::truncate();
+            echo "Portfolio table truncated\n";
+        } catch (\Exception $e) {
+            echo "Warning: Could not truncate portfolio: {$e->getMessage()}\n";
+        }
 
-        if (config('database.default') === 'sqlite') {
-            \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys = ON;');
-        } else {
-            \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        // Re-enable foreign key checks
+        try {
+            if (config('database.default') === 'sqlite') {
+                \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys = ON;');
+            } else {
+                \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            }
+            echo "Foreign key checks re-enabled\n";
+        } catch (\Exception $e) {
+            echo "Warning: Could not re-enable foreign keys: {$e->getMessage()}\n";
         }
 
         // --- SEED SERVICES ---
+        echo "\nSeeding Services...\n";
         $services = [
             [
                 'name' => 'The Signature Wedding',
@@ -66,10 +98,16 @@ class StudioContentSeeder extends Seeder
         ];
 
         foreach ($services as $service) {
-            \App\Models\Service::create($service);
+            try {
+                \App\Models\Service::create($service);
+                echo "✓ Created service: {$service['name']}\n";
+            } catch (\Exception $e) {
+                echo "✗ Error creating service {$service['name']}: {$e->getMessage()}\n";
+            }
         }
 
         // --- SEED PORTFOLIO ---
+        echo "\nSeeding Portfolio...\n";
         $portfolioItems = [
             [
                 'title' => 'Ethereal Grace',
@@ -110,7 +148,14 @@ class StudioContentSeeder extends Seeder
         ];
 
         foreach ($portfolioItems as $item) {
-            \App\Models\Portfolio::create($item);
+            try {
+                \App\Models\Portfolio::create($item);
+                echo "✓ Created portfolio: {$item['title']}\n";
+            } catch (\Exception $e) {
+                echo "✗ Error creating portfolio {$item['title']}: {$e->getMessage()}\n";
+            }
         }
+        
+        echo "\n=== StudioContentSeeder Complete ===\n";
     }
 }
