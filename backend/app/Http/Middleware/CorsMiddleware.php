@@ -28,28 +28,16 @@ class CorsMiddleware
 
         // Add CORS headers to response (check if not already set to avoid duplicates)
         if ($isAllowed && $origin) {
-            // Only set if not already set
-            if (!$response->headers->has('Access-Control-Allow-Origin')) {
-                $response->header('Access-Control-Allow-Origin', $origin);
-            }
-            if (!$response->headers->has('Access-Control-Allow-Credentials')) {
-                $response->header('Access-Control-Allow-Credentials', 'true');
-            }
-            if (!$response->headers->has('Access-Control-Expose-Headers')) {
-                $response->header('Access-Control-Expose-Headers', 'Content-Length, X-JSON-Response-Body');
-            }
+            // Use set() instead of header() to ensure replacement, not appending
+            $response->headers->set('Access-Control-Allow-Origin', $origin, false);
+            $response->headers->set('Access-Control-Allow-Credentials', 'true', false);
+            $response->headers->set('Access-Control-Expose-Headers', 'Content-Length, X-JSON-Response-Body', false);
         }
 
-        // These headers should always be present (check to avoid duplicates)
-        if (!$response->headers->has('Access-Control-Allow-Methods')) {
-            $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-        }
-        if (!$response->headers->has('Access-Control-Allow-Headers')) {
-            $response->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        }
-        if (!$response->headers->has('Access-Control-Max-Age')) {
-            $response->header('Access-Control-Max-Age', '86400');
-        }
+        // These headers should always be present
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH', false);
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With', false);
+        $response->headers->set('Access-Control-Max-Age', '86400', false);
 
         return $response;
     }
