@@ -22,6 +22,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
+# Copy MySQL SSL certificate to root for easier access
+RUN cp -f /app/backend/ca.pem /app/ca.pem 2>/dev/null || echo "Note: ca.pem not found, SSL may not work"
+
 # Build Frontend
 WORKDIR /app/frontend
 RUN npm install
