@@ -49,4 +49,8 @@ WORKDIR /app/backend
 
 EXPOSE 8000
 
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# Copy Nginx config (we'll create this next)
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+
+# Start Nginx and PHP-FPM
+CMD php-fpm83 && nginx -g 'daemon off;'
