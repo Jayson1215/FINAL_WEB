@@ -53,4 +53,5 @@ EXPOSE 8000
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # Start Nginx and PHP-FPM
-CMD php-fpm83 && nginx -g 'daemon off;'
+# Start PHP-FPM in background and Nginx in foreground
+CMD php-fpm -D && nginx -g 'daemon off;'
