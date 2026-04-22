@@ -36,9 +36,6 @@ class DebugController extends Controller
             ], 500);
         }
     }
-            'url' => config('app.url'),
-        ]);
-    }
 
     private function testDatabaseConnection()
     {

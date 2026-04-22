@@ -8,7 +8,8 @@ echo "========================================="
 
 # Ensure storage directories exist and are writable
 mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache storage/logs
-chmod -R 777 storage bootstrap/cache storage/logs 2>/dev/null || true
+chmod -R 777 storage bootstrap/cache storage/logs
+chmod -R a+rwx storage bootstrap/cache storage/logs 2>/dev/null || true
 
 # Clear all caches
 echo "[1/6] Clearing caches..."
