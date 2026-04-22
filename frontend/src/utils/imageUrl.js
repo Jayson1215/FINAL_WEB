@@ -1,5 +1,6 @@
 const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
+const toLocalImageUrl = (filename) => `/images/${filename}`;
 
 function isLocalHostname(hostname) {
   if (!hostname) return false;
@@ -17,19 +18,14 @@ export function resolveImageUrl(value) {
   const raw = String(value).trim();
   if (!raw) return '';
 
-  const toApiImageUrl = (filename) => `${backendBaseUrl}/api/images/${filename}`;
-
   if (/^https?:\/\//i.test(raw)) {
     try {
       const parsed = new URL(raw);
       const filename = parsed.pathname.split('/').filter(Boolean).pop();
       if (!filename) return raw;
 
-      if (parsed.pathname.startsWith('/api/images/')) {
-        if (!isLocalHostname(parsed.hostname)) {
-          return raw;
-        }
-        return toApiImageUrl(filename);
+      if (/\/api\/images\//i.test(parsed.pathname)) {
+        return toLocalImageUrl(filename);
       }
 
       if (
@@ -37,11 +33,19 @@ export function resolveImageUrl(value) {
         parsed.pathname.startsWith('/assets/images/') ||
         parsed.pathname.startsWith('/assests/images/')
       ) {
-        return toApiImageUrl(filename);
+        return toLocalImageUrl(filename);
+      }
+
+      if (isLocalHostname(parsed.hostname)) {
+        return `${backendBaseUrl}${parsed.pathname}`;
       }
 
       return raw;
     } catch {
+      if (/api\/images\//i.test(raw)) {
+        const filename = raw.split('/').filter(Boolean).pop();
+        return filename ? toLocalImageUrl(filename) : raw;
+      }
       return raw;
     }
   }
@@ -51,7 +55,7 @@ export function resolveImageUrl(value) {
   if (!filename) return '';
 
   if (clean.startsWith('api/images/')) {
-    return `${backendBaseUrl}/${clean}`;
+    return toLocalImageUrl(filename);
   }
 
   if (
@@ -60,7 +64,7 @@ export function resolveImageUrl(value) {
     clean.startsWith('assests/images/') ||
     !clean.includes('/')
   ) {
-    return toApiImageUrl(filename);
+    return toLocalImageUrl(filename);
   }
 
   return `${backendBaseUrl}/${clean}`;
