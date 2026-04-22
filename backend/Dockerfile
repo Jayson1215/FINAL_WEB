@@ -49,14 +49,18 @@ RUN php artisan package:discover --ansi
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 
-# Expose port (Render uses PORT env variable, but we expose 8000 as default)
+# Use environment variable for port, default to 8000
+ENV PORT=8000
+
+# Expose port (Render uses PORT env variable)
 EXPOSE 8000
 
 # Use entrypoint script
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Start PHP built-in server or FrankenPHP
-CMD ["frankenphp", "run", "--bind=0.0.0.0:8000"]
+# Listen on 0.0.0.0 with PORT from env (Render may override)
+CMD ["sh", "-c", "frankenphp run --bind=0.0.0.0:${PORT:-8000}"]
 
 # Use a custom entrypoint script
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
