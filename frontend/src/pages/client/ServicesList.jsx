@@ -2,7 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { serviceService } from '../../services/serviceService';
-import { resolveImageUrl } from '../../utils/imageUrl';
+
+function getImageFilename(value) {
+  if (!value) return '';
+  try {
+    const raw = String(value).trim();
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) {
+      const parsed = new URL(raw);
+      return parsed.pathname.split('/').filter(Boolean).pop() || '';
+    }
+    return raw.replace(/^\/+/, '').split('/').filter(Boolean).pop() || '';
+  } catch {
+    return '';
+  }
+}
 
 export default function ServicesList() {
   const [services, setServices] = useState([]);
@@ -18,7 +32,15 @@ export default function ServicesList() {
 
   const handleBookNow = (id) => navigate(`/client/booking/${id}`);
   const getServiceImageUrl = (path) => {
-    return resolveImageUrl(path);
+    const filename = getImageFilename(path);
+    return filename ? `/images/${filename}` : '/images/studio-hero.png';
+  };
+
+  const setImageFallback = (event) => {
+    const target = event.currentTarget;
+    if (target.dataset.fallbackApplied === '1') return;
+    target.dataset.fallbackApplied = '1';
+    target.src = '/images/studio-hero.png';
   };
 
   return (
@@ -40,7 +62,7 @@ export default function ServicesList() {
                   {/* Image Area */}
                   <div className="relative h-72 bg-[#F8F9FB] overflow-hidden">
                     {serviceImageUrl ? (
-                      <img src={serviceImageUrl} alt={service.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      <img src={serviceImageUrl} alt={service.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={setImageFallback} />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[#E2E8F0] text-6xl">📸</div>
                     )}
