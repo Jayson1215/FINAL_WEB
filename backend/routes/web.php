@@ -19,4 +19,4 @@ Route::get('/{path}', function (string $path) {
     return response()->file($filePath, [
         'Cache-Control' => 'public, max-age=86400',
     ]);
-})->where('path', 'https?:\/\/.*\/api\/images\/[A-Za-z0-9._-]+\.(?:png|jpe?g|webp|gif)');
+})->where('path', '.*api\/images\/[A-Za-z0-9._-]+\.(?:png|jpe?g|webp|gif).*');
