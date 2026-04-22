@@ -153,7 +153,11 @@ export default function Login() {
             </div>
 
             <button
-              onClick={() => window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/auth/google/redirect`}
+              onClick={() => {
+                const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+                const cleanBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+                window.location.href = `${cleanBase}/auth/google/redirect`;
+              }}
               className="w-full flex items-center justify-center gap-3 bg-white border border-[#F1F5F9] py-3.5 rounded-xl hover:bg-[#F8F9FB] hover:border-[#E2E8F0] transition-all duration-500 group"
             >
               <svg className="w-4 h-4 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
