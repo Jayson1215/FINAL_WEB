@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { portfolioService } from '../../services/portfolioService';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 export default function ManagePortfolio() {
   const [portfolio, setPortfolio] = useState([]);
@@ -47,7 +48,7 @@ export default function ManagePortfolio() {
             {portfolio.map(item => (
               <div key={item.id} className="bg-white rounded-2xl shadow-card hover:shadow-card-hover border border-[#F1F5F9] overflow-hidden group transition-all duration-300">
                 <div className="aspect-[4/3] overflow-hidden bg-[#F8F9FB] relative">
-                  <img src={`http://localhost:8000/${item.image_url}`} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={e=>{e.target.style.display='none';}} />
+                  <img src={resolveImageUrl(item.image_url)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={e=>{e.target.style.display='none';}} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-wider text-white bg-[#1E293B]/70 backdrop-blur px-2.5 py-1 rounded-lg">{item.category||'General'}</span>
                 </div>

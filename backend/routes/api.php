@@ -14,7 +14,6 @@ use App\Http\Controllers\NotificationController;
  */
 Route::get('/health', [\App\Http\Controllers\DebugController::class, 'health']);
 Route::get('/images/{filename}', function ($filename) {
-    // Generate placeholder image URL using placeholder service
     $allowed = ['service_wedding.png', 'service_portrait.png', 'service_editorial.png', 'service_event.png', 
                  'portfolio_bride.png', 'portfolio_fashion.png', 'portfolio_newborn.png', 'portfolio_corporate.png',
                  'portfolio_architecture.png', 'portfolio_nature.png'];
@@ -22,9 +21,28 @@ Route::get('/images/{filename}', function ($filename) {
     if (!in_array($filename, $allowed)) {
         return response()->json(['error' => 'File not found'], 404);
     }
-    
-    // Return placeholder image from placeholder service
-    return redirect('https://via.placeholder.com/400x300?text=' . urlencode(pathinfo($filename, PATHINFO_FILENAME)));
+
+        $label = ucwords(str_replace(['_', '-'], ' ', pathinfo($filename, PATHINFO_FILENAME)));
+        $escaped = htmlspecialchars($label, ENT_QUOTES, 'UTF-8');
+
+        $svg = <<<SVG
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-label="{$escaped}">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f1f5f9"/>
+            <stop offset="100%" stop-color="#e2e8f0"/>
+        </linearGradient>
+    </defs>
+    <rect width="1200" height="900" fill="url(#bg)"/>
+    <rect x="80" y="80" width="1040" height="740" rx="36" fill="#ffffff" opacity="0.65"/>
+    <text x="600" y="430" text-anchor="middle" fill="#334155" font-size="52" font-family="Arial, sans-serif" font-weight="700">LIGHT STUDIO</text>
+    <text x="600" y="500" text-anchor="middle" fill="#64748b" font-size="34" font-family="Arial, sans-serif">{$escaped}</text>
+</svg>
+SVG;
+
+        return response($svg, 200)
+                ->header('Content-Type', 'image/svg+xml')
+                ->header('Cache-Control', 'public, max-age=86400');
 });
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

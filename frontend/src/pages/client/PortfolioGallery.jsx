@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { portfolioService } from '../../services/portfolioService';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 export default function PortfolioGallery() {
   const [portfolio, setPortfolio] = useState([]);
@@ -17,6 +18,7 @@ export default function PortfolioGallery() {
 
   const categories = ['all', ...new Set(portfolio.map(item => item.category).filter(Boolean))];
   const filteredPortfolio = selectedCategory === 'all' ? portfolio : portfolio.filter(item => item.category === selectedCategory);
+  const getPortfolioImageUrl = (path) => resolveImageUrl(path);
 
   return (
     <ClientLayout title="Our Gallery">
@@ -50,7 +52,7 @@ export default function PortfolioGallery() {
               {filteredPortfolio.map(item => (
                 <div key={item.id} className="group cursor-pointer bg-white rounded-3xl p-4 shadow-card hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-500" onClick={() => setSelectedImage(item)}>
                   <div className="relative overflow-hidden rounded-2xl aspect-[4/5] bg-[#F8F9FB] mb-6">
-                    <img src={`http://localhost:8000/${item.image_url}`} alt={item.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => { e.target.style.display = 'none'; }} />
+                    <img src={getPortfolioImageUrl(item.image_url)} alt={item.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => { e.target.style.display = 'none'; }} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
                       <p className="text-white text-[10px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl">View Masterpiece</p>
                     </div>
@@ -78,7 +80,7 @@ export default function PortfolioGallery() {
           <div className="max-w-6xl w-full flex flex-col md:flex-row gap-12 lg:gap-20 items-center animate-slideIn" onClick={e => e.stopPropagation()}>
             <div className="w-full md:w-[55%]">
               <div className="bg-white p-4 rounded-3xl shadow-premium border border-[#F1F5F9]">
-                <img src={`http://localhost:8000/${selectedImage.image_url}`} alt={selectedImage.title} className="w-full h-auto rounded-2xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; }} />
+                <img src={getPortfolioImageUrl(selectedImage.image_url)} alt={selectedImage.title} className="w-full h-auto rounded-2xl shadow-sm" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
             </div>
             <div className="w-full md:w-[45%] text-left space-y-8">

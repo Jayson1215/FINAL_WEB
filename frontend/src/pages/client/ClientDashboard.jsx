@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { serviceService } from '../../services/serviceService';
 import { bookingService } from '../../services/bookingService';
 import Chatbot from '../../components/common/Chatbot';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 export default function ClientDashboard() {
   const [scrollY, setScrollY] = useState(0);
@@ -13,8 +14,6 @@ export default function ClientDashboard() {
   const [loadingServices, setLoadingServices] = useState(true);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-  const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,9 +74,7 @@ export default function ClientDashboard() {
   };
 
   const getServiceImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (/^https?:\/\//i.test(imagePath)) return imagePath;
-    return `${backendBaseUrl}/${String(imagePath).replace(/^\/+/, '')}`;
+    return resolveImageUrl(imagePath);
   };
 
   const getStatusConfig = (status) => {

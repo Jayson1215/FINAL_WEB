@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { bookingService } from '../../services/bookingService';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
@@ -9,8 +10,6 @@ export default function MyBookings() {
   const [error, setError] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const navigate = useNavigate();
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-  const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
 
   useEffect(() => {
     fetchBookings();
@@ -51,9 +50,7 @@ export default function MyBookings() {
   };
 
   const getServiceImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (/^https?:\/\//i.test(imagePath)) return imagePath;
-    return `${backendBaseUrl}/${String(imagePath).replace(/^\/+/, '')}`;
+    return resolveImageUrl(imagePath);
   };
 
   const getStatusConfig = (status) => {

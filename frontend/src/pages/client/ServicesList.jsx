@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { serviceService } from '../../services/serviceService';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 export default function ServicesList() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-  const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
 
   useEffect(() => { fetchServices(); }, []);
   const fetchServices = async () => {
@@ -19,9 +18,7 @@ export default function ServicesList() {
 
   const handleBookNow = (id) => navigate(`/client/booking/${id}`);
   const getServiceImageUrl = (path) => {
-    if (!path) return '';
-    if (/^https?:\/\//i.test(path)) return path;
-    return `${backendBaseUrl}/${String(path).replace(/^\/+/, '')}`;
+    return resolveImageUrl(path);
   };
 
   return (

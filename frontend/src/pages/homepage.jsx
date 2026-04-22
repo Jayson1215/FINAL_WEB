@@ -5,6 +5,7 @@ import { serviceService } from '../services/serviceService';
 import { bookingService } from '../services/bookingService';
 import { portfolioService } from '../services/portfolioService';
 import Chatbot from '../components/common/Chatbot';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 export default function Landing() {
   const [scrollY, setScrollY] = useState(0);
@@ -34,8 +35,6 @@ export default function Landing() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-  const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
 
   // Refs for ScrollSpy
   const sectionRefs = {
@@ -214,10 +213,10 @@ export default function Landing() {
   };
 
   const getServiceImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (/^https?:\/\//i.test(imagePath)) return imagePath;
-    return `${backendBaseUrl}/${String(imagePath).replace(/^\/+/, '')}`;
+    return resolveImageUrl(imagePath);
   };
+
+  const getPortfolioImageUrl = (imagePath) => resolveImageUrl(imagePath);
 
   const getStatusConfig = (status, payment) => {
     // If there is a pending payment, show a "Verifying" state even if the booking status is still "awaiting_payment"
@@ -393,7 +392,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPortfolio.map((item, idx) => (
               <div key={item.id} className="group cursor-pointer bg-white rounded-2xl p-3 shadow-sm hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-700 reveal" style={{ transitionDelay: `${idx * 100}ms` }} onClick={() => setSelectedImage(item)}>
-                <div className="relative overflow-hidden rounded-xl aspect-[4/5] bg-[#F8F9FB] mb-5"><img src={`${backendBaseUrl}/${item.image_url}`} alt="Art" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg">View Masterpiece</p></div></div>
+                <div className="relative overflow-hidden rounded-xl aspect-[4/5] bg-[#F8F9FB] mb-5"><img src={getPortfolioImageUrl(item.image_url)} alt="Art" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" /><div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg">View Masterpiece</p></div></div>
                 <div className="text-center px-2 pb-1"><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#E8734A] mb-1">{item.category || 'Editorial'}</p><h3 className="text-lg font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{item.title}</h3></div>
               </div>
             ))}
@@ -493,7 +492,7 @@ export default function Landing() {
         <div className="fixed inset-0 bg-[#F0F2F5]/98 backdrop-blur-xl z-[200] flex items-center justify-center p-6 md:p-12 overflow-y-auto animate-fadeIn" onClick={() => setSelectedImage(null)}>
           <button onClick={() => setSelectedImage(null)} className="fixed top-6 right-6 w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#1E293B] text-lg shadow-premium border border-[#E2E8F0] hover:bg-[#E8734A] hover:text-white transition-all z-[210]">✕</button>
           <div className="max-w-5xl w-full flex flex-col md:flex-row gap-10 lg:gap-16 items-center" onClick={e => e.stopPropagation()}>
-            <div className="w-full md:w-[50%]"><div className="bg-white p-3 rounded-2xl shadow-premium border border-[#F1F5F9]"><img src={`${backendBaseUrl}/${selectedImage.image_url}`} alt="P" className="w-full h-auto rounded-xl" /></div></div>
+            <div className="w-full md:w-[50%]"><div className="bg-white p-3 rounded-2xl shadow-premium border border-[#F1F5F9]"><img src={getPortfolioImageUrl(selectedImage.image_url)} alt="P" className="w-full h-auto rounded-xl" /></div></div>
             <div className="w-full md:w-[50%] text-left space-y-6">
                 <div><p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E8734A] mb-3">Perspective • {selectedImage.category}</p><h2 className="text-4xl font-serif text-[#1E293B] leading-[1.2]">{selectedImage.title}</h2></div>
                 <div className="w-16 h-0.5 bg-[#E8734A] rounded-full"></div>

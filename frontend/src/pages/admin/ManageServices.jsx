@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { serviceService } from '../../services/serviceService';
 import { portfolioService } from '../../services/portfolioService';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 export default function ManageServices() {
   const [services, setServices] = useState([]);
@@ -183,7 +184,7 @@ export default function ManageServices() {
                     portfolio.map(item => (
                       <div key={item.id} className="group cursor-pointer bg-[#F8F9FB] rounded-2xl overflow-hidden border border-[#E2E8F0] hover:border-[#E8734A] transition-all" onClick={() => selectFromPortfolio(item)}>
                         <div className="aspect-square relative overflow-hidden">
-                          <img src={`http://localhost:8000/${item.image_url}`} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e)=>{e.target.style.display='none';}} />
+                          <img src={resolveImageUrl(item.image_url)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e)=>{e.target.style.display='none';}} />
                         </div>
                         <div className="p-4">
                           <p className="text-[9px] font-bold uppercase tracking-wider text-[#E8734A] mb-1">{item.category || 'Series'}</p>
@@ -208,7 +209,7 @@ export default function ManageServices() {
             {services.map(s => (
               <div key={s.id} className="bg-white rounded-2xl shadow-card hover:shadow-card-hover border border-[#F1F5F9] hover:border-[#E8734A]/20 transition-all duration-300 flex flex-col overflow-hidden group">
                 <div className="w-full aspect-[16/9] bg-[#F8F9FB] overflow-hidden relative">
-                  {s.image_path ? (<img src={`http://localhost:8000/${s.image_path}`} alt={s.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e)=>{e.target.style.display='none';}} />) : (<div className="w-full h-full flex items-center justify-center text-[#E2E8F0]"><span className="text-4xl">📸</span></div>)}
+                  {s.image_path ? (<img src={resolveImageUrl(s.image_path)} alt={s.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e)=>{e.target.style.display='none';}} />) : (<div className="w-full h-full flex items-center justify-center text-[#E2E8F0]"><span className="text-4xl">📸</span></div>)}
                   <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-wider text-white bg-gradient-to-r from-[#E8734A] to-[#FB923C] px-3 py-1 rounded-lg shadow">{s.category||'General'}</span>
                 </div>
                 <div className="p-6 flex flex-col flex-1">
