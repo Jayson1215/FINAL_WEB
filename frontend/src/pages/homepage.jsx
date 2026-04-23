@@ -64,9 +64,9 @@ export default function Landing() {
     if (loading) return;
 
     const pathToId = {
-      '/client/services': 'services',
-      '/client/portfolio': 'gallery',
-      '/client/bookings': 'registry',
+      '/client/Package': 'services',
+      '/client/Portfolio': 'gallery',
+      '/client/MyBookings': 'registry',
       '/client/contact': 'contact'
     };
 
@@ -131,9 +131,9 @@ export default function Landing() {
     };
 
     const idToPath = {
-      'services': '/client/services',
-      'gallery': '/client/portfolio',
-      'registry': '/client/bookings',
+      'services': '/client/Package',
+      'gallery': '/client/Portfolio',
+      'registry': '/client/MyBookings',
       'contact': '/client/contact',
       'hero': '/'
     };
@@ -320,10 +320,10 @@ export default function Landing() {
       });
       
       const idToPath = {
-        'services': '/client/services',
-        'gallery': '/client/portfolio',
-        'registry': '/client/bookings',
-        'contact': '/client/contact',
+      'services': '/client/Package',
+      'gallery': '/client/Portfolio',
+      'registry': '/client/MyBookings',
+      'contact': '/client/contact',
         'hero': '/'
       };
       const path = idToPath[id];
@@ -338,8 +338,8 @@ export default function Landing() {
       <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-6 md:px-12 py-5 ${navScrolled ? 'bg-white/90 backdrop-blur-xl py-3 border-b border-[#F1F5F9] shadow-sm' : ''}`}>
         <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
           <div className="hidden lg:flex gap-8 items-center justify-start">
-            <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/services' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</a>
-            <a href="#gallery" onClick={(e) => handleNavClick(e, 'gallery')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</a>
+            <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Package' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</a>
+            <a href="#gallery" onClick={(e) => handleNavClick(e, 'gallery')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</a>
           </div>
           <div className="flex justify-center">
             <Link to="/" onClick={(e) => handleNavClick(e, 'hero')} className="text-2xl font-serif text-[#1E293B] tracking-[0.2em] hover:text-[#E8734A] transition-all duration-500">LIGHT</Link>
@@ -347,14 +347,15 @@ export default function Landing() {
           <div className="flex gap-4 md:gap-6 items-center justify-end">
             {user ? (
               <>
-                <a href="#registry" onClick={(e) => handleNavClick(e, 'registry')} className={`hidden lg:block text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/bookings' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>My Bookings</a>
+                <a href="#registry" onClick={(e) => handleNavClick(e, 'registry')} className={`hidden lg:block text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/MyBookings' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>My Bookings</a>
                 <a href="#contact" onClick={(e) => handleNavClick(e, 'contact')} className={`hidden sm:block text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/contact' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Contact</a>
                 <NotificationBell />
                 <button onClick={handleLogout} className="bg-[#1E293B] text-white px-6 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all whitespace-nowrap">Logout</button>
               </>
             ) : (
               <>
-                <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="hidden lg:block text-[9px] font-bold uppercase tracking-[0.3em] text-[#1E293B] hover:text-[#E8734A] transition-all">Atelier</a>
+                <a href="#about" onClick={(e) => handleNavClick(e, 'about')} className="hidden lg:block text-[9px] font-bold uppercase tracking-[0.3em] text-[#1E293B] hover:text-[#E8734A] transition-all">About Us</a>
+                <a href="#contact" onClick={(e) => handleNavClick(e, 'contact')} className="hidden lg:block text-[9px] font-bold uppercase tracking-[0.3em] text-[#1E293B] hover:text-[#E8734A] transition-all">Contact</a>
                 <Link to="/login" className="bg-[#1E293B] text-white px-6 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all whitespace-nowrap">Join</Link>
               </>
             )}

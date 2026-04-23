@@ -13,7 +13,7 @@ import SocialCallback from './pages/auth/SocialCallback';
 // Client pages - lazy loaded
 const Dashboard = React.lazy(() => import('./pages/client/Dashboard'));
 const PortfolioGallery = React.lazy(() => import('./pages/client/PortfolioGallery'));
-const ServicesList = React.lazy(() => import('./pages/client/ServicesList'));
+const ServicesList = React.lazy(() => import('./pages/client/PackageList'));
 const BookingPage = React.lazy(() => import('./pages/client/BookingPage'));
 const MyBookings = React.lazy(() => import('./pages/client/MyBookings'));
 const CheckoutPage = React.lazy(() => import('./pages/client/CheckoutPage'));
@@ -95,7 +95,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/client/services"
+        path="/client/Package"
         element={
           <PrivateRoute requiredRole="client">
             <Suspense fallback={<PageLoader />}>
@@ -105,7 +105,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/client/portfolio"
+        path="/client/Portfolio"
         element={
           <PrivateRoute requiredRole="client">
             <Suspense fallback={<PageLoader />}>
@@ -115,7 +115,17 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/client/bookings"
+        path="/client/Gallery"
+        element={
+          <PrivateRoute requiredRole="client">
+            <Suspense fallback={<PageLoader />}>
+              <PortfolioGallery />
+            </Suspense>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/client/MyBookings"
         element={
           <PrivateRoute requiredRole="client">
             <Suspense fallback={<PageLoader />}>

@@ -56,10 +56,11 @@ export default function ClientLayout({ children, title, fullHero = false }) {
         <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
           
           {/* Left Side Links */}
-          <div className="hidden lg:flex gap-10 items-center justify-start">
-            <Link to="/client/dashboard" className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/dashboard' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Dashboard</Link>
-            <Link to="/client/services" className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/services' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</Link>
-            <Link to="/client/portfolio" className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</Link>
+          <div className="hidden lg:flex gap-8 items-center justify-start">
+            <Link to="/client/dashboard" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/dashboard' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Dashboard</Link>
+            <Link to="/client/Portfolio" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Portfolio</Link>
+            <Link to="/client/Package" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Package' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Package</Link>
+            <Link to="/client/Gallery" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Gallery' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</Link>
           </div>
 
           {/* Center Logo */}
@@ -71,8 +72,8 @@ export default function ClientLayout({ children, title, fullHero = false }) {
 
           {/* Right Side Links */}
           <div className="flex gap-6 md:gap-8 items-center justify-end">
-             <Link to="/client/bookings" className={`hidden lg:block text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/bookings' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>My Bookings</Link>
-             <Link to="/client/contact" className={`hidden sm:block text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/contact' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Contact</Link>
+             <Link to="/client/MyBookings" className={`hidden lg:block text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/MyBookings' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>My Bookings</Link>
+             <Link to="/client/contact" className={`hidden sm:block text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/contact' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Contact</Link>
              <NotificationBell />
              <button onClick={() => setShowLogoutModal(true)} className="bg-[#1E293B] text-white px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] hover:shadow-lg transition-all duration-500 whitespace-nowrap">
                Logout
