@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { serviceService } from '../../services/serviceService';
@@ -23,11 +23,32 @@ export default function BookingPage() {
     })();
   }, [serviceId]);
 
+  // Calculate session window
+  const sessionWindow = useMemo(() => {
+    if (!f.time || !d.s?.duration) return null;
+    
+    const [hours, minutes] = f.time.split(':').map(Number);
+    const start = new Date();
+    start.setHours(hours, minutes, 0);
+    
+    const end = new Date(start.getTime() + d.s.duration * 60000);
+    
+    const formatTime = (date) => {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
+
+    return {
+      start: formatTime(start),
+      end: formatTime(end),
+      durationHours: (d.s.duration / 60).toFixed(0)
+    };
+  }, [f.time, d.s]);
+
   const submit = async (e) => {
     e.preventDefault();
     setD(p => ({ ...p, sub: true, err: '' }));
     try {
-      const res = await bookingService.createBooking({
+      await bookingService.createBooking({
         service_id: serviceId,
         booking_date: f.date,
         booking_time: f.time,
@@ -35,7 +56,7 @@ export default function BookingPage() {
         special_requests: f.note,
         total_amount: d.s.price
       });
-      nav(`/client/MyBookings?booking=${res.data.id}&highlight=1`);
+      nav('/client/MyBookings');
     } catch (err) {
       setD(p => ({ ...p, sub: false, err: err.response?.data?.message || 'Transaction error.' }));
     }
@@ -62,7 +83,7 @@ export default function BookingPage() {
 
         <div className="grid lg:grid-cols-5 gap-6 items-start">
           
-          {/* Package Detail Sidebar - Ultra Compact */}
+          {/* Package Detail Sidebar */}
           <div className="lg:col-span-2 space-y-4 sticky top-24">
             <div className="bg-white rounded-[1.5rem] p-5 border border-black/10 shadow-sm space-y-5 overflow-hidden relative">
               <div className="absolute top-0 left-0 w-full h-1 bg-black"></div>
@@ -70,9 +91,6 @@ export default function BookingPage() {
               <div className="space-y-2">
                 <p className="text-[7px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Selection</p>
                 <h2 className="text-2xl font-serif text-black leading-tight tracking-tighter">{d.s.name}</h2>
-                <div className="bg-slate-50 inline-block px-1.5 py-0.5 rounded-md border border-black/5">
-                    <p className="text-[6px] font-bold text-black opacity-40 uppercase tracking-widest">{d.s.category}</p>
-                </div>
               </div>
               
               <div className="rounded-[1.2rem] overflow-hidden border border-black/5 shadow-inner">
@@ -99,11 +117,9 @@ export default function BookingPage() {
             </button>
           </div>
 
-          {/* Reservation Manifest Form - Ultra Compact */}
+          {/* Reservation Manifest Form */}
           <div className="lg:col-span-3">
             <form onSubmit={submit} className="bg-white rounded-[1.5rem] p-8 border border-black/10 shadow-sm space-y-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-12 h-12 bg-slate-50 rounded-bl-full flex items-center justify-end pr-3 pt-1 text-lg opacity-5">✍️</div>
-              
               <div className="space-y-1">
                 <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Logistics</p>
                 <h3 className="text-xl font-serif text-black">Reservation Manifest</h3>
@@ -115,13 +131,27 @@ export default function BookingPage() {
                     <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Session Date</label>
                     <input type="date" required className="w-full bg-slate-50 p-3 rounded-lg text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.date} onChange={e => setF({...f, date: e.target.value})} />
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Session Time</label>
+                  <div className="space-y-1.5 relative">
+                    <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Start Time</label>
                     <input type="time" required className="w-full bg-slate-50 p-3 rounded-lg text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.time} onChange={e => setF({...f, time: e.target.value})} />
+                    
+                    {sessionWindow && (
+                        <div className="absolute top-[2.5rem] left-0 w-full h-full pointer-events-none mt-2 animate-fadeIn">
+                           <div className="bg-black/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-xl flex items-center justify-between border border-white/10">
+                              <div className="space-y-0.5">
+                                 <p className="text-[6px] font-bold text-white opacity-40 uppercase tracking-widest">End Time ({sessionWindow.durationHours}h Session)</p>
+                                 <p className="text-[9px] font-bold text-[#E8734A] tracking-widest">{sessionWindow.end}</p>
+                              </div>
+                              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                              </div>
+                           </div>
+                        </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className={`space-y-1.5 transition-all duration-500 ${sessionWindow ? 'pt-12' : ''}`}>
                   <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Venue Location</label>
                   <input type="text" placeholder="Specify Street, Barangay & Landmark" required className="w-full bg-slate-50 p-3 rounded-lg text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.loc} onChange={e => setF({...f, loc: e.target.value})} />
                 </div>

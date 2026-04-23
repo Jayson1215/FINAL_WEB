@@ -5,11 +5,12 @@ import { bookingService } from '../../services/bookingService';
 export default function BookingManager() {
   const [d, setD] = useState({ list: [], loading: true, err: '' });
   const [modal, setModal] = useState({ open: false, b: null, st: '', note: '' });
+  const [viewModal, setViewModal] = useState({ open: false, b: null });
 
   useEffect(() => { fetch(); }, []);
   const fetch = async () => {
     try { const r = await bookingService.getAllBookings(); setD({ list: r.data || [], loading: false, err: '' }); }
-    catch (e) { setD(p => ({ ...p, loading: false, err: 'Synchronization Failed' })); }
+    catch (e) { setD(p => ({ ...p, loading: false, err: 'Sync Failed' })); }
   };
 
   const openAction = (b, st) => {
@@ -36,6 +37,8 @@ export default function BookingManager() {
       default: return 'bg-slate-50 text-slate-600 border-slate-100';
     }
   };
+
+  const formatId = (id) => `LW-${new Date().getFullYear()}-${id.toString().padStart(4, '0')}`;
 
   if (d.loading) return (
     <AdminLayout title="Manage Bookings">
@@ -68,22 +71,25 @@ export default function BookingManager() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-black/10">
-                  {['Client Details', 'Session Package', 'Schedule', 'Investment', 'Status Control'].map((h, i) => (
-                    <th key={h} className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">{h}</th>
-                  ))}
+                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">ID & Client</th>
+                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Package</th>
+                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Venue Location</th>
+                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Schedule</th>
+                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Status Control</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/10">
                 {d.list.map(b => (
                   <tr key={b.id} className="group hover:bg-slate-50/50 transition-all duration-500">
                     <td className="px-12 py-8">
-                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center font-bold text-sm shadow-lg group-hover:scale-110 transition-transform">
-                          {b.user?.name?.[0]}
+                      <div className="flex items-center gap-5 cursor-pointer" onClick={() => setViewModal({open: true, b})}>
+                        <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center font-bold text-[9px] shadow-lg group-hover:scale-110 transition-transform flex-col leading-none gap-1">
+                          <span className="opacity-40">Ref</span>
+                          <span>{b.id}</span>
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-black tracking-tight">{b.user?.name}</p>
-                          <p className="text-[10px] text-black opacity-40 font-bold uppercase tracking-widest">{b.user?.email}</p>
+                          <p className="text-sm font-bold text-black tracking-tight group-hover:text-[#E8734A] transition-colors">{b.user?.name}</p>
+                          <p className="text-[8px] text-black opacity-30 font-bold uppercase tracking-[0.2em]">{formatId(b.id)}</p>
                         </div>
                       </div>
                     </td>
@@ -92,14 +98,14 @@ export default function BookingManager() {
                             <p className="text-[10px] font-bold text-black italic opacity-60">"{b.service?.name}"</p>
                         </div>
                     </td>
-                    <td className="px-12 py-8">
-                      <div className="space-y-1">
-                        <p className="text-sm font-bold text-black tracking-tighter">{new Date(b.booking_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                        <p className="text-[9px] text-[#E8734A] font-bold uppercase tracking-widest">{b.booking_time}</p>
-                      </div>
+                    <td className="px-12 py-8 max-w-[200px]">
+                        <p className="text-[11px] font-bold text-black opacity-60 truncate">{b.location}</p>
                     </td>
                     <td className="px-12 py-8">
-                      <p className="text-lg font-bold text-black tracking-tighter">₱{parseFloat(b.total_amount).toLocaleString()}</p>
+                      <div className="space-y-1">
+                        <p className="text-sm font-bold text-black tracking-tighter">{new Date(b.booking_date).toLocaleDateString()}</p>
+                        <p className="text-[9px] text-[#E8734A] font-bold uppercase tracking-widest">{b.booking_time}</p>
+                      </div>
                     </td>
                     <td className="px-12 py-8">
                       <div className="flex items-center gap-3">
@@ -117,12 +123,6 @@ export default function BookingManager() {
                              </button>
                            </div>
                          )}
-                         
-                         {b.status !== 'pending' && (
-                             <button onClick={() => openAction(b, b.status)} className="p-2 text-black opacity-20 hover:opacity-100 transition-opacity" title="Edit Notes">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                             </button>
-                         )}
                       </div>
                     </td>
                   </tr>
@@ -133,18 +133,62 @@ export default function BookingManager() {
         </div>
       </div>
 
-      {/* Decision Log Modal - Executive Feedback */}
+      {/* Pop-up Table Details - Session Manifest */}
+      {viewModal.open && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setViewModal({open: false, b: null})}>
+          <div className="bg-white rounded-[3rem] shadow-2xl p-12 max-w-2xl w-full border border-black/10 relative animate-modalPop overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="absolute top-0 right-0 p-8 opacity-5 text-8xl font-serif">INFO</div>
+            
+            <div className="flex justify-between items-start mb-10 relative z-10">
+                <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Full Session Manifest</p>
+                    <h3 className="text-3xl font-serif text-black">{viewModal.b.user?.name}</h3>
+                    <p className="text-[10px] font-bold uppercase text-black/30 tracking-[0.3em]">{formatId(viewModal.b.id)}</p>
+                </div>
+                <button onClick={() => setViewModal({open: false, b: null})} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-black hover:bg-black hover:text-white transition-all">&times;</button>
+            </div>
+
+            <div className="bg-slate-50/50 rounded-[2rem] border border-black/5 overflow-hidden mb-8">
+                <table className="w-full text-[11px]">
+                    <tbody className="divide-y divide-black/5">
+                        <tr>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 w-1/3 bg-slate-100/50">Collection</td>
+                            <td className="px-8 py-5 font-bold text-black italic">"{viewModal.b.service?.name}"</td>
+                        </tr>
+                        <tr>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Venue Destination</td>
+                            <td className="px-8 py-5 font-bold text-black">{viewModal.b.location}</td>
+                        </tr>
+                        <tr>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Logistics Date</td>
+                            <td className="px-8 py-5 font-bold text-black">{new Date(viewModal.b.booking_date).toLocaleDateString()} @ {viewModal.b.booking_time}</td>
+                        </tr>
+                        <tr>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Creative Vision</td>
+                            <td className="px-8 py-5 font-medium text-black/60 italic leading-relaxed">"{viewModal.b.special_requests || 'No specific creative requests provided.'}"</td>
+                        </tr>
+                        <tr>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Financial Manifest</td>
+                            <td className="px-8 py-5 font-bold text-black">₱{parseFloat(viewModal.b.total_amount).toLocaleString()}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button onClick={() => setViewModal({open: false, b: null})} className="w-full py-5 bg-black text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.4em] shadow-xl hover:bg-[#E8734A] transition-all">Dismiss Manifest</button>
+          </div>
+        </div>
+      )}
+
+      {/* Decision Log Modal */}
       {modal.open && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-6 animate-fadeIn">
           <div className="bg-white rounded-[3.5rem] shadow-2xl p-12 max-w-md w-full border border-black/10 relative animate-modalPop">
-            <div className="absolute top-0 left-0 w-full h-2 bg-black"></div>
-            
             <div className="text-center mb-10">
                 <div className={`inline-block px-6 py-2 rounded-full text-[9px] font-bold uppercase tracking-widest border mb-4 ${getStatusStyle(modal.st)}`}>
                     Action: {modal.st}
                 </div>
-                <h3 className="text-3xl font-serif text-black tracking-tighter">Confirmation Manifest</h3>
-                <p className="text-[10px] font-bold text-black opacity-30 uppercase tracking-[0.2em] mt-2">Append a note to the client notification</p>
+                <h3 className="text-3xl font-serif text-black tracking-tighter">Commit Decision</h3>
             </div>
 
             <div className="space-y-2">
@@ -153,7 +197,7 @@ export default function BookingManager() {
                   value={modal.note}
                   onChange={e => setModal({...modal, note: e.target.value})}
                   className="w-full bg-slate-50 p-6 rounded-[2rem] h-40 text-xs text-black border border-black/10 outline-none focus:border-black focus:bg-white transition-all resize-none italic font-medium opacity-70" 
-                  placeholder="e.g., 'We have full availability for this session. Looking forward to it!'"
+                  placeholder="e.g., 'We have full availability for this session...'"
                 ></textarea>
             </div>
 
