@@ -2,8 +2,8 @@ import api from './api';
 
 export const serviceService = {
   // Client services
-  getServices: () => api.get('/client/services'),
-  getServiceDetail: (id) => api.get(`/client/services/${id}`),
+  getServices: () => api.get('/client/Packages'),
+  getServiceDetail: (id) => api.get(`/client/Packages/${id}`),
 
   // Admin services
   createService: (data) => api.post('/admin/services', data),

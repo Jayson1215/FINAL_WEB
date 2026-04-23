@@ -2,8 +2,8 @@ import api from './api';
 
 export const portfolioService = {
   // Client portfolio
-  getPortfolio: () => api.get('/client/portfolio'),
-  getPortfolioItem: (id) => api.get(`/client/portfolio/${id}`),
+  getPortfolio: () => api.get('/client/Portfolio'),
+  getPortfolioItem: (id) => api.get(`/client/Portfolio/${id}`),
 
   // Admin portfolio
   createPortfolioItem: (data) => api.post('/admin/portfolio', data),

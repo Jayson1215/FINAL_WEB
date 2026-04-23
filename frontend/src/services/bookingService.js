@@ -2,12 +2,12 @@ import api from './api';
 
 export const bookingService = {
   // Client bookings
-  getMyBookings: () => api.get('/client/bookings'),
-  getBookingDetail: (id) => api.get(`/client/bookings/${id}`),
-  createBooking: (data) => api.post('/client/bookings', data),
-  updateBooking: (id, data) => api.put(`/client/bookings/${id}`, data),
-  cancelBooking: (id) => api.delete(`/client/bookings/${id}`),
-  requestCancellation: (id, reason) => api.post(`/client/bookings/${id}/cancel`, { reason }),
+  getMyBookings: () => api.get('/client/MyBookings'),
+  getBookingDetail: (id) => api.get(`/client/MyBookings/${id}`),
+  createBooking: (data) => api.post('/client/MyBookings', data),
+  updateBooking: (id, data) => api.put(`/client/MyBookings/${id}`, data),
+  cancelBooking: (id) => api.delete(`/client/MyBookings/${id}`),
+  requestCancellation: (id, reason) => api.post(`/client/MyBookings/${id}/cancel`, { reason }),
 
   // Admin bookings
   getAllBookings: () => api.get('/admin/bookings'),

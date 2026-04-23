@@ -37,10 +37,10 @@ Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\SocialAuthControl
 Route::get('/auth/{provider}/callback', [\App\Http\Controllers\SocialAuthController::class, 'handleProviderCallback']);
 
 // Public services and portfolio access (for browsing before login)
-Route::get('/client/services', [ServiceController::class, 'index']);
-Route::get('/client/services/{service}', [ServiceController::class, 'show']);
-Route::get('/client/portfolio', [PortfolioController::class, 'index']);
-Route::get('/client/portfolio/{portfolio}', [PortfolioController::class, 'show']);
+Route::get('/client/Packages', [ServiceController::class, 'index']);
+Route::get('/client/Packages/{service}', [ServiceController::class, 'show']);
+Route::get('/client/Portfolio', [PortfolioController::class, 'index']);
+Route::get('/client/Portfolio/{portfolio}', [PortfolioController::class, 'show']);
 
 /**
  * Protected Routes (Authentication Required)
@@ -63,12 +63,12 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::middleware('role:client')->group(function () {
         // Bookings routes (client)
-        Route::get('/client/bookings', [BookingController::class, 'index']);
-        Route::post('/client/bookings', [BookingController::class, 'store']);
-        Route::get('/client/bookings/{booking}', [BookingController::class, 'show']);
-        Route::put('/client/bookings/{booking}', [BookingController::class, 'update']);
-        Route::delete('/client/bookings/{booking}', [BookingController::class, 'destroy']);
-        Route::post('/client/bookings/{booking}/cancel', [BookingController::class, 'requestCancellation']);
+        Route::get('/client/MyBookings', [BookingController::class, 'index']);
+        Route::post('/client/MyBookings', [BookingController::class, 'store']);
+        Route::get('/client/MyBookings/{booking}', [BookingController::class, 'show']);
+        Route::put('/client/MyBookings/{booking}', [BookingController::class, 'update']);
+        Route::delete('/client/MyBookings/{booking}', [BookingController::class, 'destroy']);
+        Route::post('/client/MyBookings/{booking}/cancel', [BookingController::class, 'requestCancellation']);
 
         // Payments routes (client)
         Route::post('/client/payments', [PaymentController::class, 'store']);
