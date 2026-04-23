@@ -95,7 +95,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/client/Package"
+        path="/client/Packages"
         element={
           <PrivateRoute requiredRole="client">
             <Suspense fallback={<PageLoader />}>

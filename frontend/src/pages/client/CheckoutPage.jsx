@@ -24,7 +24,7 @@ export default function CheckoutPage() {
         setBooking(JSON.parse(bookingData));
       } else {
         setTimeout(() => {
-          navigate('/client/services');
+          navigate('/client/Packages');
         }, 1000);
       }
     }

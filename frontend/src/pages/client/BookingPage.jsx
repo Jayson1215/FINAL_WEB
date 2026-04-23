@@ -110,7 +110,7 @@ export default function BookingPage() {
         <div className="text-center py-24 bg-white rounded-2xl border border-dashed border-[#E2E8F0] shadow-card">
           <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#94A3B8] mb-8">This session is no longer available</p>
           <button
-            onClick={() => navigate('/client/services')}
+            onClick={() => navigate('/client/Packages')}
             className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#E8734A] border-b border-[#E8734A] pb-1 hover:opacity-70 transition"
           >
             Browse Other Packages

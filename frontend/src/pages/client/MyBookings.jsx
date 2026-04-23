@@ -161,7 +161,7 @@ export default function MyBookings() {
       <div className="space-y-12 animate-fadeIn">
         {!loading && bookings.length > 0 && (
           <div className="flex justify-end mb-4">
-             <Link to="/client/services">
+             <Link to="/client/Packages">
               <button className="bg-gradient-to-r from-[#E8734A] to-[#FB923C] text-white px-10 py-5 rounded-2xl text-[11px] font-bold uppercase tracking-[0.3em] hover:shadow-2xl hover:translate-y-[-2px] transition-all shadow-xl">
                 + New Request
               </button>
@@ -279,7 +279,7 @@ export default function MyBookings() {
           <div className="text-center py-32 bg-white rounded-[4rem] border border-[#F1F5F9] shadow-premium">
             <div className="w-24 h-24 bg-[#F0F2F5] rounded-full flex items-center justify-center mx-auto mb-8 animate-pulse text-4xl opacity-40">📸</div>
             <h3 className="text-2xl text-[#1E293B] mb-8 font-serif">Your registry is currently empty.</h3>
-            <Link to="/client/services">
+            <Link to="/client/Packages">
               <button className="bg-gradient-to-r from-[#E8734A] to-[#FB923C] text-white px-12 py-6 rounded-2xl font-bold uppercase tracking-[0.4em] hover:shadow-2xl transition shadow-xl text-[11px]">
                 ✨ Explore Collections
               </button>

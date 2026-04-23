@@ -64,7 +64,7 @@ export default function Landing() {
     if (loading) return;
 
     const pathToId = {
-      '/client/Package': 'services',
+      '/client/Packages': 'services',
       '/client/Portfolio': 'gallery',
       '/client/MyBookings': 'registry',
       '/client/contact': 'contact'
@@ -131,7 +131,7 @@ export default function Landing() {
     };
 
     const idToPath = {
-      'services': '/client/Package',
+      'services': '/client/Packages',
       'gallery': '/client/Portfolio',
       'registry': '/client/MyBookings',
       'contact': '/client/contact',
@@ -320,7 +320,7 @@ export default function Landing() {
       });
       
       const idToPath = {
-      'services': '/client/Package',
+      'services': '/client/Packages',
       'gallery': '/client/Portfolio',
       'registry': '/client/MyBookings',
       'contact': '/client/contact',
@@ -338,7 +338,7 @@ export default function Landing() {
       <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-6 md:px-12 py-5 ${navScrolled ? 'bg-white/90 backdrop-blur-xl py-3 border-b border-[#F1F5F9] shadow-sm' : ''}`}>
         <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
           <div className="hidden lg:flex gap-8 items-center justify-start">
-            <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Package' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</a>
+            <a href="#services" onClick={(e) => handleNavClick(e, 'services')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Packages' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</a>
             <a href="#gallery" onClick={(e) => handleNavClick(e, 'gallery')} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</a>
           </div>
           <div className="flex justify-center">

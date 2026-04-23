@@ -8,11 +8,12 @@
 - **Documentation**: Created `documentation.md` covering Tech Stack, Database Schema, and Core Functionalities.
 
 ### Changed
-- **Client Landing Page**: Renamed the client starting page from `/client/dashboard` to **`/client/homepage`**.
-- **Unified Hero Experience**: 
-  - The client homepage now perfectly mirrors the high-impact style of the public site, using the cinematic video background by default.
-  - Heading updated to: **"Manage Your Visual Story."** with the signature split-color typography.
-  - Personalized welcome messages (e.g., "WELCOME BACK, [NAME]") now appear at the top of the client portal.
+- **Route Renaming (Case-Sensitive & Plural)**:
+  - `/client/services` ➔ **`/client/Packages`** (plural)
+  - `/client/Portfolio`
+  - `/client/Gallery`
+  - `/client/MyBookings`
+  - Fixed all internal navigation links (Dashboard, Checkout, My Bookings) to point to the new `/client/Packages` route.
 - **Enhanced Navigation**: 
   - Added smooth scroll-to-top behavior for the primary "Homepage" link and "LIGHT" logo.
   - Updated all login and social authentication redirects to point directly to the new `/client/homepage`.
