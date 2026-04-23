@@ -6,6 +6,7 @@ import { bookingService } from '../services/bookingService';
 import { portfolioService } from '../services/portfolioService';
 import Chatbot from '../components/common/Chatbot';
 import LocationPickerMap from '../components/common/LocationPickerMap';
+import NotificationBell from '../components/common/NotificationBell';
 import { resolveImageUrl } from '../utils/imageUrl';
 
 export default function Landing() {
@@ -33,6 +34,7 @@ export default function Landing() {
   // Contact Form States
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [selectedBookingDetail, setSelectedBookingDetail] = useState(null);
+  const [highlightedBookingId, setHighlightedBookingId] = useState('');
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -81,6 +83,42 @@ export default function Landing() {
       }, 500);
     }
   }, [loading, location.pathname]);
+
+  useEffect(() => {
+    if (loading || !user || user.role !== 'client') return;
+
+    const params = new URLSearchParams(location.search);
+    const bookingId = params.get('booking');
+
+    if (!bookingId) return;
+
+    setHighlightedBookingId(bookingId);
+
+    const scrollToBooking = () => {
+      const bookingElement = document.querySelector(`[data-booking-id="${bookingId}"]`);
+
+      if (bookingElement) {
+        bookingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      const registryElement = document.getElementById('registry');
+      if (registryElement) {
+        window.scrollTo({
+          top: registryElement.offsetTop - 80,
+          behavior: 'smooth',
+        });
+      }
+    };
+
+    const timer = setTimeout(scrollToBooking, 300);
+    const clearHighlightTimer = setTimeout(() => setHighlightedBookingId(''), 6000);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(clearHighlightTimer);
+    };
+  }, [loading, location.search, user, bookings]);
 
   // ScrollSpy - Update URL as user scrolls
   useEffect(() => {
@@ -199,8 +237,13 @@ export default function Landing() {
         add_on_ids: [],
       };
       const response = await bookingService.createBooking(payload);
-      sessionStorage.setItem('bookingData', JSON.stringify(response.data));
-      navigate('/client/checkout');
+      const nextBookings = [...bookings, response.data].sort((a, b) =>
+        new Date(b.booking_date) - new Date(a.booking_date)
+      );
+      setBookings(nextBookings);
+      setBookingServiceDetail(null);
+      setBookingFormData({ bookingDate: '', bookingTime: '', location: '', specialRequests: '' });
+      navigate(`/client/bookings?booking=${response.data.id}&highlight=1`);
     } catch (err) {
       setBookingError(err.response?.data?.message || 'Failed to create booking.');
     } finally {
@@ -271,10 +314,19 @@ export default function Landing() {
     }
 
     switch (status) {
-      case 'approved': return { label: 'Available', bg: 'bg-blue-50', text: 'text-blue-600', dot: 'bg-blue-500' };
+      case 'approved':
+      case 'confirmed':
+        return { label: 'Confirmed', bg: 'bg-emerald-50', text: 'text-emerald-600', dot: 'bg-emerald-500' };
       case 'awaiting_payment': return { label: 'Payment Required', bg: 'bg-orange-50', text: 'text-orange-600', dot: 'bg-orange-500' };
       case 'paid': return { label: 'Confirmed & Paid', bg: 'bg-emerald-50', text: 'text-emerald-600', dot: 'bg-emerald-500' };
-      default: return { label: 'Reviewing', bg: 'bg-amber-50', text: 'text-amber-600', dot: 'bg-amber-500' };
+      case 'rejected':
+      case 'cancelled':
+        return { label: 'Rejected', bg: 'bg-rose-50', text: 'text-rose-600', dot: 'bg-rose-500' };
+      case 'finished':
+        return { label: 'Completed', bg: 'bg-sky-50', text: 'text-sky-600', dot: 'bg-sky-500' };
+      case 'pending':
+      default:
+        return { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-600', dot: 'bg-amber-500' };
     }
   };
 
@@ -324,6 +376,7 @@ export default function Landing() {
               <>
                 <a href="#registry" onClick={(e) => handleNavClick(e, 'registry')} className={`hidden lg:block text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/bookings' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>My Bookings</a>
                 <a href="#contact" onClick={(e) => handleNavClick(e, 'contact')} className={`hidden sm:block text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/contact' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Contact</a>
+                <NotificationBell />
                 <button onClick={handleLogout} className="bg-[#1E293B] text-white px-6 py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all whitespace-nowrap">Logout</button>
               </>
             ) : (
@@ -395,7 +448,12 @@ export default function Landing() {
                 const hasPendingPayment = booking.payment && booking.payment.payment_status === 'pending';
 
                 return (
-                  <div key={booking.id} className="reveal bg-[#F8F9FB] rounded-[2.5rem] p-8 md:p-12 border border-[#F1F5F9] flex flex-col lg:flex-row gap-10 items-center" style={{ transitionDelay: `${idx * 100}ms` }}>
+                  <div
+                    key={booking.id}
+                    data-booking-id={booking.id}
+                    className={`reveal rounded-[2.5rem] p-8 md:p-12 border flex flex-col lg:flex-row gap-10 items-center transition-all duration-500 ${highlightedBookingId === booking.id ? 'bg-[#FFF7ED] border-[#FDBA74] shadow-[0_0_0_3px_rgba(251,146,60,0.25)]' : 'bg-[#F8F9FB] border-[#F1F5F9]'}`}
+                    style={{ transitionDelay: `${idx * 100}ms` }}
+                  >
                     <div className="w-full lg:w-1/4 aspect-video lg:aspect-square rounded-2xl overflow-hidden bg-white shadow-sm"><img src={getServiceImageUrl(booking.service)} alt="Service" className="w-full h-full object-cover" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /></div>
                     <div className="flex-1 space-y-6">
                       <div className="flex justify-between items-start">
@@ -407,6 +465,12 @@ export default function Landing() {
                          <div className="space-y-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Investment</p><p className="text-xs font-bold text-[#1E293B]">₱{parseFloat(booking.total_amount).toLocaleString()}</p></div>
                          <div className="space-y-1 col-span-2 md:col-span-1"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Location</p><p className="text-xs font-bold text-[#1E293B] truncate">📍 {booking.location}</p></div>
                       </div>
+                      {booking.admin_notes && (
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl px-4 py-3">
+                          <p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] mb-1">Admin Notes</p>
+                          <p className="text-xs text-[#1E293B] leading-relaxed">{booking.admin_notes}</p>
+                        </div>
+                      )}
                       <div className="pt-6 border-t border-[#F1F5F9] flex gap-3">
                          {booking.status === 'awaiting_payment' && !hasPendingPayment && (
                             <button onClick={() => navigate('/client/checkout', { state: { booking } })} className="bg-[#E8734A] text-white px-8 py-3 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:shadow-lg transition-all shadow-md">Proceed to Payment</button>
@@ -580,6 +644,7 @@ export default function Landing() {
                 </div>
                 <div className="space-y-1 pt-4 border-t border-[#F1F5F9]"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Venue / Location</p><p className="text-xs font-medium text-[#1E293B] leading-relaxed">📍 {selectedBookingDetail.location}</p></div>
                 {selectedBookingDetail.special_requests && (<div className="space-y-1 pt-4 border-t border-[#F1F5F9]"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Special Requests</p><p className="text-xs text-[#64748B] italic leading-relaxed">"{selectedBookingDetail.special_requests}"</p></div>)}
+                {selectedBookingDetail.admin_notes && (<div className="space-y-1 pt-4 border-t border-[#F1F5F9]"><p className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8]">Admin Notes</p><p className="text-xs text-[#1E293B] leading-relaxed">{selectedBookingDetail.admin_notes}</p></div>)}
                 <div className="pt-6"><button onClick={() => setSelectedBookingDetail(null)} className="w-full bg-[#1E293B] text-white py-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all">Close Registry</button></div>
               </div>
             </div>

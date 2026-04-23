@@ -20,6 +20,7 @@ class Booking extends Model
         'booking_date',
         'booking_time',
         'status',
+        'admin_notes',
         'refund_status',
         'cancellation_reason',
         'total_amount',

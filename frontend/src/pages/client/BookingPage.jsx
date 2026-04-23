@@ -86,8 +86,7 @@ export default function BookingPage() {
       };
       
       const response = await bookingService.createBooking(bookingPayload);
-      sessionStorage.setItem('bookingData', JSON.stringify(response.data));
-      navigate('/client/checkout');
+      navigate(`/client/bookings?booking=${response.data.id}&highlight=1`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create booking.');
     } finally {
@@ -264,7 +263,7 @@ export default function BookingPage() {
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     <span>Processing...</span>
                   </>
-                ) : 'Continue to Checkout'}
+                ) : 'Submit Booking Request'}
               </button>
             </form>
           </div>

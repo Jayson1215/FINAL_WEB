@@ -11,6 +11,12 @@ export const bookingService = {
 
   // Admin bookings
   getAllBookings: () => api.get('/admin/bookings'),
-  updateBookingStatus: (id, status) => api.patch(`/admin/bookings/${id}/status`, { status }),
+  updateBookingStatus: (id, statusOrPayload, adminNotes = null) => {
+    const payload = typeof statusOrPayload === 'object'
+      ? statusOrPayload
+      : { status: statusOrPayload, ...(adminNotes !== null ? { admin_notes: adminNotes } : {}) };
+
+    return api.patch(`/admin/bookings/${id}/status`, payload);
+  },
   processRefund: (id) => api.post(`/admin/bookings/${id}/refund`),
 };

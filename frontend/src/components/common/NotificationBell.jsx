@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BellIcon } from '@heroicons/react/24/outline';
 import notificationService from '../../services/notificationService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
@@ -9,8 +10,56 @@ const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const getFallbackPath = (notif) => {
+    const title = String(notif?.title || '').toLowerCase();
+    const message = String(notif?.message || '').toLowerCase();
+
+    if (user?.role === 'client') {
+      return '/client/bookings';
+    }
+
+    if (title.includes('booking') || message.includes('booking') || title.includes('session') || message.includes('session')) {
+      return '/admin/bookings';
+    }
+    if (title.includes('user') || title.includes('register') || message.includes('user')) {
+      return '/admin/users';
+    }
+    if (title.includes('payment') || title.includes('paid')) {
+      return '/admin/bookings';
+    }
+    if (title.includes('report') || title.includes('revenue')) {
+      return '/admin/reports';
+    }
+
+    return '/admin/dashboard';
+  };
+
+  const getNotificationPath = (notif) => {
+    const rawLink = String(notif?.link || '').trim();
+
+    if (rawLink.startsWith('/')) {
+      return rawLink;
+    }
+
+    if (/^https?:\/\//i.test(rawLink)) {
+      try {
+        const parsed = new URL(rawLink);
+        if (parsed.pathname) {
+          return `${parsed.pathname}${parsed.search}`;
+        }
+      } catch {
+        // Fall back to role/title based path
+      }
+    }
+
+    return getFallbackPath(notif);
+  };
 
   const fetchNotifications = async () => {
+    if (!user) return;
+
     try {
       const data = await notificationService.getNotifications();
       setNotifications(data.data || []);
@@ -18,7 +67,26 @@ const NotificationBell = () => {
     } catch (error) { console.error('Failed to fetch notifications:', error); }
   };
 
-  useEffect(() => { fetchNotifications(); const i = setInterval(fetchNotifications, 45000); return () => clearInterval(i); }, []);
+  useEffect(() => {
+    if (!user) return undefined;
+
+    fetchNotifications();
+
+    const intervalId = setInterval(fetchNotifications, 8000);
+    const handleVisible = () => {
+      if (document.visibilityState === 'visible') {
+        fetchNotifications();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisible);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisible);
+    };
+  }, [user]);
+
   useEffect(() => {
     const h = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsOpen(false); };
     document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h);
@@ -26,25 +94,16 @@ const NotificationBell = () => {
 
   const handleNotificationClick = async (notif) => {
     try {
-      // Mark as read
       if (!notif.read_at) {
         await notificationService.markAsRead(notif.id);
-        fetchNotifications();
+        setNotifications((prev) => prev.map((item) => (
+          item.id === notif.id ? { ...item, read_at: new Date().toISOString() } : item
+        )));
+        setUnreadCount((prev) => Math.max(0, prev - 1));
       }
 
-      // Determine navigation path
-      const title = notif.title.toLowerCase();
-      const message = notif.message.toLowerCase();
-
-      if (title.includes('booking') || message.includes('booking') || title.includes('session') || message.includes('session')) {
-        navigate('/admin/bookings');
-      } else if (title.includes('user') || title.includes('register') || message.includes('user')) {
-        navigate('/admin/users');
-      } else if (title.includes('payment') || title.includes('paid')) {
-        navigate('/admin/bookings');
-      } else if (title.includes('report') || title.includes('revenue')) {
-        navigate('/admin/reports');
-      }
+      const destination = getNotificationPath(notif);
+      navigate(destination);
 
       setIsOpen(false);
     } catch (e) {
@@ -52,7 +111,17 @@ const NotificationBell = () => {
     }
   };
 
-  const handleMarkAllAsRead = async () => { try { await notificationService.markAllAsRead(); fetchNotifications(); } catch (e) {} };
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications((prev) => prev.map((notif) => ({ ...notif, read_at: notif.read_at || new Date().toISOString() })));
+      setUnreadCount(0);
+    } catch (e) {
+      console.error('Failed to mark all notifications as read:', e);
+    }
+  };
+
+  if (!user) return null;
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -80,7 +149,15 @@ const NotificationBell = () => {
           </div>
           {notifications.length > 0 && (
             <div className="p-3 bg-[#F8F9FB] border-t border-[#F1F5F9] text-center">
-              <button onClick={() => { navigate('/admin/dashboard'); setIsOpen(false); }} className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] hover:text-[#E8734A]">Dashboard Overview</button>
+              <button
+                onClick={() => {
+                  navigate(user.role === 'client' ? '/client/bookings' : '/admin/dashboard');
+                  setIsOpen(false);
+                }}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] hover:text-[#E8734A]"
+              >
+                {user.role === 'client' ? 'Go To My Bookings' : 'Dashboard Overview'}
+              </button>
             </div>
           )}
         </div>

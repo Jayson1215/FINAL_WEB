@@ -81,7 +81,7 @@ class BookingController extends Controller
                     'type' => 'booking_created',
                     'title' => 'New Booking Received',
                     'message' => "{$request->user()->name} has booked {$service->name} for " . date('M d, Y', strtotime($booking->booking_date)),
-                    'link' => '/admin/bookings'
+                    'link' => '/admin/bookings?booking=' . $booking->id
                 ]);
             }
 
@@ -150,31 +150,47 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|in:pending,approved,awaiting_payment,paid,confirmed,cancelled,finished,rejected',
+            'admin_notes' => 'nullable|string|max:1000',
         ]);
 
-        $booking->update(['status' => $validated['status']]);
+        $updatePayload = [
+            'status' => $validated['status'],
+        ];
+
+        if ($request->has('admin_notes')) {
+            $updatePayload['admin_notes'] = $validated['admin_notes'];
+        }
+
+        $booking->update($updatePayload);
 
         // Custom messages based on the new flow
         $messages = [
-            'approved' => "Availability confirmed! We are ready for your session on " . date('M d', strtotime($booking->booking_date)) . ".",
+            'approved' => 'Your booking is available.',
             'awaiting_payment' => "Your request is ready. Please proceed to payment to finalize your booking.",
             'paid' => "Payment received! Your booking ID {$booking->id} is now fully confirmed.",
-            'rejected' => "We're sorry, but we cannot accommodate your request at this time.",
-            'finished' => "Thank you for choosing LIGHT Photography. Your session is now complete."
+            'confirmed' => 'Your booking is available.',
+            'rejected' => 'Your booking has been declined.',
+            'finished' => "Thank you for choosing LIGHT Photography. Your session is now complete.",
         ];
 
         $message = $messages[$validated['status']] ?? "Your booking status is now " . ucfirst($validated['status']) . ".";
+
+        $title = match ($validated['status']) {
+            'confirmed', 'approved' => 'Booking Confirmed',
+            'rejected' => 'Booking Declined',
+            default => 'Booking Update',
+        };
 
         // Notify Client
         Notification::create([
             'user_id' => $booking->user_id,
             'type' => 'booking_status_updated',
-            'title' => 'Booking Update',
+            'title' => $title,
             'message' => $message,
-            'link' => '/client/bookings'
+            'link' => '/client/bookings?booking=' . $booking->id . '&highlight=1'
         ]);
 
-        return response()->json($booking);
+        return response()->json($booking->fresh(['service', 'addOns', 'payment']));
     }
 
     /**

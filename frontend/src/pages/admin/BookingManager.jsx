@@ -9,7 +9,35 @@ export default function BookingManager() {
 
   useEffect(() => { fetchBookings(); }, []);
   const fetchBookings = async () => { try { setLoading(true); const r = await bookingService.getAllBookings(); setBookings(r.data); } catch(e){ setError('Failed to load bookings'); } finally { setLoading(false); } };
-  const handleStatusChange = async (id, s) => { try { setBookings(bookings.map(b=>b.id===id?{...b,status:s}:b)); await bookingService.updateBookingStatus(id,s); } catch(e){ setError('Failed to update status'); } };
+
+  const handleStatusChange = async (booking, nextStatus, adminNotes = null) => {
+    const previous = bookings;
+
+    try {
+      setError('');
+      setBookings((prev) => prev.map((b) => (
+        b.id === booking.id
+          ? { ...b, status: nextStatus, ...(adminNotes !== null ? { admin_notes: adminNotes } : {}) }
+          : b
+      )));
+
+      const response = await bookingService.updateBookingStatus(booking.id, {
+        status: nextStatus,
+        ...(adminNotes !== null ? { admin_notes: adminNotes } : {}),
+      });
+
+      setBookings((prev) => prev.map((b) => (b.id === booking.id ? response.data : b)));
+    } catch (e) {
+      setBookings(previous);
+      setError('Failed to update status');
+    }
+  };
+
+  const handleDecisionWithNotes = (booking, nextStatus) => {
+    const adminNotes = window.prompt('Optional admin note for the client:', booking.admin_notes || '');
+    if (adminNotes === null) return;
+    handleStatusChange(booking, nextStatus, adminNotes);
+  };
   
   const getStatusStyle = (s) => {
     switch(s) {
@@ -77,16 +105,24 @@ export default function BookingManager() {
                       <div className="flex flex-col items-end gap-3">
                         <div className="flex items-center gap-2">
                            {b.status === 'pending' && (
-                              <button 
-                                onClick={() => handleStatusChange(b.id, 'approved')}
-                                className="bg-[#E0F2FE] text-[#0369A1] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#0EA5E9] hover:text-white transition-all shadow-sm"
+                              <button
+                                onClick={() => handleDecisionWithNotes(b, 'confirmed')}
+                                className="bg-[#DCFCE7] text-[#166534] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#22C55E] hover:text-white transition-all shadow-sm"
                               >
-                                Confirm Availability
+                                Confirm (Available)
+                              </button>
+                           )}
+                           {b.status === 'pending' && (
+                              <button
+                                onClick={() => handleDecisionWithNotes(b, 'rejected')}
+                                className="bg-[#FEE2E2] text-[#991B1B] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#EF4444] hover:text-white transition-all shadow-sm"
+                              >
+                                Reject (Unavailable)
                               </button>
                            )}
                            {b.status === 'approved' && (
                               <button 
-                                onClick={() => handleStatusChange(b.id, 'awaiting_payment')}
+                                onClick={() => handleStatusChange(b, 'awaiting_payment')}
                                 className="bg-[#FFEDD5] text-[#9A3412] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#EA580C] hover:text-white transition-all shadow-sm"
                               >
                                 Request Payment
@@ -94,13 +130,13 @@ export default function BookingManager() {
                            )}
                             {b.status === 'awaiting_payment' && (
                               <button 
-                                onClick={() => handleStatusChange(b.id, 'paid')}
+                                onClick={() => handleStatusChange(b, 'paid')}
                                 className="bg-[#DCFCE7] text-[#15803D] px-4 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest hover:bg-[#10B981] hover:text-white transition-all shadow-sm"
                               >
                                 Confirm Payment
                               </button>
                            )}
-                           <select value={b.status} onChange={(e)=>handleStatusChange(b.id,e.target.value)}
+                           <select value={b.status} onChange={(e)=>handleStatusChange(b, e.target.value)}
                             className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg cursor-pointer outline-none transition-all shadow-sm border border-transparent focus:border-[#E8734A] ${getStatusStyle(b.status)}`}>
                             <option value="pending">Pending</option>
                             <option value="approved">Approved</option>
@@ -112,6 +148,11 @@ export default function BookingManager() {
                             <option value="cancelled">Cancelled</option>
                           </select>
                         </div>
+                        {b.admin_notes && (
+                          <p className="text-[10px] text-[#64748B] max-w-[260px] text-right leading-relaxed">
+                            Note: {b.admin_notes}
+                          </p>
+                        )}
                         {b.special_requests && (
                            <div className="group/note relative">
                              <span className="text-[9px] font-bold uppercase tracking-widest text-[#94A3B8] cursor-help border-b border-dashed border-[#94A3B8] hover:text-[#E8734A] transition-colors">View Client Brief</span>

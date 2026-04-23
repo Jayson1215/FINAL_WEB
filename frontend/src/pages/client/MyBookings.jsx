@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { bookingService } from '../../services/bookingService';
 import { resolveImageUrl } from '../../utils/imageUrl';
@@ -9,11 +9,36 @@ export default function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const [highlightedBookingId, setHighlightedBookingId] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const bookingId = params.get('booking');
+
+    if (!bookingId || loading) return;
+
+    setHighlightedBookingId(bookingId);
+
+    const timer = setTimeout(() => {
+      const element = document.querySelector(`[data-booking-id="${bookingId}"]`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 250);
+
+    const clearTimer = setTimeout(() => setHighlightedBookingId(''), 6000);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(clearTimer);
+    };
+  }, [loading, location.search]);
 
   const fetchBookings = async () => {
     try {
@@ -55,14 +80,16 @@ export default function MyBookings() {
 
   const getStatusConfig = (status) => {
     switch (status) {
-      case 'approved': return { label: 'Available', bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100', dot: 'bg-blue-500' };
+      case 'approved':
+      case 'confirmed':
+        return { label: 'Confirmed', bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', dot: 'bg-emerald-500' };
       case 'awaiting_payment': return { label: 'Payment Required', bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-100', dot: 'bg-orange-500' };
       case 'paid': return { label: 'Confirmed & Paid', bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', dot: 'bg-emerald-500' };
-      case 'confirmed': return { label: 'Approved', bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-100', dot: 'bg-emerald-500' };
       case 'rejected': return { label: 'Rejected', bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100', dot: 'bg-rose-500' };
       case 'cancelled': return { label: 'Cancelled', bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-100', dot: 'bg-rose-500' };
       case 'finished': return { label: 'Finished', bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-100', dot: 'bg-sky-500' };
-      default: return { label: 'Reviewing', bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', dot: 'bg-amber-500' };
+      case 'pending':
+      default: return { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-100', dot: 'bg-amber-500' };
     }
   };
 
@@ -152,7 +179,11 @@ export default function MyBookings() {
               const bookingDate = new Date(booking.booking_date);
               
               return (
-                <div key={booking.id} className="group bg-white rounded-[3rem] shadow-premium hover:shadow-card-hover border border-[#F1F5F9] overflow-hidden transition-all duration-700">
+                <div
+                  key={booking.id}
+                  data-booking-id={booking.id}
+                  className={`group rounded-[3rem] shadow-premium hover:shadow-card-hover border overflow-hidden transition-all duration-700 ${highlightedBookingId === booking.id ? 'bg-[#FFF7ED] border-[#FDBA74] shadow-[0_0_0_3px_rgba(251,146,60,0.25)]' : 'bg-white border-[#F1F5F9]'}`}
+                >
                   <div className="flex flex-col lg:flex-row">
                     {/* Image Area */}
                     <div className="w-full lg:w-[400px] relative h-80 lg:h-auto bg-[#F8F9FB] overflow-hidden">
@@ -214,6 +245,13 @@ export default function MyBookings() {
                           </div>
                         )}
                       </div>
+
+                      {booking.admin_notes && (
+                        <div className="mb-10 bg-white border border-[#E2E8F0] rounded-2xl px-6 py-5">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#94A3B8] mb-2">Admin Notes</p>
+                          <p className="text-sm text-[#1E293B] leading-relaxed">{booking.admin_notes}</p>
+                        </div>
+                      )}
 
                       <div className="mt-auto flex flex-wrap items-center justify-between gap-6 pt-10 border-t border-[#F1F5F9]">
                         <p className="text-[10px] text-[#94A3B8] font-bold tracking-[0.4em] uppercase">REF_ID: {booking.id.split('-')[0].toUpperCase()}</p>

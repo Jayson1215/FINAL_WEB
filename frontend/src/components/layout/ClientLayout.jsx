@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Chatbot from '../common/Chatbot';
+import NotificationBell from '../common/NotificationBell';
 
 export default function ClientLayout({ children, title }) {
   const { logout, user } = useAuth();
@@ -70,6 +71,7 @@ export default function ClientLayout({ children, title }) {
           <div className="flex gap-6 md:gap-8 items-center justify-end">
              <Link to="/client/bookings" className={`hidden lg:block text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/bookings' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>My Bookings</Link>
              <Link to="/client/contact" className={`hidden sm:block text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/contact' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Contact</Link>
+             <NotificationBell />
              <button onClick={() => setShowLogoutModal(true)} className="bg-[#1E293B] text-white px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] hover:shadow-lg transition-all duration-500 whitespace-nowrap">
                Logout
              </button>
