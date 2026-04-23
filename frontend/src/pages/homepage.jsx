@@ -515,7 +515,7 @@ export default function Landing() {
                 <div className="px-5 pb-5 flex-1 flex flex-col space-y-5">
                   <div><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#E8734A] mb-2">{service.category}</p><h3 className="text-xl font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{service.name}</h3></div>
                   <p className="text-xs text-[#64748B] leading-relaxed line-clamp-2 italic font-medium">"{service.description}"</p>
-                  <div className="flex justify-between items-center pt-5 border-t border-[#F1F5F9] mt-auto"><span className="text-xl font-serif font-bold text-[#1E293B]">₱{parseFloat(service.price).toLocaleString()}</span><button onClick={(e) => { e.stopPropagation(); handleBookNow(service); }} className="bg-[#1E293B] text-white px-5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all duration-500 shadow-md">Book</button></div>
+                  <div className="flex justify-between items-center pt-5 border-t border-[#F1F5F9] mt-auto"><span className="text-xl font-serif font-bold text-[#1E293B]">₱{parseFloat(service.price).toLocaleString()}</span><button onClick={(e) => { e.stopPropagation(); handleBookNow(service); }} className="bg-[#1E293B] text-white px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all duration-500 shadow-md">Book Now</button></div>
                 </div>
               </div>
             );})}
@@ -644,7 +644,7 @@ export default function Landing() {
                 <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Event Location</label><input type="text" placeholder="Venue or Address" required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all" value={bookingFormData.location} onChange={e => setBookingFormData({...bookingFormData, location: e.target.value})} /></div>
                 <LocationPickerMap locationText={bookingFormData.location} onLocationSelect={handleMapLocationPick} height="200px" />
                 <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Special Requests</label><textarea rows={2} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all resize-none" placeholder="Notes for the photographer..." value={bookingFormData.specialRequests} onChange={e => setBookingFormData({...bookingFormData, specialRequests: e.target.value})}></textarea></div>
-                <button type="submit" disabled={bookingSubmitting} className="w-full bg-[#1E293B] text-white py-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all">{bookingSubmitting ? 'Processing...' : 'Request Session →'}</button>
+                <button type="submit" disabled={bookingSubmitting} className="w-full bg-[#1E293B] text-white py-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all">{bookingSubmitting ? 'Processing...' : 'Book Now'}</button>
               </form>
             </div>
           </div>
