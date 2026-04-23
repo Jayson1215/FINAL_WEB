@@ -37,6 +37,24 @@ const PageLoader = () => (
   </div>
 );
 
+const HomeEntry = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
+    return <Landing />;
+  }
+
+  if (user.role === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  return <Navigate to="/client/services" replace />;
+};
+
 // Protected route wrapper
 const PrivateRoute = ({ children, requiredRole }) => {
   const { user, loading } = useAuth();
@@ -189,7 +207,7 @@ function AppRoutes() {
       />
 
       {/* Main Entry Point */}
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<HomeEntry />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
