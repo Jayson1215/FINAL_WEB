@@ -83,8 +83,7 @@ export default function ServicesList() {
                     </div>
 
                     <button onClick={() => handleBookNow(service.id)} className="w-full bg-gradient-to-r from-[#1E293B] to-[#334155] text-white py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] shadow-lg hover:shadow-xl hover:translate-y-[-2px] transition-all duration-500 flex items-center justify-center gap-3 group/btn">
-                      Request This Package
-                      <span className="transition-transform duration-300 group-hover/btn:translate-x-2">→</span>
+                      Book Now
                     </button>
                   </div>
                 </div>
