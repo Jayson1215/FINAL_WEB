@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { serviceService } from '../../services/serviceService';
 import { bookingService } from '../../services/bookingService';
 import Chatbot from '../../components/common/Chatbot';
-import { resolveImageUrl } from '../../utils/imageUrl';
+import { resolveServiceImageUrl } from '../../utils/imageUrl';
 
 export default function ClientDashboard() {
   const [scrollY, setScrollY] = useState(0);
@@ -73,9 +73,7 @@ export default function ClientDashboard() {
     }
   };
 
-  const getServiceImageUrl = (imagePath) => {
-    return resolveImageUrl(imagePath);
-  };
+  const getServiceImageUrl = (serviceOrPath, category = '') => resolveServiceImageUrl(serviceOrPath, category);
 
   const getStatusConfig = (status) => {
     switch (status) {
@@ -156,7 +154,7 @@ export default function ClientDashboard() {
               return (
                 <div key={booking.id} className="reveal bg-white rounded-[3rem] p-10 md:p-16 shadow-premium border border-[#F1F5F9] flex flex-col lg:flex-row gap-12 items-center" style={{ transitionDelay: `${idx * 100}ms` }}>
                   <div className="w-full lg:w-1/3 aspect-video lg:aspect-square rounded-[2rem] overflow-hidden bg-[#F8F9FB]">
-                     <img src={getServiceImageUrl(booking.service?.image_path)} alt={booking.service?.name} className="w-full h-full object-cover" />
+                     <img src={getServiceImageUrl(booking.service)} alt={booking.service?.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 space-y-8">
                     <div className="flex justify-between items-start">
@@ -212,7 +210,7 @@ export default function ClientDashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {dbServices.map((service, index) => {
-              const serviceImageUrl = getServiceImageUrl(service.image_path);
+              const serviceImageUrl = getServiceImageUrl(service);
               return (
               <div key={service.id} className="group bg-white border border-[#F1F5F9] rounded-[2.5rem] p-4 transition-all duration-700 hover:shadow-card-hover flex flex-col reveal" style={{ transitionDelay: `${index * 150}ms` }}>
                 <div className="relative rounded-[2rem] overflow-hidden aspect-[4/5] mb-8 bg-[#F8F9FB]">

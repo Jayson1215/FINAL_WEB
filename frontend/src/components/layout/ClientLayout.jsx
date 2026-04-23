@@ -11,6 +11,7 @@ export default function ClientLayout({ children, title }) {
   const [navScrolled, setNavScrolled] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [heroVideoFailed, setHeroVideoFailed] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,12 +83,27 @@ export default function ClientLayout({ children, title }) {
       {/* Hero Section - Homepage Exact Style (Mini Version) */}
       <section className="relative h-[65vh] flex items-center justify-center overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/images/studio-hero.png" 
-            alt="Hero Background" 
-            className="w-full h-full object-cover opacity-80"
-            style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }}
-          />
+          {heroVideoFailed ? (
+            <img 
+              src="/images/studio-hero.png" 
+              alt="Hero Background" 
+              className="w-full h-full object-cover opacity-80"
+              style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }}
+            />
+          ) : (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover opacity-80"
+              style={{ transform: `scale(1.05) translateY(${scrollY * 0.1}px)` }}
+              poster="/images/studio-hero.png"
+              onError={() => setHeroVideoFailed(true)}
+            >
+              <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
+            </video>
+          )}
           <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-[#F0F2F5]"></div>
         </div>
         

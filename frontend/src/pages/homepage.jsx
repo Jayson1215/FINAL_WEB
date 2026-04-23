@@ -7,7 +7,7 @@ import { portfolioService } from '../services/portfolioService';
 import Chatbot from '../components/common/Chatbot';
 import LocationPickerMap from '../components/common/LocationPickerMap';
 import NotificationBell from '../components/common/NotificationBell';
-import { resolveImageUrl } from '../utils/imageUrl';
+import { resolveImageUrl, resolveServiceImageUrl } from '../utils/imageUrl';
 
 export default function Landing() {
   const [scrollY, setScrollY] = useState(0);
@@ -267,35 +267,8 @@ export default function Landing() {
     }));
   };
 
-  const getImageFilename = (value) => {
-    if (!value) return '';
-    try {
-      const raw = String(value).trim();
-      if (!raw) return '';
-      if (/^https?:\/\//i.test(raw)) {
-        const parsed = new URL(raw);
-        return parsed.pathname.split('/').filter(Boolean).pop() || '';
-      }
-      return raw.replace(/^\/+/, '').split('/').filter(Boolean).pop() || '';
-    } catch {
-      return '';
-    }
-  };
-
-  const defaultServiceImageByFilename = {
-    'service_wedding.png': '/images/featured-work.png',
-    'service_portrait.png': '/images/about-photographer.png',
-    'service_editorial.png': '/images/studio-hero.png',
-    'service_event.png': '/images/featured-work.png',
-  };
-
   const getServiceImageUrl = (serviceOrImagePath) => {
-    const imagePath = typeof serviceOrImagePath === 'object' ? serviceOrImagePath?.image_path : serviceOrImagePath;
-    const filename = getImageFilename(imagePath);
-    if (filename && defaultServiceImageByFilename[filename]) {
-      return defaultServiceImageByFilename[filename];
-    }
-    return resolveImageUrl(imagePath);
+    return resolveServiceImageUrl(serviceOrImagePath);
   };
 
   const getPortfolioImageUrl = (imagePath) => resolveImageUrl(imagePath);

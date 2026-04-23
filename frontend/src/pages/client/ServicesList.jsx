@@ -2,21 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { serviceService } from '../../services/serviceService';
-
-function getImageFilename(value) {
-  if (!value) return '';
-  try {
-    const raw = String(value).trim();
-    if (!raw) return '';
-    if (/^https?:\/\//i.test(raw)) {
-      const parsed = new URL(raw);
-      return parsed.pathname.split('/').filter(Boolean).pop() || '';
-    }
-    return raw.replace(/^\/+/, '').split('/').filter(Boolean).pop() || '';
-  } catch {
-    return '';
-  }
-}
+import { resolveServiceImageUrl } from '../../utils/imageUrl';
 
 export default function ServicesList() {
   const [services, setServices] = useState([]);
@@ -31,10 +17,7 @@ export default function ServicesList() {
   };
 
   const handleBookNow = (id) => navigate(`/client/booking/${id}`);
-  const getServiceImageUrl = (path) => {
-    const filename = getImageFilename(path);
-    return filename ? `/images/${filename}` : '/images/studio-hero.png';
-  };
+  const getServiceImageUrl = (service) => resolveServiceImageUrl(service);
 
   const setImageFallback = (event) => {
     const target = event.currentTarget;
@@ -56,7 +39,7 @@ export default function ServicesList() {
           {/* Services Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {services.map((service) => {
-              const serviceImageUrl = getServiceImageUrl(service.image_path);
+              const serviceImageUrl = getServiceImageUrl(service);
               return (
                 <div key={service.id} className="group bg-white rounded-[2rem] overflow-hidden shadow-card hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-500 flex flex-col hover:border-[#E8734A]/20">
                   {/* Image Area */}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { bookingService } from '../../services/bookingService';
-import { resolveImageUrl } from '../../utils/imageUrl';
+import { resolveServiceImageUrl } from '../../utils/imageUrl';
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
@@ -74,9 +74,7 @@ export default function MyBookings() {
     return (booking.status === 'pending' || booking.status === 'approved') && bookingDate > now;
   };
 
-  const getServiceImageUrl = (imagePath) => {
-    return resolveImageUrl(imagePath);
-  };
+  const getServiceImageUrl = (service) => resolveServiceImageUrl(service);
 
   const getStatusConfig = (status) => {
     switch (status) {
@@ -174,7 +172,7 @@ export default function MyBookings() {
         {bookings.length > 0 ? (
           <div className="grid grid-cols-1 gap-12">
             {bookings.map((booking) => {
-              const serviceImageUrl = getServiceImageUrl(booking.service?.image_path);
+              const serviceImageUrl = getServiceImageUrl(booking.service);
               const status = getStatusConfig(booking.status);
               const bookingDate = new Date(booking.booking_date);
               
