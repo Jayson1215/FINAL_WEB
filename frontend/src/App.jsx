@@ -69,7 +69,9 @@ function AppRoutes() {
         path="/client/services"
         element={
           <PrivateRoute requiredRole="client">
-            <Landing />
+            <Suspense fallback={<PageLoader />}>
+              <ServicesList />
+            </Suspense>
           </PrivateRoute>
         }
       />
@@ -77,7 +79,9 @@ function AppRoutes() {
         path="/client/portfolio"
         element={
           <PrivateRoute requiredRole="client">
-            <Landing />
+            <Suspense fallback={<PageLoader />}>
+              <PortfolioGallery />
+            </Suspense>
           </PrivateRoute>
         }
       />
@@ -85,7 +89,9 @@ function AppRoutes() {
         path="/client/bookings"
         element={
           <PrivateRoute requiredRole="client">
-            <Landing />
+            <Suspense fallback={<PageLoader />}>
+              <MyBookings />
+            </Suspense>
           </PrivateRoute>
         }
       />
@@ -93,7 +99,9 @@ function AppRoutes() {
         path="/client/contact"
         element={
           <PrivateRoute requiredRole="client">
-            <Landing />
+            <Suspense fallback={<PageLoader />}>
+              <Contact />
+            </Suspense>
           </PrivateRoute>
         }
       />
