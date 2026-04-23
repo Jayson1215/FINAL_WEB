@@ -57,15 +57,14 @@ export default function ClientLayout({ children, title, fullHero = false }) {
           
           {/* Left Side Links */}
           <div className="hidden lg:flex gap-8 items-center justify-start">
-            <Link to="/client/dashboard" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/dashboard' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Dashboard</Link>
+            <Link to="/client/homepage" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/homepage' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Homepage</Link>
             <Link to="/client/Portfolio" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Portfolio</Link>
             <Link to="/client/Package" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Package' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Package</Link>
             <Link to="/client/Gallery" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Gallery' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</Link>
           </div>
 
-          {/* Center Logo */}
           <div className="flex justify-center">
-            <Link to="/" className="text-3xl font-serif text-[#1E293B] tracking-[0.2em] hover:text-[#E8734A] transition-all duration-500">
+            <Link to="/client/homepage" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-3xl font-serif text-[#1E293B] tracking-[0.2em] hover:text-[#E8734A] transition-all duration-500">
               LIGHT
             </Link>
           </div>
@@ -85,7 +84,7 @@ export default function ClientLayout({ children, title, fullHero = false }) {
       {/* Hero Section */}
       <section className={`relative flex items-center justify-center overflow-hidden bg-white transition-all duration-1000 ${fullHero ? 'h-[65vh]' : 'h-[35vh]'}`}>
         <div className="absolute inset-0 z-0">
-          {heroVideoFailed || !fullHero ? (
+          {heroVideoFailed ? (
             <img 
               src="/images/studio-hero.png" 
               alt="Hero Background" 
@@ -110,9 +109,18 @@ export default function ClientLayout({ children, title, fullHero = false }) {
         </div>
         
         <div className="relative z-10 text-center max-w-5xl px-6 space-y-6">
-          <p className="text-[11px] font-bold uppercase tracking-[0.6em] text-[#E8734A] animate-fadeIn">{fullHero ? 'Registry & Management' : 'Registry Explorer'}</p>
-          <h1 className={`${fullHero ? 'text-5xl md:text-8xl' : 'text-4xl md:text-6xl'} font-serif text-[#1E293B] leading-tight reveal tracking-tight`}>
-            {title}
+          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] animate-fadeIn">
+            {user ? `WELCOME BACK, ${user.name.toUpperCase()}` : (fullHero ? 'Registry & Management' : 'Registry Explorer')}
+          </p>
+          <h1 className={`${fullHero ? 'text-5xl md:text-8xl' : 'text-4xl md:text-6xl'} font-serif leading-tight reveal tracking-tight`}>
+            {title === "Manage Your Visual Story." ? (
+              <>
+                <span className="text-[#1E293B]">Manage Your</span> <br />
+                <span className="text-[#E8734A]">Visual Story.</span>
+              </>
+            ) : (
+              <span className="text-[#1E293B]">{title}</span>
+            )}
           </h1>
           <div className="flex justify-center reveal delay-300 pt-4">
              <div className="w-16 h-1 bg-gradient-to-r from-[#E8734A] to-[#FB923C] rounded-full"></div>
