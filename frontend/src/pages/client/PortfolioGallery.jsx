@@ -17,7 +17,7 @@ export default function PortfolioGallery() {
   const filtered = d.cat === 'all' ? d.list : d.list.filter(i => i.category === d.cat);
 
   return (
-    <ClientLayout title="Masterpiece Gallery">
+    <ClientLayout title="Masterpiece Gallery" hideHero={true}>
       {d.loading ? <div className="h-96 flex items-center justify-center animate-pulse">Loading Gallery...</div> : (
         <div className="space-y-12 animate-fadeIn">
           <div className="flex justify-center gap-2 flex-wrap bg-white p-2 rounded-2xl border w-fit mx-auto">

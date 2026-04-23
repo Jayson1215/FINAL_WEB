@@ -53,7 +53,7 @@ const HomeEntry = () => {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
-  return <Navigate to="/client/homepage" replace />;
+  return <Navigate to="/client/home" replace />;
 };
 
 // Protected route wrapper
@@ -85,7 +85,7 @@ function AppRoutes() {
 
       {/* Client Routes */}
       <Route
-        path="/client/homepage"
+        path="/client/home"
         element={
           <PrivateRoute requiredRole="client">
             <Suspense fallback={<PageLoader />}>
@@ -145,7 +145,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/client/booking/:serviceId"
+        path="/client/packages/book/:serviceId"
         element={
           <PrivateRoute requiredRole="client">
             <Suspense fallback={<PageLoader />}>

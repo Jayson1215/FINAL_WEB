@@ -35,7 +35,7 @@ export default function Login() {
           navigate('/');
         }
       } else {
-        navigate(user.role === 'admin' ? '/admin/dashboard' : '/client/homepage');
+        navigate(user.role === 'admin' ? '/admin/dashboard' : '/client/home');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials. Please try again.');

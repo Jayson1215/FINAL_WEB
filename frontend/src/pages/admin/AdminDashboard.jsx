@@ -10,39 +10,108 @@ export default function AdminDashboard() {
     const fetch = async () => {
       try {
         const [s, b] = await Promise.allSettled([paymentService.getReports(), bookingService.getAllBookings()]);
-        setD({ stats: s.status === 'fulfilled' ? s.value.data : {}, bookings: (b.status === 'fulfilled' ? b.value.data : []).slice(0, 8), loading: false, error: '' });
+        setD({ stats: s.status === 'fulfilled' ? s.value.data : {}, bookings: (b.status === 'fulfilled' ? b.value.data : []).slice(0, 10), loading: false, error: '' });
       } catch (e) { setD(p => ({ ...p, loading: false, error: 'Failed' })); }
     };
     fetch();
   }, []);
 
-  if (d.loading) return <AdminLayout title="..."><div className="h-96 flex items-center justify-center animate-pulse text-[#64748B]">Loading Studio Data...</div></AdminLayout>;
+  if (d.loading) return (
+    <AdminLayout title="Dashboard">
+      <div className="h-96 flex flex-col items-center justify-center space-y-4">
+        <div className="w-10 h-10 border-4 border-slate-200 border-t-[#E8734A] rounded-full animate-spin"></div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">Loading metrics...</p>
+      </div>
+    </AdminLayout>
+  );
 
-  const cards = [
-    { l: 'Revenue', v: `₱${(d.stats?.total_revenue || 0).toLocaleString()}`, c: 'text-[#E8734A]' },
-    { l: 'Sessions', v: d.stats?.total_bookings || 0, c: 'text-[#6366F1]' },
-    { l: 'Confirmed', v: d.stats?.confirmed_bookings || 0, c: 'text-[#10B981]' },
-    { l: 'Pending', v: d.stats?.pending_payments || 0, c: 'text-[#F59E0B]' }
+  const stats = [
+    { label: 'Total Revenue', value: `₱${(d.stats?.total_revenue || 0).toLocaleString()}`, color: 'bg-slate-900', icon: '₱' },
+    { label: 'Total Sessions', value: d.stats?.total_bookings || 0, color: 'bg-[#E8734A]', icon: '📸' },
+    { label: 'Confirmed', value: d.stats?.confirmed_bookings || 0, color: 'bg-indigo-500', icon: '✨' },
+    { label: 'Pending', value: d.stats?.pending_payments || 0, color: 'bg-emerald-500', icon: '💳' }
   ];
 
   return (
-    <AdminLayout title="Overview">
-      <div className="space-y-6">
-        <div className="bg-[#1E293B] rounded-2xl p-8 text-white"><h2 className="text-2xl font-serif">Studio Manager.</h2><p className="text-white/60 text-xs mt-1">Real-time session and revenue metrics.</p></div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {cards.map((c, i) => <div key={i} className="bg-white rounded-2xl p-5 border shadow-sm"><p className="text-[10px] text-[#94A3B8] uppercase font-bold tracking-widest">{c.l}</p><p className={`text-2xl font-bold mt-2 ${c.c}`}>{c.v}</p></div>)}
+    <AdminLayout title="Dashboard">
+      <div className="space-y-12 animate-fadeIn">
+        
+        {/* Metric Grid - Professional Clean Style */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((s, i) => (
+            <div key={i} className="bg-white rounded-2xl overflow-hidden border border-black/20 shadow-sm hover:shadow-md transition-all flex flex-col relative group">
+              <div className={`absolute top-0 left-0 right-0 h-1 ${s.color}`}></div>
+              <div className="p-8">
+                <div className="flex justify-between items-start mb-4">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-black">{s.label}</p>
+                  <span className="text-sm opacity-20 group-hover:opacity-100 transition-opacity">{s.icon}</span>
+                </div>
+                <h3 className="text-2xl font-bold text-black tracking-tight">{s.value}</h3>
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="bg-white rounded-2xl border overflow-hidden shadow-sm">
-          <div className="p-5 border-b font-bold text-[#1E293B]">Recent Activity</div>
+
+        {/* Recent Bookings - SaaS Data Style */}
+        <div className="bg-white rounded-[2rem] border border-black/20 shadow-sm overflow-hidden">
+          <div className="px-10 py-8 border-b border-black/10 flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-bold text-black uppercase tracking-widest">Recent Bookings</h3>
+              <p className="text-[10px] font-bold text-black uppercase tracking-[0.2em] mt-1">Live Reservation Stream</p>
+            </div>
+            <div className="flex items-center gap-3">
+               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+               <span className="text-[9px] font-bold text-black uppercase tracking-widest">Real-time</span>
+            </div>
+          </div>
+          
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-[#F8F9FB]"><tr>{['Client','Service','Amount','Status'].map(h => <th key={h} className="px-6 py-3 text-[#94A3B8] uppercase tracking-widest">{h}</th>)}</tr></thead>
-              <tbody>
-                {d.bookings.map(b => (
-                  <tr key={b.id} className="border-b hover:bg-gray-50"><td className="px-6 py-4 font-bold">{b.user?.name}</td><td className="px-6 py-4">{b.service?.name}</td><td className="px-6 py-4 font-bold">₱{parseFloat(b.total_amount).toLocaleString()}</td><td className="px-6 py-4"><span className="px-2 py-1 bg-gray-100 rounded-md font-bold uppercase text-[9px]">{b.status}</span></td></tr>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50 border-b border-black/20">
+                  {['Lead Client', 'Package Selection', 'Revenue', 'Status', 'Timeline'].map((h, i) => (
+                    <th key={h} className={`px-10 py-5 text-[9px] font-bold text-black uppercase tracking-[0.25em] ${i < 4 ? 'border-r border-black/10' : ''}`}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/10 bg-white">
+                {d.bookings.map((b, i) => (
+                  <tr key={b.id} className="group hover:bg-slate-50/50 transition-colors">
+                    <td className="px-10 py-6 border-r border-black/5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-bold text-black text-[10px] border border-black/10">
+                          {b.user?.name?.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-black">{b.user?.name}</p>
+                          <p className="text-[10px] text-black font-medium">{b.user?.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-10 py-6 text-xs font-medium text-black italic border-r border-black/5">"{b.service?.name}"</td>
+                    <td className="px-10 py-6 border-r border-black/5">
+                      <p className="text-xs font-bold text-black">₱{parseFloat(b.total_amount).toLocaleString()}</p>
+                    </td>
+                    <td className="px-10 py-6 border-r border-black/5">
+                      <span className={`px-3 py-1 rounded-md text-[8px] font-bold uppercase tracking-widest ${
+                        b.status === 'confirmed' ? 'bg-green-50 text-green-600 border border-black/10' : 
+                        b.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-black/10' : 'bg-slate-50 text-black border border-black/10'
+                      }`}>
+                        {b.status}
+                      </span>
+                    </td>
+                    <td className="px-10 py-6 text-[10px] font-bold text-black uppercase tracking-widest">
+                      {new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
+            {d.bookings.length === 0 && (
+              <div className="p-20 text-center">
+                <p className="text-black text-[10px] font-bold uppercase tracking-widest italic">No active records found.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

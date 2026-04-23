@@ -23,7 +23,7 @@ export default function SocialCallback() {
             localStorage.removeItem('bookingIntent');
             navigate(`/client/booking/${serviceId}`);
           } else {
-            navigate('/client/homepage');
+            navigate('/client/home');
           }
         }
       } catch (err) {
@@ -40,7 +40,7 @@ export default function SocialCallback() {
         <div className="w-16 h-16 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto"></div>
         <div className="space-y-2">
           <div className="flex justify-center">
-            <Link to="/client/homepage" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#1E293B] hover:text-[#E8734A] transition-all duration-500">
+            <Link to="/client/home" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#1E293B] hover:text-[#E8734A] transition-all duration-500">
               LIGHT Studio
             </Link>
           </div>
