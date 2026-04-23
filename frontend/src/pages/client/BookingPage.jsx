@@ -136,14 +136,14 @@ export default function BookingPage() {
                     <input type="time" required className="w-full bg-slate-50 p-3 rounded-lg text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.time} onChange={e => setF({...f, time: e.target.value})} />
                     
                     {sessionWindow && (
-                        <div className="absolute top-[2.5rem] left-0 w-full h-full pointer-events-none mt-2 animate-fadeIn">
-                           <div className="bg-black/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-xl flex items-center justify-between border border-white/10">
-                              <div className="space-y-0.5">
-                                 <p className="text-[6px] font-bold text-white opacity-40 uppercase tracking-widest">End Time ({sessionWindow.durationHours}h Session)</p>
-                                 <p className="text-[9px] font-bold text-[#E8734A] tracking-widest">{sessionWindow.end}</p>
+                        <div className="absolute top-[100%] left-0 w-full z-20 pt-2 animate-fadeIn">
+                           <div className="bg-black/95 backdrop-blur-md px-5 py-3 rounded-2xl shadow-2xl flex items-center justify-between border border-white/10 ring-4 ring-black/5">
+                              <div className="space-y-1">
+                                 <p className="text-[7px] font-bold text-white opacity-40 uppercase tracking-[0.2em]">Calculated End Time ({sessionWindow.durationHours}h Session)</p>
+                                 <p className="text-[11px] font-bold text-[#E8734A] tracking-[0.3em]">{sessionWindow.end}</p>
                               </div>
-                              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
-                                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                              <div className="w-8 h-8 rounded-full bg-[#E8734A]/20 flex items-center justify-center border border-[#E8734A]/30">
+                                 <svg className="w-4 h-4 text-[#E8734A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                               </div>
                            </div>
                         </div>
@@ -151,7 +151,7 @@ export default function BookingPage() {
                   </div>
                 </div>
 
-                <div className={`space-y-1.5 transition-all duration-500 ${sessionWindow ? 'pt-12' : ''}`}>
+                <div className={`space-y-1.5 transition-all duration-700 ${sessionWindow ? 'pt-16' : 'pt-0'}`}>
                   <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Venue Location</label>
                   <input type="text" placeholder="Specify Street, Barangay & Landmark" required className="w-full bg-slate-50 p-3 rounded-lg text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.loc} onChange={e => setF({...f, loc: e.target.value})} />
                 </div>
