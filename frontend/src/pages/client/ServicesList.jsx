@@ -23,7 +23,7 @@ export default function ServicesList() {
     const target = event.currentTarget;
     if (target.dataset.fallbackApplied === '1') return;
     target.dataset.fallbackApplied = '1';
-    target.src = '/images/studio-hero.png';
+    target.src = '/images/service_wedding.png';
   };
 
   return (
@@ -44,11 +44,12 @@ export default function ServicesList() {
                 <div key={service.id} className="group bg-white rounded-[2rem] overflow-hidden shadow-card hover:shadow-card-hover border border-[#F1F5F9] transition-all duration-500 flex flex-col hover:border-[#E8734A]/20">
                   {/* Image Area */}
                   <div className="relative h-72 bg-[#F8F9FB] overflow-hidden">
-                    {serviceImageUrl ? (
-                      <img src={serviceImageUrl} alt={service.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={setImageFallback} />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#E2E8F0] text-6xl">📸</div>
-                    )}
+                    <img 
+                      src={serviceImageUrl || '/images/service_wedding.png'} 
+                      alt={service.name} 
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
+                      onError={setImageFallback} 
+                    />
                     <div className="absolute top-6 left-6">
                       <span className="px-4 py-2 bg-white/95 backdrop-blur rounded-xl shadow-md text-[10px] font-bold uppercase tracking-wider text-[#1E293B] border border-[#F1F5F9]">
                         {service.category || 'Package'}
