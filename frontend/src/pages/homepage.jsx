@@ -213,7 +213,33 @@ export default function Landing() {
     setTimeout(() => setContactSubmitted(false), 5000);
   };
 
+  const getImageFilename = (value) => {
+    if (!value) return '';
+    try {
+      const raw = String(value).trim();
+      if (!raw) return '';
+      if (/^https?:\/\//i.test(raw)) {
+        const parsed = new URL(raw);
+        return parsed.pathname.split('/').filter(Boolean).pop() || '';
+      }
+      return raw.replace(/^\/+/, '').split('/').filter(Boolean).pop() || '';
+    } catch {
+      return '';
+    }
+  };
+
+  const defaultServiceImageByFilename = {
+    'service_wedding.png': '/images/featured-work.png',
+    'service_portrait.png': '/images/about-photographer.png',
+    'service_editorial.png': '/images/studio-hero.png',
+    'service_event.png': '/images/featured-work.png',
+  };
+
   const getServiceImageUrl = (imagePath) => {
+    const filename = getImageFilename(imagePath);
+    if (filename && defaultServiceImageByFilename[filename]) {
+      return defaultServiceImageByFilename[filename];
+    }
     return resolveImageUrl(imagePath);
   };
 
@@ -422,12 +448,25 @@ export default function Landing() {
             {dbServices.map((service, index) => {
               const serviceImageUrl = getServiceImageUrl(service.image_path);
               return (
-              <div key={service.id} className="group bg-white border border-[#F1F5F9] rounded-[2rem] p-3.5 transition-all duration-700 hover:shadow-card-hover flex flex-col reveal" style={{ transitionDelay: `${index * 150}ms` }}>
+              <div
+                key={service.id}
+                className="group bg-white border border-[#F1F5F9] rounded-[2rem] p-3.5 transition-all duration-700 hover:shadow-card-hover flex flex-col reveal cursor-pointer"
+                style={{ transitionDelay: `${index * 150}ms` }}
+                onClick={() => handleBookNow(service)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBookNow(service);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+              >
                 <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] mb-6 bg-[#F8F9FB]"><img src={serviceImageUrl} alt="Pkg" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /><div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-5 py-2.5 rounded-xl">Book Now</p></div></div>
                 <div className="px-5 pb-5 flex-1 flex flex-col space-y-5">
                   <div><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#E8734A] mb-2">{service.category}</p><h3 className="text-xl font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{service.name}</h3></div>
                   <p className="text-xs text-[#64748B] leading-relaxed line-clamp-2 italic font-medium">"{service.description}"</p>
-                  <div className="flex justify-between items-center pt-5 border-t border-[#F1F5F9] mt-auto"><span className="text-xl font-serif font-bold text-[#1E293B]">₱{parseFloat(service.price).toLocaleString()}</span><button onClick={() => handleBookNow(service)} className="bg-[#1E293B] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#E8734A] transition-all duration-500 shadow-md">→</button></div>
+                  <div className="flex justify-between items-center pt-5 border-t border-[#F1F5F9] mt-auto"><span className="text-xl font-serif font-bold text-[#1E293B]">₱{parseFloat(service.price).toLocaleString()}</span><button onClick={(e) => { e.stopPropagation(); handleBookNow(service); }} className="bg-[#1E293B] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#E8734A] transition-all duration-500 shadow-md">→</button></div>
                 </div>
               </div>
             );})}
