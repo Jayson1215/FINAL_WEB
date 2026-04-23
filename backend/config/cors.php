@@ -21,6 +21,7 @@ return [
 
     'allowed_origins_patterns' => [
         '#^https://finalweb.*\.vercel\.app$#',
+        '#^https://.*\.vercel\.app$#',
         '#^http://localhost.*$#',
         '#^http://127\.0\.0\.1.*$#',
     ],
