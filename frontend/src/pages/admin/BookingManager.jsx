@@ -155,9 +155,16 @@ export default function BookingManager() {
                             <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 w-1/3 bg-slate-100/50">Collection</td>
                             <td className="px-8 py-5 font-bold text-black italic">"{viewModal.b.service?.name}"</td>
                         </tr>
-                        <tr>
+                        <tr 
+                            className="cursor-pointer hover:bg-slate-100 transition-colors group/row" 
+                            title="Click to Navigate via Google Maps"
+                            onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(viewModal.b.location)}`, '_blank')}
+                        >
                             <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Venue Destination</td>
-                            <td className="px-8 py-5 font-bold text-black">{viewModal.b.location}</td>
+                            <td className="px-8 py-5 font-bold text-black flex items-center justify-between">
+                                <span>{viewModal.b.location}</span>
+                                <svg className="w-4 h-4 text-[#E8734A] opacity-0 group-hover/row:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            </td>
                         </tr>
                         <tr>
                             <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Logistics Date</td>
