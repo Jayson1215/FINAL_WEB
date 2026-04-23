@@ -81,7 +81,7 @@ class BookingController extends Controller
                     'type' => 'booking_created',
                     'title' => 'New Booking Received',
                     'message' => "{$request->user()->name} has booked {$service->name} for " . date('M d, Y', strtotime($booking->booking_date)),
-                    'link' => '/admin/bookings?booking=' . $booking->id
+                    'link' => '/admin/bookings?booking=' . $booking->id . '&highlight=1'
                 ]);
             }
 
@@ -220,7 +220,7 @@ class BookingController extends Controller
                 'type' => 'cancellation_requested',
                 'title' => 'Cancellation Request',
                 'message' => "{$request->user()->name} has requested to cancel their booking for {$booking->service->name}.",
-                'link' => '/admin/bookings'
+                'link' => '/admin/bookings?booking=' . $booking->id . '&highlight=1'
             ]);
         }
 

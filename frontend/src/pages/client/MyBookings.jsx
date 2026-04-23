@@ -180,7 +180,7 @@ export default function MyBookings() {
                 <div
                   key={booking.id}
                   data-booking-id={booking.id}
-                  className={`group rounded-[3rem] shadow-premium hover:shadow-card-hover border overflow-hidden transition-all duration-700 ${highlightedBookingId === booking.id ? 'bg-[#FFF7ED] border-[#FDBA74] shadow-[0_0_0_3px_rgba(251,146,60,0.25)]' : 'bg-white border-[#F1F5F9]'}`}
+                  className={`group rounded-[3rem] shadow-premium hover:shadow-card-hover border overflow-hidden transition-all duration-1000 ${highlightedBookingId === booking.id ? 'bg-[#FFF7ED] border-[#FDBA74] ring-8 ring-[#FB923C]/10 shadow-2xl scale-[1.01] z-10' : 'bg-white border-[#F1F5F9]'}`}
                 >
                   <div className="flex flex-col lg:flex-row">
                     {/* Image Area */}
