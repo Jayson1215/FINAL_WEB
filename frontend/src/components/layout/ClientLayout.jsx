@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Chatbot from '../common/Chatbot';
 import NotificationBell from '../common/NotificationBell';
 
-export default function ClientLayout({ children, title }) {
+export default function ClientLayout({ children, title, fullHero = false }) {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,16 +52,17 @@ export default function ClientLayout({ children, title }) {
     <div className="bg-[#F0F2F5] min-h-screen selection:bg-[#E8734A] selection:text-white font-sans overflow-x-hidden">
       
       {/* Navigation - Perfectly Centered Grid (3-column) */}
-      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-6 md:px-12 py-6 ${navScrolled ? 'bg-white/80 backdrop-blur-xl py-4 border-b border-[#F1F5F9] shadow-sm' : ''}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 px-6 md:px-12 py-6 ${navScrolled || !fullHero ? 'bg-white/80 backdrop-blur-xl py-4 border-b border-[#F1F5F9] shadow-sm' : ''}`}>
         <div className="max-w-7xl mx-auto grid grid-cols-3 items-center">
           
           {/* Left Side Links */}
           <div className="hidden lg:flex gap-10 items-center justify-start">
+            <Link to="/client/dashboard" className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/dashboard' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Dashboard</Link>
             <Link to="/client/services" className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/services' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</Link>
             <Link to="/client/portfolio" className={`text-[10px] font-bold uppercase tracking-[0.4em] transition-all ${location.pathname === '/client/portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</Link>
           </div>
 
-          {/* Center Logo - Perfectly Centered */}
+          {/* Center Logo */}
           <div className="flex justify-center">
             <Link to="/" className="text-3xl font-serif text-[#1E293B] tracking-[0.2em] hover:text-[#E8734A] transition-all duration-500">
               LIGHT
@@ -80,10 +81,10 @@ export default function ClientLayout({ children, title }) {
         </div>
       </nav>
 
-      {/* Hero Section - Homepage Exact Style (Mini Version) */}
-      <section className="relative h-[65vh] flex items-center justify-center overflow-hidden bg-white">
+      {/* Hero Section */}
+      <section className={`relative flex items-center justify-center overflow-hidden bg-white transition-all duration-1000 ${fullHero ? 'h-[65vh]' : 'h-[35vh]'}`}>
         <div className="absolute inset-0 z-0">
-          {heroVideoFailed ? (
+          {heroVideoFailed || !fullHero ? (
             <img 
               src="/images/studio-hero.png" 
               alt="Hero Background" 
@@ -104,12 +105,12 @@ export default function ClientLayout({ children, title }) {
               <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
             </video>
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/10 to-[#F0F2F5]"></div>
+          <div className={`absolute inset-0 bg-gradient-to-b from-white/40 ${fullHero ? 'via-white/10 to-[#F0F2F5]' : 'via-white/60 to-[#F0F2F5]'}`}></div>
         </div>
         
         <div className="relative z-10 text-center max-w-5xl px-6 space-y-6">
-          <p className="text-[11px] font-bold uppercase tracking-[0.6em] text-[#E8734A] animate-fadeIn">Registry & Management</p>
-          <h1 className="text-5xl md:text-8xl font-serif text-[#1E293B] leading-tight reveal tracking-tight">
+          <p className="text-[11px] font-bold uppercase tracking-[0.6em] text-[#E8734A] animate-fadeIn">{fullHero ? 'Registry & Management' : 'Registry Explorer'}</p>
+          <h1 className={`${fullHero ? 'text-5xl md:text-8xl' : 'text-4xl md:text-6xl'} font-serif text-[#1E293B] leading-tight reveal tracking-tight`}>
             {title}
           </h1>
           <div className="flex justify-center reveal delay-300 pt-4">

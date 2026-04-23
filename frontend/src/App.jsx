@@ -11,6 +11,7 @@ import Register from './pages/auth/Register';
 import SocialCallback from './pages/auth/SocialCallback';
 
 // Client pages - lazy loaded
+const Dashboard = React.lazy(() => import('./pages/client/Dashboard'));
 const PortfolioGallery = React.lazy(() => import('./pages/client/PortfolioGallery'));
 const ServicesList = React.lazy(() => import('./pages/client/ServicesList'));
 const BookingPage = React.lazy(() => import('./pages/client/BookingPage'));
@@ -52,7 +53,7 @@ const HomeEntry = () => {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
-  return <Navigate to="/client/services" replace />;
+  return <Navigate to="/client/dashboard" replace />;
 };
 
 // Protected route wrapper
@@ -82,7 +83,17 @@ function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/auth/callback" element={<SocialCallback />} />
 
-      {/* Client Routes - All mapped to the Universal Single Page */}
+      {/* Client Routes */}
+      <Route
+        path="/client/dashboard"
+        element={
+          <PrivateRoute requiredRole="client">
+            <Suspense fallback={<PageLoader />}>
+              <Dashboard />
+            </Suspense>
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/client/services"
         element={

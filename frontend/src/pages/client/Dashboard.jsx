@@ -22,7 +22,7 @@ export default function ClientDashboard() {
   const pendingBookingsCount = bookings.filter(b=>b.status==='pending').length;
 
   return (
-    <ClientLayout title="Dashboard">
+    <ClientLayout title="Dashboard" fullHero={true}>
       {error && (<div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600"><p className="font-semibold mb-1">Error</p><p>{error}</p><button onClick={fetchDashboardData} className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-semibold">Try Again</button></div>)}
 
       {loading ? (
