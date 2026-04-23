@@ -71,43 +71,41 @@ export default function BookingManager() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-black/10">
-                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">ID & Client</th>
-                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Package</th>
-                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Venue Location</th>
-                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Schedule</th>
-                  <th className="px-12 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Status Control</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">ID</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Client Name</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Package</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Venue Location</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Schedule</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-black uppercase tracking-[0.3em]">Status Control</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/10">
                 {d.list.map(b => (
                   <tr key={b.id} className="group hover:bg-slate-50/50 transition-all duration-500">
-                    <td className="px-12 py-8">
-                      <div className="flex items-center gap-5 cursor-pointer" onClick={() => setViewModal({open: true, b})}>
-                        <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center font-bold text-[9px] shadow-lg group-hover:scale-110 transition-transform flex-col leading-none gap-1">
-                          <span className="opacity-40">Ref</span>
-                          <span>{b.id}</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-black tracking-tight group-hover:text-[#E8734A] transition-colors">{b.user?.name}</p>
-                          <p className="text-[8px] text-black opacity-30 font-bold uppercase tracking-[0.2em]">{formatId(b.id)}</p>
-                        </div>
+                    <td className="px-8 py-8">
+                      <div className="flex flex-col gap-1 cursor-pointer" onClick={() => setViewModal({open: true, b})}>
+                         <p className="text-[11px] font-black text-black tracking-widest">{formatId(b.id)}</p>
+                         <p className="text-[8px] text-black opacity-20 font-bold uppercase">System ID: #{b.id}</p>
                       </div>
                     </td>
-                    <td className="px-12 py-8">
+                    <td className="px-8 py-8">
+                      <p className="text-sm font-bold text-black tracking-tight group-hover:text-[#E8734A] transition-colors">{b.user?.name}</p>
+                    </td>
+                    <td className="px-8 py-8">
                         <div className="bg-slate-50 inline-block px-3 py-1.5 rounded-xl border border-black/5">
                             <p className="text-[10px] font-bold text-black italic opacity-60">"{b.service?.name}"</p>
                         </div>
                     </td>
-                    <td className="px-12 py-8 max-w-[200px]">
+                    <td className="px-8 py-8 max-w-[200px]">
                         <p className="text-[11px] font-bold text-black opacity-60 truncate">{b.location}</p>
                     </td>
-                    <td className="px-12 py-8">
+                    <td className="px-8 py-8">
                       <div className="space-y-1">
                         <p className="text-sm font-bold text-black tracking-tighter">{new Date(b.booking_date).toLocaleDateString()}</p>
                         <p className="text-[9px] text-[#E8734A] font-bold uppercase tracking-widest">{b.booking_time}</p>
                       </div>
                     </td>
-                    <td className="px-12 py-8">
+                    <td className="px-8 py-8">
                       <div className="flex items-center gap-3">
                          <div className={`px-4 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border ${getStatusStyle(b.status)} shadow-sm`}>
                             {b.status}
