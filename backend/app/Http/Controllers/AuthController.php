@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\User;
@@ -8,113 +7,54 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
+    public function register(Request $request) {
+        $v = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:client,admin',
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-        ]);
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+        $user = User::create([...$v, 'password' => Hash::make($v['password'])]);
+        return response()->json(['user' => $user, 'token' => $user->createToken('at')->plainTextToken], 201);
     }
 
-    public function login(Request $request)
-    {
-        $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
+    public function login(Request $request) {
+        $v = $request->validate(['email' => 'required|email', 'password' => 'required|string']);
+        $user = User::whereRaw('LOWER(email) = ?', [strtolower($v['email'])])->first();
 
-        $user = User::whereRaw('LOWER(email) = ?', [strtolower($validated['email'])])->first();
-
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (!$user || !Hash::check($v['password'], $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ]);
+        return response()->json(['user' => $user, 'token' => $user->createToken('at')->plainTextToken]);
     }
 
-    public function logout(Request $request)
-    {
+    public function logout(Request $request) {
         $request->user()->currentAccessToken()->delete();
-
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['message' => 'Logged out']);
     }
 
-    public function index()
-    {
-        return response()->json(User::all());
-    }
+    public function index() { return response()->json(User::all()); }
+    public function getDeletedUsers() { return response()->json(User::onlyTrashed()->get()); }
 
-    public function getDeletedUsers()
-    {
-        return response()->json(User::onlyTrashed()->get());
-    }
-
-    public function deleteUser($id)
-    {
+    public function deleteUser($id) {
         $user = User::find($id);
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        // Prevent deleting yourself
-        if ($user->id === auth()->id()) {
-            return response()->json(['message' => 'Cannot delete your own account'], 403);
-        }
-
+        if (!$user || $user->id === auth()->id()) return response()->json(['message' => 'Action forbidden'], 403);
         $user->delete();
-
-        return response()->json(['message' => 'User deleted successfully']);
+        return response()->json(['message' => 'Deleted']);
     }
 
-    public function restoreUser($id)
-    {
+    public function restoreUser($id) {
         $user = User::withTrashed()->find($id);
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        if (!$user->trashed()) {
-            return response()->json(['message' => 'User is not deleted'], 400);
-        }
-
+        if (!$user) return response()->json(['message' => 'Not found'], 404);
         $user->restore();
-
-        return response()->json(['message' => 'User restored successfully', 'user' => $user]);
+        return response()->json(['message' => 'Restored', 'user' => $user]);
     }
 
-    public function forceDeleteUser($id)
-    {
+    public function forceDeleteUser($id) {
         $user = User::withTrashed()->find($id);
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        $user->forceDelete();
-
-        return response()->json(['message' => 'User permanently deleted']);
+        if ($user) $user->forceDelete();
+        return response()->json(['message' => 'Permanently deleted']);
     }
 }

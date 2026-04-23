@@ -9,12 +9,11 @@ import LocationPickerMap from '../components/common/LocationPickerMap';
 import NotificationBell from '../components/common/NotificationBell';
 import { resolveImageUrl, resolveServiceImageUrl } from '../utils/imageUrl';
 
+const NavLink = ({ id, label, path, onClick, active }) => (
+  <a href={`#${id}`} onClick={(e) => onClick(e, id)} className={`text-[9px] font-bold uppercase tracking-[0.3em] transition-all ${active ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>{label}</a>
+);
+
 export default function Landing() {
-  const [scrollY, setScrollY] = useState(0);
-  const [navScrolled, setNavScrolled] = useState(false);
-  const [dbServices, setDbServices] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [portfolio, setPortfolio] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);

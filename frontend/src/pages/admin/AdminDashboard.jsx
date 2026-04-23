@@ -4,13 +4,6 @@ import { paymentService } from '../../services/paymentService';
 import { bookingService } from '../../services/bookingService';
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState(null);
-  const [recentBookings, setRecentBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => { fetchDashboardData(); }, []);
-
   const fetchDashboardData = async () => {
     try {
       setLoading(true); setError('');

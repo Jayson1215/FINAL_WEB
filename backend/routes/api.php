@@ -1,18 +1,10 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\PortfolioController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\{AuthController, BookingController, ServiceController, PortfolioController, PaymentController, NotificationController, SocialAuthController};
 
-/**
- * Public Routes (No Authentication Required)
- */
 Route::get('/health', [\App\Http\Controllers\DebugController::class, 'health']);
+
 Route::get('/images/{filename}', function ($filename) {
     $filename = basename($filename);
 
