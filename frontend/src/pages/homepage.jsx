@@ -235,7 +235,8 @@ export default function Landing() {
     'service_event.png': '/images/featured-work.png',
   };
 
-  const getServiceImageUrl = (imagePath) => {
+  const getServiceImageUrl = (serviceOrImagePath) => {
+    const imagePath = typeof serviceOrImagePath === 'object' ? serviceOrImagePath?.image_path : serviceOrImagePath;
     const filename = getImageFilename(imagePath);
     if (filename && defaultServiceImageByFilename[filename]) {
       return defaultServiceImageByFilename[filename];
@@ -384,7 +385,7 @@ export default function Landing() {
 
                 return (
                   <div key={booking.id} className="reveal bg-[#F8F9FB] rounded-[2.5rem] p-8 md:p-12 border border-[#F1F5F9] flex flex-col lg:flex-row gap-10 items-center" style={{ transitionDelay: `${idx * 100}ms` }}>
-                    <div className="w-full lg:w-1/4 aspect-video lg:aspect-square rounded-2xl overflow-hidden bg-white shadow-sm"><img src={getServiceImageUrl(booking.service?.image_path)} alt="Service" className="w-full h-full object-cover" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /></div>
+                    <div className="w-full lg:w-1/4 aspect-video lg:aspect-square rounded-2xl overflow-hidden bg-white shadow-sm"><img src={getServiceImageUrl(booking.service)} alt="Service" className="w-full h-full object-cover" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /></div>
                     <div className="flex-1 space-y-6">
                       <div className="flex justify-between items-start">
                         <div><h3 className="text-2xl font-serif text-[#1E293B] mb-1">{booking.service?.name}</h3><p className="text-[12px] text-[#64748B] italic">Session on {new Date(booking.booking_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p></div>
@@ -446,7 +447,7 @@ export default function Landing() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {dbServices.map((service, index) => {
-              const serviceImageUrl = getServiceImageUrl(service.image_path);
+              const serviceImageUrl = getServiceImageUrl(service);
               return (
               <div
                 key={service.id}
@@ -462,11 +463,11 @@ export default function Landing() {
                 role="button"
                 tabIndex={0}
               >
-                <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] mb-6 bg-[#F8F9FB]"><img src={serviceImageUrl} alt="Pkg" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /><div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6"><p className="text-white text-[9px] font-bold uppercase tracking-widest bg-white/20 backdrop-blur-md px-5 py-2.5 rounded-xl">Book Now</p></div></div>
+                <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] mb-6 bg-[#F8F9FB]"><img src={serviceImageUrl} alt="Pkg" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /></div>
                 <div className="px-5 pb-5 flex-1 flex flex-col space-y-5">
                   <div><p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#E8734A] mb-2">{service.category}</p><h3 className="text-xl font-serif text-[#1E293B] group-hover:text-[#E8734A] transition-colors">{service.name}</h3></div>
                   <p className="text-xs text-[#64748B] leading-relaxed line-clamp-2 italic font-medium">"{service.description}"</p>
-                  <div className="flex justify-between items-center pt-5 border-t border-[#F1F5F9] mt-auto"><span className="text-xl font-serif font-bold text-[#1E293B]">₱{parseFloat(service.price).toLocaleString()}</span><button onClick={(e) => { e.stopPropagation(); handleBookNow(service); }} className="bg-[#1E293B] text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-[#E8734A] transition-all duration-500 shadow-md">→</button></div>
+                  <div className="flex justify-between items-center pt-5 border-t border-[#F1F5F9] mt-auto"><span className="text-xl font-serif font-bold text-[#1E293B]">₱{parseFloat(service.price).toLocaleString()}</span><button onClick={(e) => { e.stopPropagation(); handleBookNow(service); }} className="bg-[#1E293B] text-white px-5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all duration-500 shadow-md">Book</button></div>
                 </div>
               </div>
             );})}
@@ -557,7 +558,7 @@ export default function Landing() {
           <div className="max-w-3xl w-full bg-white rounded-[2.5rem] shadow-premium border border-[#F1F5F9] p-8 md:p-12 relative overflow-hidden" onClick={e => e.stopPropagation()}>
             <button onClick={() => setSelectedBookingDetail(null)} className="absolute top-6 right-6 w-9 h-9 bg-[#F8F9FB] rounded-full flex items-center justify-center text-[#1E293B] hover:bg-[#E8734A] hover:text-white transition-all">✕</button>
             <div className="flex flex-col md:flex-row gap-10">
-              <div className="w-full md:w-1/3 aspect-square rounded-2xl overflow-hidden shadow-sm"><img src={getServiceImageUrl(selectedBookingDetail.service?.image_path)} alt="S" className="w-full h-full object-cover" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /></div>
+              <div className="w-full md:w-1/3 aspect-square rounded-2xl overflow-hidden shadow-sm"><img src={getServiceImageUrl(selectedBookingDetail.service)} alt="S" className="w-full h-full object-cover" onError={(e) => setImageFallback(e, '/images/studio-hero.png')} /></div>
               <div className="flex-1 space-y-6">
                 <div><p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-2">Registry Details</p><h2 className="text-3xl font-serif text-[#1E293B] leading-tight">{selectedBookingDetail.service?.name}</h2></div>
                 <div className="grid grid-cols-2 gap-6 pt-4 border-t border-[#F1F5F9]">
