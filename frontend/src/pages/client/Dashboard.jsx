@@ -29,15 +29,30 @@ export default function ClientDashboard() {
         <div className="flex justify-center items-center h-96"><div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto"></div></div>
       ) : (
         <div className="space-y-8 animate-fadeIn">
-          {/* Welcome Banner */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#1E293B] to-[#334155] rounded-2xl p-10 shadow-lg">
-            <div className="absolute top-[-50px] right-[-30px] w-[200px] h-[200px] bg-[#E8734A]/20 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-[-50px] left-[-30px] w-[180px] h-[180px] bg-[#6366F1]/15 rounded-full blur-3xl"></div>
-            <div className="relative z-10">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#E8734A] mb-2">Welcome Back</p>
-              <h1 className="text-3xl md:text-4xl font-serif text-white mb-2">Your Photography Dashboard</h1>
-              <p className="text-sm text-white/60">Manage your on-call service requests with elegance</p>
+          {/* Welcome Banner with Video Background */}
+          <div className="relative overflow-hidden rounded-3xl p-12 shadow-2xl min-h-[300px] flex items-center border border-white/10 group">
+            <div className="absolute inset-0 z-0">
+              <video 
+                autoPlay 
+                muted 
+                loop 
+                playsInline 
+                className="w-full h-full object-cover opacity-60 scale-105 group-hover:scale-110 transition-transform duration-1000"
+              >
+                <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#1E293B] via-[#1E293B]/80 to-transparent"></div>
             </div>
+            
+            <div className="relative z-10 max-w-2xl">
+              <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#E8734A] mb-3 animate-fadeIn">Welcome Back</p>
+              <h1 className="text-4xl md:text-5xl font-serif text-white mb-4 leading-tight">Your Photography <br /><span className="text-[#E8734A]">Command Center.</span></h1>
+              <p className="text-sm text-white/70 leading-relaxed max-w-md italic font-medium">"Manage your on-call service requests and explore your visual legacy with masterful vision."</p>
+            </div>
+            
+            {/* Subtle decorative elements */}
+            <div className="absolute top-10 right-10 w-20 h-20 border border-white/10 rounded-full animate-pulse"></div>
+            <div className="absolute bottom-10 right-20 w-32 h-32 border border-white/5 rounded-full"></div>
           </div>
 
           {/* Stats */}
