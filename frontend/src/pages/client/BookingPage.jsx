@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { serviceService } from '../../services/serviceService';
 import { bookingService } from '../../services/bookingService';
+import LocationPickerMap from '../../components/common/LocationPickerMap';
 
 export default function BookingPage() {
   const { serviceId } = useParams();
@@ -39,6 +40,12 @@ export default function BookingPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleMapLocationPick = ({ lat, lng, address }) => {
+    const coordinateSuffix = `(${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+    const locationValue = address ? `${address} ${coordinateSuffix}` : coordinateSuffix;
+    setFormData(prev => ({ ...prev, location: locationValue }));
   };
 
   const getAvailableTimeSlots = () => {
@@ -224,6 +231,7 @@ export default function BookingPage() {
                     placeholder="Enter the full address or venue name..."
                     className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-6 py-4 text-sm text-[#1E293B] focus:border-[#E8734A] focus:ring-4 focus:ring-[#E8734A]/5 outline-none transition-all placeholder:text-[#94A3B8]"
                   />
+                  <LocationPickerMap locationText={formData.location} onLocationSelect={handleMapLocationPick} height="240px" />
                 </div>
 
                 {/* Special Requests */}

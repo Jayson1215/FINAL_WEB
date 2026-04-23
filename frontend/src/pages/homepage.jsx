@@ -5,6 +5,7 @@ import { serviceService } from '../services/serviceService';
 import { bookingService } from '../services/bookingService';
 import { portfolioService } from '../services/portfolioService';
 import Chatbot from '../components/common/Chatbot';
+import LocationPickerMap from '../components/common/LocationPickerMap';
 import { resolveImageUrl } from '../utils/imageUrl';
 
 export default function Landing() {
@@ -211,6 +212,16 @@ export default function Landing() {
     e.preventDefault();
     setContactSubmitted(true);
     setTimeout(() => setContactSubmitted(false), 5000);
+  };
+
+  const handleMapLocationPick = ({ lat, lng, address }) => {
+    const coordinateSuffix = `(${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+    const locationValue = address ? `${address} ${coordinateSuffix}` : coordinateSuffix;
+
+    setBookingFormData((prev) => ({
+      ...prev,
+      location: locationValue,
+    }));
   };
 
   const getImageFilename = (value) => {
@@ -593,6 +604,7 @@ export default function Landing() {
                 <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Preferred Date</label><input type="date" min={minDate} required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all" value={bookingFormData.bookingDate} onChange={e => setBookingFormData({...bookingFormData, bookingDate: e.target.value})} /></div>
                 <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Session Time</label><input type="time" required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all" value={bookingFormData.bookingTime} onChange={e => setBookingFormData({...bookingFormData, bookingTime: e.target.value})} /></div>
                 <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Event Location</label><input type="text" placeholder="Venue or Address" required className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all" value={bookingFormData.location} onChange={e => setBookingFormData({...bookingFormData, location: e.target.value})} /></div>
+                <LocationPickerMap locationText={bookingFormData.location} onLocationSelect={handleMapLocationPick} height="200px" />
                 <div className="space-y-1.5"><label className="text-[8px] font-bold uppercase tracking-widest text-[#94A3B8] ml-1">Special Requests</label><textarea rows={2} className="w-full bg-[#F8F9FB] border border-[#E2E8F0] rounded-xl px-4 py-3 text-xs outline-none focus:border-[#E8734A] transition-all resize-none" placeholder="Notes for the photographer..." value={bookingFormData.specialRequests} onChange={e => setBookingFormData({...bookingFormData, specialRequests: e.target.value})}></textarea></div>
                 <button type="submit" disabled={bookingSubmitting} className="w-full bg-[#1E293B] text-white py-4 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all">{bookingSubmitting ? 'Processing...' : 'Request Session →'}</button>
               </form>
