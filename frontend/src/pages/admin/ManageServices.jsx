@@ -55,7 +55,7 @@ export default function ManageServices() {
             <textarea placeholder="Description" className="w-full bg-gray-50 p-4 rounded-xl text-xs h-24" value={f.description} onChange={e => setF({ ...f, description: e.target.value })} />
             <button className="w-full bg-[#E8734A] text-white py-4 rounded-xl text-[10px] font-bold uppercase">{editId ? 'Update' : 'Create'}</button>
           </form>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {d.s.map(s => (

@@ -40,7 +40,7 @@ export default function ManagePortfolio() {
             <input type="file" className="text-xs" onChange={e => setF({ ...f, image: e.target.files[0] })} required />
             <button className="w-full bg-[#E8734A] text-white py-4 rounded-xl text-[10px] font-bold uppercase">Upload</button>
           </form>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {d.list.map(p => (
