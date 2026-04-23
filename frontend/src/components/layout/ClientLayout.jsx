@@ -59,7 +59,7 @@ export default function ClientLayout({ children, title, fullHero = false }) {
           <div className="hidden lg:flex gap-8 items-center justify-start">
             <Link to="/client/homepage" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/homepage' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Homepage</Link>
             <Link to="/client/Portfolio" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Portfolio' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Portfolio</Link>
-            <Link to="/client/Packages" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Packages' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Package</Link>
+            <Link to="/client/Packages" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Packages' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Packages</Link>
             <Link to="/client/Gallery" className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all ${location.pathname === '/client/Gallery' ? 'text-[#E8734A]' : 'text-[#1E293B] hover:text-[#E8734A]'}`}>Gallery</Link>
           </div>
 

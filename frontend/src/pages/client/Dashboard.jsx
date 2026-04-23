@@ -81,7 +81,7 @@ export default function ClientDashboard() {
                 <div><h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#E8734A] transition">Request New Package</h3><p className="text-xs text-[#94A3B8]">Browse our on-call photography packages</p></div>
               </div>
             </Link>
-            <Link to="/client/portfolio" className="group">
+            <Link to="/client/Portfolio" className="group">
               <div className="bg-white rounded-2xl p-6 shadow-card hover:shadow-card-hover border border-[#F1F5F9] hover:border-[#6366F1]/30 transition-all duration-300 flex items-center gap-5">
                 <div className="w-14 h-14 bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] rounded-2xl flex items-center justify-center text-white text-xl shadow-md">🎨</div>
                 <div><h3 className="text-base font-bold text-[#1E293B] group-hover:text-[#6366F1] transition">View Gallery</h3><p className="text-xs text-[#94A3B8]">Explore our collection of work</p></div>

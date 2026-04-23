@@ -243,7 +243,7 @@ export default function Landing() {
       setBookings(nextBookings);
       setBookingServiceDetail(null);
       setBookingFormData({ bookingDate: '', bookingTime: '', location: '', specialRequests: '' });
-      navigate(`/client/bookings?booking=${response.data.id}&highlight=1`);
+      navigate(`/client/MyBookings?booking=${response.data.id}&highlight=1`);
     } catch (err) {
       setBookingError(err.response?.data?.message || 'Failed to create booking.');
     } finally {

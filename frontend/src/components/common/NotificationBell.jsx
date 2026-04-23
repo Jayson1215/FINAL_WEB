@@ -17,7 +17,7 @@ const NotificationBell = () => {
     const message = String(notif?.message || '').toLowerCase();
 
     if (user?.role === 'client') {
-      return '/client/bookings';
+      return '/client/MyBookings';
     }
 
     if (title.includes('booking') || message.includes('booking') || title.includes('session') || message.includes('session')) {
@@ -151,7 +151,7 @@ const NotificationBell = () => {
             <div className="p-3 bg-[#F8F9FB] border-t border-[#F1F5F9] text-center">
               <button
                 onClick={() => {
-                  navigate(user.role === 'client' ? '/client/bookings' : '/admin/dashboard');
+                  navigate(user.role === 'client' ? '/client/MyBookings' : '/admin/dashboard');
                   setIsOpen(false);
                 }}
                 className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] hover:text-[#E8734A]"

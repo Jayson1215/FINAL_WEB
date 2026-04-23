@@ -86,7 +86,7 @@ export default function BookingPage() {
       };
       
       const response = await bookingService.createBooking(bookingPayload);
-      navigate(`/client/bookings?booking=${response.data.id}&highlight=1`);
+      navigate(`/client/MyBookings?booking=${response.data.id}&highlight=1`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create booking.');
     } finally {

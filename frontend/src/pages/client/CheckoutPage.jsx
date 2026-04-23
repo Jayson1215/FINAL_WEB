@@ -51,7 +51,7 @@ export default function CheckoutPage() {
       sessionStorage.removeItem('bookingData');
       
       setTimeout(() => {
-        navigate('/client/bookings');
+        navigate('/client/MyBookings');
       }, 4000);
     } catch (err) {
       setError(err.response?.data?.message || 'Payment processing failed. Please try again.');
