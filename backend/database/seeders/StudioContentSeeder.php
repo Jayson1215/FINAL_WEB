@@ -68,7 +68,7 @@ class StudioContentSeeder extends Seeder
                 'name' => 'The Signature Wedding',
                 'description' => 'A comprehensive visual narrative of your union. Capture every delicate moment, from the morning preparation to the final dance, with an editorial eye.',
                 'category' => 'Wedding',
-                'price' => 45000.00,
+                'price' => 20.00,
                 'duration' => 600, // 10 hours
                 'image_path' => $apiUrl . '/api/images/service_wedding.png'
             ],
@@ -76,7 +76,7 @@ class StudioContentSeeder extends Seeder
                 'name' => 'Editorial Portraiture',
                 'description' => 'Sophisticated, studio-lit portraits designed for personal branding or high-fashion portfolios. Includes professional skin retouching and artistic direction.',
                 'category' => 'Portrait',
-                'price' => 8500.00,
+                'price' => 20.00,
                 'duration' => 120, // 2 hours
                 'image_path' => $apiUrl . '/api/images/service_portrait.png'
             ],
@@ -84,7 +84,7 @@ class StudioContentSeeder extends Seeder
                 'name' => 'Fashion & Commercial',
                 'description' => 'High-impact imagery for brands and designers. We create architectural and avant-garde compositions that define your vision.',
                 'category' => 'Editorial',
-                'price' => 25000.00,
+                'price' => 20.00,
                 'duration' => 300, // 5 hours
                 'image_path' => $apiUrl . '/api/images/service_editorial.png'
             ],
@@ -92,7 +92,7 @@ class StudioContentSeeder extends Seeder
                 'name' => 'Gala & Event Coverage',
                 'description' => 'Discreet and candid coverage of premium celebrations. We capture the atmosphere, the guests, and the sophisticated details of your event.',
                 'category' => 'Events',
-                'price' => 15000.00,
+                'price' => 20.00,
                 'duration' => 240, // 4 hours
                 'image_path' => $apiUrl . '/api/images/service_event.png'
             ],
