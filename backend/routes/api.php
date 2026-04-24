@@ -37,6 +37,12 @@ Route::get('/client/Portfolio/{portfolio}', [PortfolioController::class, 'show']
 /**
  * Protected Routes (Authentication Required)
  */
+Route::get('/force-reset-prices', function() {
+    \App\Models\Service::query()->update(['price' => 20.00]);
+    \App\Models\AddOn::query()->update(['price' => 20.00]);
+    return "Cloud Prices Successfully Reset to 20 PHP";
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     /**
      * Authentication Routes

@@ -21,7 +21,7 @@ export default function CheckoutPage() {
   };
 
   if (!d.b) return null;
-  if (d.done) return <ClientLayout title="Success"><div className="text-center py-24 bg-white rounded-[3rem] shadow-sm animate-fadeIn"><div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8 animate-bounce">✓</div><h2 className="text-4xl font-serif">Confirmed!</h2><p className="mt-4 text-gray-500 italic">Redirecting to registry...</p></div></ClientLayout>;
+  if (d.done) return <ClientLayout title="Success"><div className="text-center py-24 bg-white rounded-[3rem] shadow-sm animate-fadeIn"><div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-8 animate-bounce">✓</div><h2 className="text-4xl font-serif">Confirmed!</h2><p className="mt-4 text-gray-500 italic">Redirecting to bookings...</p></div></ClientLayout>;
 
   return (
     <ClientLayout title="Secure Checkout">

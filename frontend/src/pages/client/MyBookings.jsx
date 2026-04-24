@@ -13,6 +13,7 @@ export default function MyBookings() {
   const [paymentStatus, setPaymentStatus] = useState(null); // success, cancelled, or booking_success
   const [payLoading, setPayLoading] = useState(null); // bookingId
   const highlightRef = useRef(null);
+  const clearStatus = () => setPaymentStatus(null);
 
   const query = new URLSearchParams(location.search);
   const highlightedId = query.get('booking');
@@ -75,13 +76,12 @@ export default function MyBookings() {
   };
 
   const formatId = (id) => `LW-${new Date().getFullYear()}-${id.toString().padStart(4, '0')}`;
-
   const activeBookings = d.list.filter(b => !['finished', 'rejected', 'cancelled'].includes(b.status));
   const historyBookings = d.list.filter(b => ['finished', 'rejected', 'cancelled'].includes(b.status));
   const displayList = tab === 'active' ? activeBookings : historyBookings;
 
   if (d.loading) return (
-    <ClientLayout title="Accessing Registry..." hideHero={true}>
+    <ClientLayout title="Accessing Bookings..." hideHero={true}>
         <div className="h-96 flex flex-col items-center justify-center space-y-4 animate-pulse">
             <div className="w-10 h-10 border-4 border-slate-100 border-t-black rounded-full animate-spin"></div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-black">Retrieving Masterpiece History...</p>
@@ -90,30 +90,30 @@ export default function MyBookings() {
   );
 
   return (
-    <ClientLayout title="Your Registry" hideHero={true}>
+    <ClientLayout title="Your Bookings" hideHero={true}>
       <div className="max-w-7xl mx-auto space-y-12 animate-fadeIn">
         
         {/* Tab Selection - Professional Filtering */}
         <div className="flex justify-center gap-4">
-           <button onClick={() => setTab('active')} className={`px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${tab === 'active' ? 'bg-black text-white shadow-xl scale-105' : 'bg-white text-black border border-black/10'}`}>
+           <button onClick={() => setTab('active')} className={`px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${tab === 'active' ? 'bg-black text-white shadow-xl scale-105' : 'bg-white text-black border border-black'}`}>
               Active Sessions ({activeBookings.length})
            </button>
-           <button onClick={() => setTab('history')} className={`px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${tab === 'history' ? 'bg-black text-white shadow-xl scale-105' : 'bg-white text-black border border-black/10'}`}>
+           <button onClick={() => setTab('history')} className={`px-8 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${tab === 'history' ? 'bg-black text-white shadow-xl scale-105' : 'bg-white text-black border border-black'}`}>
               Session History ({historyBookings.length})
            </button>
         </div>
 
         {displayList.length === 0 ? (
-          <div className="text-center py-32 bg-white rounded-[3rem] border border-black/5 shadow-sm">
+          <div className="text-center py-32 bg-white rounded-[3rem] border border-black shadow-sm">
             <p className="text-black font-serif italic text-lg mb-8">
-              {tab === 'active' ? 'Your active session registry is currently empty.' : 'No historical sessions found in your archive.'}
+              {tab === 'active' ? 'Your active booking registry is currently empty.' : 'No historical sessions found in your archive.'}
             </p>
             {tab === 'active' && (
               <button onClick={() => nav('/client/Packages')} className="bg-black text-white px-12 py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-[#E8734A] transition-all shadow-xl">Explore Collections</button>
             )}
           </div>
         ) : (
-          <div className="grid gap-10">
+          <div className="grid gap-16">
             {displayList.map((b, idx) => {
               const displayId = `LW-${new Date(b.created_at).getFullYear()}-${(displayList.length - idx).toString().padStart(2, '0')}`;
               const isHighlighted = highlightedId === b.id.toString();
@@ -121,79 +121,75 @@ export default function MyBookings() {
                 <div 
                   key={b.id} 
                   ref={isHighlighted ? highlightRef : null}
-                  className={`bg-white rounded-[3rem] p-10 border transition-all duration-1000 flex flex-col md:flex-row gap-12 relative overflow-hidden ${isHighlighted ? 'border-[#E8734A] shadow-2xl scale-[1.02] ring-4 ring-[#E8734A]/5' : 'border-black/5 shadow-sm hover:shadow-xl hover:border-black/10'}`}
+                  className={`group relative bg-[#FAF9F6] rounded-[3rem] p-1 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] transition-all duration-700 flex flex-col md:flex-row gap-0 overflow-hidden border border-black/5 border-t-[8px] ${isHighlighted ? 'border-[#C5A059] shadow-2xl scale-[1.01]' : 'border-black hover:shadow-[0_40px_100px_-30px_rgba(0,0,0,0.2)] hover:-translate-y-1'}`}
                 >
-                  {isHighlighted && <div className="absolute top-0 left-0 w-full h-2 bg-[#E8734A] animate-pulse"></div>}
-                  
-                  <div className="w-full md:w-72 aspect-square bg-slate-50 rounded-[2.5rem] overflow-hidden border border-black/5 shadow-inner shrink-0 relative group">
-                    <img src={resolveServiceImageUrl(b.service)} className="w-full h-full object-cover grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-1000" />
-                    <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 shadow-xl">
-                        <p className="text-[8px] font-bold text-white uppercase tracking-widest leading-none">{displayId}</p>
-                    </div>
+                  {/* Visual Column - Cinematic Dark Frame */}
+                  <div className="w-full md:w-80 h-[320px] relative overflow-hidden shrink-0 border-r border-black/5 bg-[#111111]">
+                    <img src={resolveServiceImageUrl(b.service)} className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-[1.5s]" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity duration-700"></div>
                   </div>
                   
-                  <div className="flex-1 flex flex-col">
-                    <div className="flex justify-between items-start mb-8">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-3">
-                            <p className="text-[9px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">{b.service?.category}</p>
-                            <span className="w-1 h-1 bg-black/10 rounded-full"></span>
-                            <p className="text-[9px] font-bold text-black uppercase tracking-widest">{displayId}</p>
-                        </div>
-                        <h3 className="text-3xl font-serif text-black tracking-tighter">{b.service?.name}</h3>
-                      </div>
-                      <div className={`px-5 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest border ${getStatusColor(b.status)}`}>
-                        {b.status}
-                      </div>
-                    </div>
+                  {/* Content Column - Luxury Manifest */}
+                  <div className="flex-1 flex flex-col justify-between relative">
+                    <div className="absolute top-0 right-0 p-10 opacity-[0.03] text-[10rem] font-serif pointer-events-none select-none italic leading-none">LW</div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-10 border-t border-black/5 pt-8 mb-8">
-                      <div className="space-y-1">
-                        <p className="text-[8px] font-bold text-black uppercase tracking-widest">Session Date</p>
-                        <p className="text-[13px] font-bold text-black">{new Date(b.booking_date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[8px] font-bold text-black uppercase tracking-widest">Investment</p>
-                        <p className="text-[13px] font-bold text-black">₱{parseFloat(b.total_amount).toLocaleString()}</p>
-                      </div>
-                      <div className="space-y-1 hidden md:block">
-                        <p className="text-[8px] font-bold text-black uppercase tracking-widest">Venue Destination</p>
-                        <p className="text-[11px] font-bold text-black truncate max-w-[150px]">{b.location}</p>
-                      </div>
+                    <div className="relative z-10 p-8 pb-4">
+                        <div className="flex items-center justify-between gap-4 mb-4">
+                            <div className="flex items-center gap-4">
+                                <span className="w-8 h-[1.5px] bg-[#C5A059]"></span>
+                                <p className="text-[9px] font-bold text-[#C5A059] uppercase tracking-[0.4em]">{b.service?.category}</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <div className="bg-black px-3 py-1 rounded-lg border border-white/10 shadow-sm">
+                                    <p className="text-[8px] font-bold text-white uppercase tracking-[0.2em]">{displayId}</p>
+                                </div>
+                                <div className={`px-3 py-1 rounded-lg text-[7px] font-bold uppercase tracking-widest border shadow-sm ${getStatusColor(b.status)}`}>
+                                    {b.status}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 className="text-4xl font-serif text-black tracking-tighter mb-6 leading-tight">{b.service?.name}</h3>
+                    
+                        <div className="grid grid-cols-2 gap-8 border-t border-black/5 pt-6">
+                            <div className="space-y-1">
+                                <p className="text-[8px] font-bold text-black/30 uppercase tracking-[0.3em]">Session Date</p>
+                                <p className="text-lg font-medium text-black tracking-tight">{new Date(b.booking_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                            </div>
+                            <div className="space-y-1 text-right">
+                                <p className="text-[8px] font-bold text-black/30 uppercase tracking-[0.3em]">Investment</p>
+                                <p className="text-xl font-serif text-[#C5A059]">₱{parseFloat(b.total_amount).toLocaleString()}</p>
+                            </div>
+                        </div>
                     </div>
- 
-                    {b.admin_notes && (
-                      <div className="bg-[#E8734A]/5 p-6 rounded-2xl border border-[#E8734A]/10 mb-8 relative">
-                         <div className="absolute top-2 right-4 text-[7px] font-bold uppercase tracking-widest text-[#E8734A]">Studio Response</div>
-                         <p className="text-[11px] text-[#E8734A] italic leading-relaxed font-medium">"{b.admin_notes}"</p>
-                      </div>
-                    )}
- 
-                    <div className="mt-auto flex flex-wrap gap-4 pt-6 border-t border-black/5">
-                      {['confirmed', 'approved'].includes(b.status) && parseFloat(b.total_amount) - parseFloat(b.paid_amount || 0) > 0 && (
-                        <button 
-                          disabled={payLoading === b.id}
-                          onClick={async () => {
-                            setPayLoading(b.id);
-                            try {
-                              const res = await paymentService.createCheckoutSession({ booking_id: b.id, type: 'balance' });
-                              if (res.data?.checkout_url) window.location.href = res.data.checkout_url;
-                            } catch (e) { 
-                              console.error('Payment Error:', e);
-                              const msg = e.response?.data?.message || e.message || 'Unknown network error.';
-                              alert(`Studio Payment Error: ${msg}`); 
-                              setPayLoading(null); 
-                            }
-                          }} 
-                          className="bg-black text-white px-8 py-4 rounded-xl text-[9px] font-bold uppercase tracking-widest shadow-lg hover:bg-[#E8734A] transition-all disabled:opacity-50 disabled:cursor-wait"
-                        >
-                          {payLoading === b.id ? 'Establishing Secure Link...' : `Proceed Studio Payment (₱${(parseFloat(b.total_amount) - parseFloat(b.paid_amount || 0)).toLocaleString()})`}
-                        </button>
-                      )}
-                      <button onClick={() => setD({ ...d, sel: { ...b, displayId } })} className="bg-white border border-black/10 text-black px-8 py-4 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-slate-50 transition-all">Session Details</button>
-                      {b.status === 'pending' && (
-                        <button onClick={() => cancel(b.id)} className="ml-auto text-black hover:text-red-500 text-[9px] font-bold uppercase tracking-widest transition-all">Request Cancellation</button>
-                      )}
+
+                    <div className="relative z-10 p-8 pt-6 bg-[#F2F2F2]/50 border-t border-black/5 flex flex-wrap items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white text-[9px] font-bold shadow-lg">LW</div>
+                            <div className="space-y-0.5">
+                                <p className="text-[7px] font-bold text-black/20 uppercase tracking-widest leading-none">Destination</p>
+                                <p className="text-[11px] font-bold text-black truncate max-w-[150px]">{b.location}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button onClick={() => setD({ ...d, sel: { ...b, displayId } })} className="bg-white border border-black text-black px-6 py-3.5 rounded-2xl text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all shadow-sm">DETAILS</button>
+                            
+                            {['confirmed', 'approved'].includes(b.status) && parseFloat(b.total_amount) - parseFloat(b.paid_amount || 0) > 0 && (
+                                <button 
+                                onClick={async () => {
+                                    setPayLoading(b.id);
+                                    try {
+                                    const res = await paymentService.createCheckoutSession({ booking_id: b.id, type: 'balance' });
+                                    if (res.data?.checkout_url) window.location.href = res.data.checkout_url;
+                                    } catch (e) { alert(`Error: ${e.message}`); setPayLoading(null); }
+                                }} 
+                                className="bg-black text-white px-6 py-3.5 rounded-2xl text-[9px] font-bold uppercase tracking-[0.4em] shadow-lg hover:bg-[#C5A059] transition-all"
+                                >
+                                {payLoading === b.id ? '...' : 'SETTLE'}
+                                </button>
+                            )}
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -201,27 +197,25 @@ export default function MyBookings() {
             })}
           </div>
         )}
-      </div>
-
-      {/* Pop-up Card Details - Immersive Manifest */}
+      </div>      {/* Pop-up Card Details - Ultra Compact Luxury Manifest */}
       {d.sel && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[2000] flex items-center justify-center p-6 lg:p-12" onClick={() => setD({ ...d, sel: null })}>
-          <div className="bg-white rounded-[4rem] max-w-xl w-full shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] animate-cinemaShow border border-white/20 overflow-hidden relative" onClick={e => e.stopPropagation()}>
-            <div className="absolute top-0 right-0 p-12 opacity-5 text-[10rem] font-serif pointer-events-none select-none">LW</div>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[2000] flex items-center justify-center p-4" onClick={() => setD({ ...d, sel: null })}>
+          <div className="bg-[#FAF9F6] rounded-[2rem] max-w-[380px] w-full shadow-2xl animate-cinemaShow border border-black/5 overflow-hidden relative max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="absolute top-0 right-0 p-6 opacity-[0.03] text-[5rem] font-serif pointer-events-none select-none">LW</div>
             
-            <div className="relative z-10 px-12 pt-12 pb-6 border-b border-black/5">
-                <div className="flex items-center gap-3 mb-2">
-                    <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Personal Session ID</p>
-                    <span className="text-[10px] font-bold text-black">{d.sel.displayId}</span>
+            <div className="relative z-10 px-6 pt-6 pb-3 border-b border-black/5">
+                <div className="flex items-center gap-2 mb-1">
+                    <p className="text-[7px] font-bold text-[#C5A059] uppercase tracking-[0.4em]">Manifest ID</p>
+                    <span className="text-[8px] font-bold text-black/40">{d.sel.displayId}</span>
                 </div>
-                <h3 className="text-5xl font-serif text-black tracking-tighter">{d.sel.service?.name}</h3>
+                <h3 className="text-xl font-serif text-black tracking-tighter leading-tight">{d.sel.service?.name}</h3>
             </div>
             
-            <div className="px-12 py-10 space-y-10 relative z-10">
-              <div className="grid grid-cols-2 gap-8 pb-8 border-b-2 border-black/10">
-                <div className="space-y-1">
-                  <p className="text-[8px] font-bold text-black uppercase tracking-[0.3em]">Schedule</p>
-                  <p className="text-sm font-bold text-black">
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 relative z-10 custom-scrollbar">
+              <div className="grid grid-cols-2 gap-4 pb-4 border-b border-black/5">
+                <div className="space-y-0.5">
+                  <p className="text-[7px] font-bold text-black/30 uppercase tracking-[0.3em]">Schedule</p>
+                  <p className="text-[10px] font-bold text-black">
                     {new Date(d.sel.booking_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} @ {(() => {
                       const [h, m] = d.sel.booking_time.split(':');
                       const dt = new Date();
@@ -230,34 +224,34 @@ export default function MyBookings() {
                     })()}
                   </p>
                 </div>
-                <div className="space-y-1 text-right">
-                  <p className="text-[8px] font-bold text-black uppercase tracking-[0.3em]">Investment</p>
-                  <p className="text-xl font-black text-black">₱{parseFloat(d.sel.total_amount).toLocaleString()}</p>
+                <div className="space-y-0.5 text-right">
+                  <p className="text-[7px] font-bold text-black/30 uppercase tracking-[0.3em]">Investment</p>
+                  <p className="text-lg font-serif text-[#C5A059]">₱{parseFloat(d.sel.total_amount).toLocaleString()}</p>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-[8px] font-bold text-black uppercase tracking-[0.3em]">Venue Destination</p>
-                <div className="bg-slate-50 p-6 rounded-[2rem] border border-black/10">
-                    <p className="text-xs font-bold text-black leading-relaxed">{d.sel.location}</p>
+              <div className="space-y-1.5">
+                <p className="text-[7px] font-bold text-black/30 uppercase tracking-[0.3em]">Venue</p>
+                <div className="bg-black/5 p-3 rounded-xl border border-black/5">
+                    <p className="text-[9px] font-bold text-black leading-tight">{d.sel.location}</p>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-[8px] font-bold text-black uppercase tracking-[0.3em]">Your Creative Vision</p>
-                <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-black/10">
-                    <p className="text-xs font-medium text-black italic leading-relaxed font-serif">"{d.sel.special_requests || 'No specific creative requests provided.'}"</p>
+              <div className="space-y-1.5">
+                <p className="text-[7px] font-bold text-black/30 uppercase tracking-[0.3em]">Vision</p>
+                <div className="bg-black/5 p-3 rounded-xl border border-black/5">
+                    <p className="text-[9px] font-medium text-black italic leading-tight" style={{ fontFamily: 'Arial, sans-serif' }}>"{d.sel.special_requests || 'Standard Studio Manifest'}"</p>
                 </div>
               </div>
 
               {d.sel.add_ons?.length > 0 && (
-                <div className="space-y-3">
-                  <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-widest">Package Enhancements (Add-ons)</p>
-                  <div className="space-y-2">
+                <div className="space-y-1.5">
+                  <p className="text-[7px] font-bold text-[#C5A059] uppercase tracking-widest">Enhancements</p>
+                  <div className="space-y-1">
                     {d.sel.add_ons.map(addon => (
-                      <div key={addon.id} className="flex justify-between items-center bg-slate-50 px-6 py-4 rounded-2xl border border-black/10">
-                        <p className="text-[11px] font-bold text-black">{addon.name}</p>
-                        <p className="text-xs font-black text-[#E8734A]">₱{parseFloat(addon.price).toLocaleString()}</p>
+                      <div key={addon.id} className="flex justify-between items-center bg-black/5 px-3 py-2 rounded-lg border border-black/5">
+                        <p className="text-[8px] font-bold text-black">{addon.name}</p>
+                        <p className="text-[9px] font-black text-[#C5A059]">₱{parseFloat(addon.price).toLocaleString()}</p>
                       </div>
                     ))}
                   </div>
@@ -265,49 +259,56 @@ export default function MyBookings() {
               )}
             </div>
 
-            <div className="px-12 pb-12 relative z-10">
-              <button onClick={() => setD({ ...d, sel: null })} className="w-full bg-black text-white py-6 rounded-[2rem] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#E8734A] transition-all shadow-2xl">Close Manifest</button>
+            <div className="px-6 py-4 border-t border-black/5 relative z-10 bg-[#FAF9F6]">
+              <button onClick={() => setD({ ...d, sel: null })} className="w-full bg-black text-white py-3 rounded-xl text-[8px] font-bold uppercase tracking-[0.4em] hover:bg-[#C5A059] transition-all shadow-lg">Close Manifest</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Payment Status Overlay - Cinematic Confirmation */}
+      {/* Payment Status Overlay - Luxury Boutique Confirmation */}
       {paymentStatus && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[3000] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setPaymentStatus(null)}>
-           <div className="bg-white rounded-[4rem] max-w-md w-full p-12 text-center shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/20 animate-cinemaShow" onClick={e => e.stopPropagation()}>
-              <div className={`w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center text-4xl shadow-2xl ${paymentStatus === 'success' ? 'bg-emerald-500 text-white' : paymentStatus === 'booking_success' ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`}>
-                {paymentStatus === 'success' ? '✓' : paymentStatus === 'booking_success' ? '★' : '×'}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[3000] flex items-center justify-center p-6 animate-glassFade" onClick={clearStatus}>
+           <div className="bg-[#FAF9F6]/95 backdrop-blur-md rounded-[3.5rem] max-w-sm w-full p-10 text-center shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] border border-black/5 animate-glassPop relative overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#C5A059]/10 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-black/5 rounded-full blur-3xl"></div>
+              
+              <div className={`w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center text-3xl shadow-2xl relative z-10 ${paymentStatus === 'success' ? 'bg-black text-[#C5A059] shadow-[#C5A059]/20' : paymentStatus === 'booking_success' ? 'bg-black text-[#C5A059] shadow-black/20' : 'bg-red-500 text-white shadow-red-500/20'}`}>
+                <div className={`absolute inset-0 rounded-full bg-white/10 ${paymentStatus !== 'failed' ? 'animate-ping' : ''}`}></div>
+                <span className="relative z-20 font-serif">{paymentStatus === 'success' ? '✓' : paymentStatus === 'booking_success' ? '★' : '×'}</span>
               </div>
               
-              <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-4">
-                {paymentStatus === 'booking_success' ? 'Logistics Synchronized' : 'Masterpiece Secured'}
-              </p>
-              <h3 className="text-4xl font-serif text-black mb-6 tracking-tighter">
-                {paymentStatus === 'success' ? 'Transaction Confirmed' : paymentStatus === 'booking_success' ? 'Reservation Logged' : 'Payment Interrupted'}
-              </h3>
+              <h2 className="text-3xl font-serif text-black mb-3 tracking-tighter relative z-10">
+                {paymentStatus === 'success' ? 'Session Secured' : paymentStatus === 'booking_success' ? 'Manifest Logged' : 'Action Required'}
+              </h2>
               
-              <p className="text-sm text-black italic font-medium opacity-60 leading-relaxed mb-10">
+              <p className="text-[11px] text-black/60 italic font-medium leading-relaxed mb-10 relative z-10 px-4">
                 {paymentStatus === 'success' 
-                  ? "Your creative session has been successfully logged in our master registry. We are now preparing the studio for your arrival."
+                  ? "Your creative session has been successfully finalized. We are now curating the studio environment for your arrival."
                   : paymentStatus === 'booking_success'
-                  ? "Your reservation request has been transmitted to our curators. We will review the date and notify you once approved for payment."
-                  : "The transaction was not completed. Your reservation remains in the registry but is currently awaiting settlement."}
+                  ? "Your reservation manifest has been received. Our curators will review the details and notify you via this portal."
+                  : "The transaction could not be verified. Your reservation remains active but requires manual settlement to proceed."}
               </p>
               
-              <button onClick={() => setPaymentStatus(null)} className="w-full py-6 bg-black text-white rounded-[2rem] text-[10px] font-bold uppercase tracking-[0.4em] shadow-xl hover:bg-[#E8734A] transition-all">
-                {paymentStatus === 'booking_success' ? 'View Registry' : 'Enter Dashboard'}
+              <button onClick={clearStatus} className="w-full py-5 bg-black text-white rounded-2xl text-[9px] font-bold uppercase tracking-[0.4em] shadow-2xl hover:bg-[#C5A059] transition-all relative z-10">
+                {paymentStatus === 'booking_success' ? 'Back to Registry' : 'Enter Dashboard'}
               </button>
            </div>
         </div>
       )}
 
       <style>{`
-        @keyframes cinemaShow {
-          0% { opacity: 0; transform: scale(0.9) translateY(40px); filter: blur(10px); }
-          100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        @keyframes glassFade {
+          0% { opacity: 0; backdrop-filter: blur(0px); }
+          100% { opacity: 1; backdrop-filter: blur(40px); }
         }
-        .animate-cinemaShow { animation: cinemaShow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-glassFade { animation: glassFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes glassPop {
+          0% { opacity: 0; transform: scale(0.9) translateY(30px); filter: brightness(1.5); }
+          100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+        }
+        .animate-glassPop { animation: glassPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
       `}</style>
     </ClientLayout>
   );

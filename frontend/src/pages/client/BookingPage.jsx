@@ -245,10 +245,10 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
-      {/* Cinematic Confirmation Manifest Modal */}
+      {/* Glassmorphic Masterpiece Confirmation */}
       {d.showConfirm && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[4000] flex items-center justify-center p-6 animate-fadeIn">
-           <div className="bg-white rounded-[4rem] max-w-xl w-full shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] animate-cinemaShow border border-white/20 overflow-hidden relative">
+        <div className="fixed inset-0 bg-slate-400/20 backdrop-blur-2xl z-[4000] flex items-center justify-center p-6 animate-glassFade">
+           <div className="bg-white/80 backdrop-blur-md rounded-[4rem] max-w-xl w-full shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] animate-glassPop border border-white/50 overflow-hidden relative">
               <div className="absolute top-0 right-0 p-12 opacity-5 text-[10rem] font-serif pointer-events-none select-none">LW</div>
               
               <div className="px-12 py-12 space-y-10 relative z-10">
@@ -257,23 +257,23 @@ export default function BookingPage() {
                   <h3 className="text-4xl font-serif text-black tracking-tighter">Confirm Masterpiece Manifest</h3>
                 </div>
 
-                <div className="bg-slate-50/50 rounded-[2.5rem] border border-black/5 overflow-hidden">
+                <div className="bg-slate-50/50 rounded-[2.5rem] border border-black overflow-hidden">
                    <table className="w-full text-left">
                       <tbody className="divide-y divide-black/5">
                          <tr>
-                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black/40 w-1/3">Session</td>
+                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black w-1/3">Session</td>
                             <td className="px-8 py-5 text-[12px] font-bold text-black italic">"{d.s.name}"</td>
                          </tr>
                          <tr>
-                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black/40">Logistics</td>
+                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black">Logistics</td>
                             <td className="px-8 py-5 text-[12px] font-bold text-black">{new Date(f.date).toLocaleDateString()} @ {sessionWindow?.start}</td>
                          </tr>
                          <tr>
-                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black/40">Destination</td>
+                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black">Destination</td>
                             <td className="px-8 py-5 text-[11px] font-bold text-black">{f.loc}</td>
                          </tr>
                          <tr>
-                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black/40">Investment</td>
+                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black">Investment</td>
                             <td className="px-8 py-5 text-xl font-black text-[#E8734A]">₱{totalAmount.toLocaleString()}</td>
                          </tr>
                       </tbody>
@@ -281,8 +281,8 @@ export default function BookingPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <button onClick={() => setD(p => ({ ...p, showConfirm: false }))} className="flex-1 py-6 border border-black/10 rounded-[2rem] text-[10px] font-bold uppercase tracking-[0.4em] text-black hover:bg-slate-50 transition-all">Review Details</button>
-                  <button onClick={finalSubmit} className="flex-2 bg-black text-white px-10 py-6 rounded-[2rem] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#E8734A] transition-all shadow-2xl">Initialize Transaction</button>
+                  <button onClick={() => setD(p => ({ ...p, showConfirm: false }))} className="flex-1 py-6 border border-black rounded-[2rem] text-[10px] font-bold uppercase tracking-[0.4em] text-black hover:bg-white transition-all">Review Details</button>
+                  <button onClick={finalSubmit} className="flex-2 bg-black text-white px-10 py-6 rounded-[2rem] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#E8734A] transition-all shadow-2xl">Proceed Transaction</button>
                 </div>
               </div>
            </div>
@@ -290,11 +290,17 @@ export default function BookingPage() {
       )}
 
       <style>{`
-        @keyframes cinemaShow {
-          0% { opacity: 0; transform: scale(0.9) translateY(40px); filter: blur(10px); }
-          100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        @keyframes glassFade {
+          0% { opacity: 0; backdrop-filter: blur(0px); }
+          100% { opacity: 1; backdrop-filter: blur(40px); }
         }
-        .animate-cinemaShow { animation: cinemaShow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-glassFade { animation: glassFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes glassPop {
+          0% { opacity: 0; transform: scale(0.95) translateY(30px); filter: brightness(1.2); }
+          100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+        }
+        .animate-glassPop { animation: glassPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
       `}</style>
     </ClientLayout>
   );

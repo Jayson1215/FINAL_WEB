@@ -138,21 +138,21 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
         </section>
       )}
 
-      {/* Main Content Area - Full Width Logic */}
-      <section className={`bg-[#F3F4F6] relative z-20 ${hideHero ? 'pt-28' : (fullWidth ? 'py-20' : '-mt-24 pb-32')}`}>
+      {/* Main Content Area - Sleek Compact Logic */}
+      <section className={`bg-[#F3F4F6] relative z-20 ${hideHero ? 'pt-24' : (fullWidth ? 'py-12' : '-mt-24 pb-20')}`}>
         {fullWidth ? (
           <div className="w-full">
             {children}
           </div>
         ) : (
-          <div className="max-w-[92%] mx-auto px-6 md:px-12">
-            <div className={`bg-white rounded-[2.5rem] shadow-sm reveal border border-black/10 min-h-[50vh] ${hideHero ? 'p-10 md:p-16' : 'p-8 md:p-16'}`}>
+          <div className="max-w-[85%] mx-auto px-4 md:px-8">
+            <div className={`bg-white rounded-[2rem] shadow-sm reveal border border-black/10 min-h-[40vh] ${hideHero ? 'p-8 md:p-10' : 'p-6 md:p-10'}`}>
               <div className="relative z-10">
                   {hideHero && (
-                    <div className="mb-12 border-b border-black/5 pb-8 flex justify-between items-end">
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Directory / {title}</p>
-                        <h1 className="text-4xl font-serif text-black">{title}</h1>
+                    <div className="mb-8 border-b border-black/5 pb-6 flex justify-between items-end">
+                      <div className="space-y-1">
+                        <p className="text-[9px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Directory / {title}</p>
+                        <h1 className="text-3xl font-serif text-black tracking-tight">{title}</h1>
                       </div>
                     </div>
                   )}
@@ -165,28 +165,28 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
 
       <Chatbot />
 
-      {/* Footer - Unified High Contrast */}
-      <footer className="bg-white py-24 px-6 md:px-12 border-t border-black/10">
-        <div className="max-w-[92%] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-20">
-          <div className="lg:col-span-2 space-y-8">
-            <Link to="/" className="text-2xl font-bold text-black tracking-[0.4em] uppercase">Lightworks</Link>
-            <p className="text-sm text-black leading-relaxed max-w-sm font-medium italic">"A premium on-call photography service dedicated to the art of visual storytelling."</p>
+      {/* Footer - Sleek Minimalist Manifest */}
+      <footer className="bg-white py-12 px-6 md:px-12 border-t border-black/10">
+        <div className="max-w-[92%] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-10">
+          <div className="lg:col-span-2 space-y-4">
+            <Link to="/" className="text-xl font-bold text-black tracking-[0.4em] uppercase">Lightworks</Link>
+            <p className="text-[11px] text-black leading-relaxed max-w-sm font-medium italic">"A premium photography service dedicated to visual storytelling."</p>
           </div>
-          <div className="space-y-8">
-            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Directory</p>
-            <div className="space-y-4 text-[10px] text-black font-bold uppercase tracking-widest">
+          <div className="space-y-4">
+            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Directory</p>
+            <div className="space-y-2 text-[9px] text-black font-bold uppercase tracking-widest">
               {navLinks.map(l => (
                 <Link key={l.path} to={l.path} className="block hover:text-[#E8734A] transition-colors">{l.label}</Link>
               ))}
             </div>
           </div>
-          <div className="space-y-8">
-            <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Concierge</p>
-            <p className="text-[10px] text-black font-bold tracking-widest uppercase leading-relaxed">Butuan City / HQ<br/>concierge@light.com</p>
+          <div className="space-y-4">
+            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Concierge</p>
+            <p className="text-[9px] text-black font-bold tracking-widest uppercase leading-relaxed">Butuan City / HQ<br/>concierge@light.com</p>
           </div>
         </div>
-        <div className="max-w-[92%] mx-auto mt-24 pt-8 border-t border-black/5 text-center">
-            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-black">© {new Date().getFullYear()} LIGHT STUDIO EXPERIENCE / ART DIRECTION BY ANTIGRAVITY</p>
+        <div className="max-w-[92%] mx-auto mt-12 pt-6 border-t border-black/5 text-center">
+            <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-black/40">© {new Date().getFullYear()} LIGHT STUDIO EXPERIENCE / ART DIRECTION BY ANTIGRAVITY</p>
         </div>
       </footer>
 
