@@ -8,6 +8,7 @@ export const bookingService = {
   updateBooking: (id, data) => api.put(`/client/MyBookings/${id}`, data),
   cancelBooking: (id) => api.delete(`/client/MyBookings/${id}`),
   requestCancellation: (id, reason) => api.post(`/client/MyBookings/${id}/cancel`, { reason }),
+  getAddOns: () => api.get('/client/AddOns'),
 
   // Admin bookings
   getAllBookings: () => api.get('/admin/bookings'),

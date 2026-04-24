@@ -3,25 +3,38 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ClientLayout from '../../components/layout/ClientLayout';
 import { serviceService } from '../../services/serviceService';
 import { bookingService } from '../../services/bookingService';
+import { paymentService } from '../../services/paymentService';
 import { resolveServiceImageUrl } from '../../utils/imageUrl';
 import LocationPickerMap from '../../components/common/LocationPickerMap';
 
 export default function BookingPage() {
   const { serviceId } = useParams();
   const nav = useNavigate();
-  const [d, setD] = useState({ s: null, loading: true, sub: false, err: '' });
-  const [f, setF] = useState({ date: '', time: '', loc: '', note: '' });
+  const [d, setD] = useState({ s: null, a: [], loading: true, sub: false, err: '', showConfirm: false });
+  const [f, setF] = useState({ date: '', time: '', loc: '', note: '', selectedAddOns: [] });
 
   useEffect(() => {
     (async () => {
       try {
-        const r = await serviceService.getServiceDetail(serviceId);
-        setD({ s: r.data, loading: false, sub: false, err: '' });
+        const [s, a] = await Promise.all([
+          serviceService.getServiceDetail(serviceId),
+          bookingService.getAddOns() // I'll need to add this to bookingService
+        ]);
+        setD({ s: s.data, a: a.data || [], loading: false, sub: false, err: '' });
       } catch (e) {
         setD(p => ({ ...p, loading: false, err: 'Failed to synchronize package data.' }));
       }
     })();
   }, [serviceId]);
+
+  const totalAmount = useMemo(() => {
+    if (!d.s) return 0;
+    const addonsTotal = f.selectedAddOns.reduce((sum, id) => {
+      const addon = d.a.find(a => a.id === id);
+      return sum + (addon ? parseFloat(addon.price) : 0);
+    }, 0);
+    return parseFloat(d.s.price) + addonsTotal;
+  }, [d.s, d.a, f.selectedAddOns]);
 
   // Calculate session window
   const sessionWindow = useMemo(() => {
@@ -44,20 +57,43 @@ export default function BookingPage() {
     };
   }, [f.time, d.s]);
 
-  const submit = async (e) => {
+  const toggleAddOn = (id) => {
+    setF(prev => ({
+      ...prev,
+      selectedAddOns: prev.selectedAddOns.includes(id)
+        ? prev.selectedAddOns.filter(i => i !== id)
+        : [...prev.selectedAddOns, id]
+    }));
+  };
+
+  const handlePreSubmit = (e) => {
     e.preventDefault();
-    setD(p => ({ ...p, sub: true, err: '' }));
+    setD(p => ({ ...p, showConfirm: true }));
+  };
+
+  const finalSubmit = async () => {
+    setD(p => ({ ...p, sub: true, err: '', showConfirm: false }));
     try {
-      await bookingService.createBooking({
+      const res = await bookingService.createBooking({
         service_id: serviceId,
         booking_date: f.date,
         booking_time: f.time,
         location: f.loc,
         special_requests: f.note,
-        total_amount: d.s.price
+        total_amount: totalAmount,
+        add_on_ids: f.selectedAddOns
       });
-      nav('/client/MyBookings');
+
+      const bookingId = res.data?.id || res.data?.data?.id;
+
+      if (!bookingId) {
+        throw new Error('Booking created but ID missing.');
+      }
+
+      // Redirect to MyBookings for Admin Approval
+      nav(`/client/MyBookings?booking_success=true&booking=${bookingId}`);
     } catch (err) {
+      console.error('Submission error:', err);
       setD(p => ({ ...p, sub: false, err: err.response?.data?.message || 'Transaction error.' }));
     }
   };
@@ -97,12 +133,27 @@ export default function BookingPage() {
                 <img src={resolveServiceImageUrl(d.s)} alt={d.s.name} className="w-full aspect-[4/5] object-cover" />
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-6">
                 <p className="text-[11px] text-black italic leading-relaxed font-medium opacity-60">"{d.s.description}"</p>
+                
+                {d.s.inclusions && (
+                  <div className="space-y-3 pt-4 border-t border-black/5">
+                    <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-[0.3em]">Package Inclusions</p>
+                    <div className="space-y-2">
+                      {d.s.inclusions.split('\n').map((inc, i) => (
+                        <div key={i} className="flex gap-2 items-start">
+                          <div className="w-1 h-1 rounded-full bg-black mt-1.5 opacity-20"></div>
+                          <p className="text-[9px] text-black/70 font-medium leading-tight">{inc.replace('• ', '')}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="pt-4 border-t border-black/5 flex justify-between items-end">
                    <div className="space-y-0.5">
-                      <p className="text-[7px] font-bold text-black opacity-30 uppercase tracking-widest">Investment</p>
-                      <p className="text-xl font-bold text-black tracking-tighter">₱{parseFloat(d.s.price).toLocaleString()}</p>
+                      <p className="text-[7px] font-bold text-black opacity-30 uppercase tracking-widest">Total Investment</p>
+                      <p className="text-xl font-bold text-black tracking-tighter">₱{totalAmount.toLocaleString()}</p>
                    </div>
                    <div className="bg-slate-50 px-2 py-1 rounded-lg border border-black/5">
                       <p className="text-[7px] font-bold text-black opacity-40 uppercase tracking-widest">{Math.floor(d.s.duration / 60)}h Session</p>
@@ -119,7 +170,7 @@ export default function BookingPage() {
 
           {/* Reservation Manifest Form */}
           <div className="lg:col-span-3">
-            <form onSubmit={submit} className="bg-white rounded-[1.5rem] p-8 border border-black/10 shadow-sm space-y-6 relative overflow-hidden">
+            <form onSubmit={handlePreSubmit} className="bg-white rounded-[1.5rem] p-8 border border-black/10 shadow-sm space-y-6 relative overflow-hidden">
               <div className="space-y-1">
                 <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Logistics</p>
                 <h3 className="text-xl font-serif text-black">Reservation Manifest</h3>
@@ -129,7 +180,7 @@ export default function BookingPage() {
                 <div className="grid md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Session Date</label>
-                    <input type="date" required className="w-full bg-slate-50 p-3 rounded-lg text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.date} onChange={e => setF({...f, date: e.target.value})} />
+                    <input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-slate-50 p-3 rounded-lg text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.date} onChange={e => setF({...f, date: e.target.value})} />
                   </div>
                   <div className="space-y-1.5 relative">
                     <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Start Time</label>
@@ -164,6 +215,25 @@ export default function BookingPage() {
                   <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Creative Vision</label>
                   <textarea placeholder="Atmosphere, shots, priorities..." className="w-full bg-slate-50 p-3 rounded-lg text-[10px] h-24 border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none resize-none" value={f.note} onChange={e => setF({...f, note: e.target.value})} />
                 </div>
+
+                {d.a.length > 0 && (
+                  <div className="space-y-3">
+                    <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Enhance Your Package (Add-ons)</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {d.a.map(addon => (
+                        <div key={addon.id} onClick={() => toggleAddOn(addon.id)} className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center ${f.selectedAddOns.includes(addon.id) ? 'border-[#E8734A] bg-orange-50/50' : 'border-black/5 bg-slate-50'}`}>
+                           <div className="space-y-0.5">
+                              <p className="text-[10px] font-bold text-black tracking-tight">{addon.name}</p>
+                              <p className="text-[9px] font-bold text-[#E8734A]">₱{parseFloat(addon.price).toLocaleString()}</p>
+                           </div>
+                           <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${f.selectedAddOns.includes(addon.id) ? 'border-[#E8734A] bg-[#E8734A]' : 'border-black/10'}`}>
+                              {f.selectedAddOns.includes(addon.id) && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7"/></svg>}
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 border-t border-black/5">
@@ -175,6 +245,57 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
+      {/* Cinematic Confirmation Manifest Modal */}
+      {d.showConfirm && (
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[4000] flex items-center justify-center p-6 animate-fadeIn">
+           <div className="bg-white rounded-[4rem] max-w-xl w-full shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] animate-cinemaShow border border-white/20 overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-12 opacity-5 text-[10rem] font-serif pointer-events-none select-none">LW</div>
+              
+              <div className="px-12 py-12 space-y-10 relative z-10">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Final Verification</p>
+                  <h3 className="text-4xl font-serif text-black tracking-tighter">Confirm Masterpiece Manifest</h3>
+                </div>
+
+                <div className="bg-slate-50/50 rounded-[2.5rem] border border-black/5 overflow-hidden">
+                   <table className="w-full text-left">
+                      <tbody className="divide-y divide-black/5">
+                         <tr>
+                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black/40 w-1/3">Session</td>
+                            <td className="px-8 py-5 text-[12px] font-bold text-black italic">"{d.s.name}"</td>
+                         </tr>
+                         <tr>
+                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black/40">Logistics</td>
+                            <td className="px-8 py-5 text-[12px] font-bold text-black">{new Date(f.date).toLocaleDateString()} @ {sessionWindow?.start}</td>
+                         </tr>
+                         <tr>
+                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black/40">Destination</td>
+                            <td className="px-8 py-5 text-[11px] font-bold text-black">{f.loc}</td>
+                         </tr>
+                         <tr>
+                            <td className="px-8 py-5 text-[9px] font-bold uppercase tracking-widest text-black/40">Investment</td>
+                            <td className="px-8 py-5 text-xl font-black text-[#E8734A]">₱{totalAmount.toLocaleString()}</td>
+                         </tr>
+                      </tbody>
+                   </table>
+                </div>
+
+                <div className="flex gap-4">
+                  <button onClick={() => setD(p => ({ ...p, showConfirm: false }))} className="flex-1 py-6 border border-black/10 rounded-[2rem] text-[10px] font-bold uppercase tracking-[0.4em] text-black hover:bg-slate-50 transition-all">Review Details</button>
+                  <button onClick={finalSubmit} className="flex-2 bg-black text-white px-10 py-6 rounded-[2rem] text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-[#E8734A] transition-all shadow-2xl">Initialize Transaction</button>
+                </div>
+              </div>
+           </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes cinemaShow {
+          0% { opacity: 0; transform: scale(0.9) translateY(40px); filter: blur(10px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        .animate-cinemaShow { animation: cinemaShow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+      `}</style>
     </ClientLayout>
   );
 }

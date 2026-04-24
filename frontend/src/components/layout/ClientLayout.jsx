@@ -9,7 +9,7 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
   const navigate = useNavigate();
   const location = useLocation();
   const [navScrolled, setNavScrolled] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [heroVideoFailed, setHeroVideoFailed] = useState(false);
 
   useEffect(() => {
@@ -60,12 +60,12 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
       
       {/* Navigation - Professional Consistency */}
       <nav className={`fixed top-0 inset-x-0 z-[100] transition-all duration-500 px-6 md:px-12 py-5 ${isTransparentNav ? 'bg-transparent' : 'bg-white border-b border-black/10 py-4 shadow-sm'}`}>
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="max-w-[92%] mx-auto flex justify-between items-center">
           <Link to="/client/home" className="group flex items-center gap-3">
             <div className={`w-10 h-10 flex items-center justify-center rounded-xl font-serif text-xl transition-all shadow-lg ${isTransparentNav ? 'bg-white text-black' : 'bg-black text-white'}`}>L</div>
             <div className="flex flex-col">
               <span className={`text-sm font-bold tracking-[0.3em] transition-colors ${isTransparentNav ? 'text-white drop-shadow-md' : 'text-black'}`}>LIGHTWORKS</span>
-              <span className="text-[7px] font-bold uppercase tracking-[0.5em] text-[#E8734A]">CONCIERGE</span>
+              <span className="text-[7px] font-bold uppercase tracking-[0.5em] text-[#E8734A]">PORTAL</span>
             </div>
           </Link>
 
@@ -81,9 +81,30 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
               <div className={isTransparentNav ? 'text-white drop-shadow-md' : 'text-black'}>
                 <NotificationBell />
               </div>
-              <button onClick={() => setShowLogoutModal(true)} className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all shadow-sm ${isTransparentNav ? 'bg-white text-black hover:bg-[#E8734A] hover:text-white' : 'bg-black text-white'}`}>
-                {user?.name?.charAt(0)}
-              </button>
+              <div className="relative">
+                <button onClick={() => setProfileOpen(!profileOpen)} className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold transition-all shadow-sm ${isTransparentNav ? 'bg-white text-black hover:bg-[#E8734A] hover:text-white' : 'bg-black text-white hover:bg-[#E8734A]'}`}>
+                  {user?.name?.charAt(0)}
+                </button>
+
+                {profileOpen && (
+                  <>
+                    <div className="fixed inset-0 z-[110]" onClick={() => setProfileOpen(false)}></div>
+                    <div className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] z-[120] py-6 border border-black/10 animate-slideUp overflow-hidden">
+                      <div className="px-8 pb-4 border-b border-black/5 mb-4">
+                        <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-[0.4em] mb-1">Welcome, {user?.name?.split(' ')[0]}</p>
+                        <p className="text-[11px] font-bold text-black truncate">{user?.email}</p>
+                      </div>
+                      
+                      <div className="px-4">
+                        <button onClick={handleLogout} className="w-full text-left px-4 py-4 rounded-2xl text-[9px] font-bold text-red-500 hover:bg-red-50 transition-all uppercase tracking-[0.3em] flex items-center justify-between group">
+                          <span>Log Out</span>
+                          <svg className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -105,7 +126,7 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
           
           <div className="relative z-10 text-center max-w-5xl px-6 space-y-4 animate-fadeIn">
             <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-[#E8734A] drop-shadow-lg">
-              {user ? `Authenticated / ${user.name.toUpperCase()}` : `Registry / ${title.toUpperCase()}`}
+              {user ? `Welcome / ${user.name.toUpperCase()}` : `Studio Experience / ${title.toUpperCase()}`}
             </p>
             <h1 className={`${fullHero ? 'text-5xl md:text-8xl' : 'text-4xl md:text-5xl'} font-serif leading-tight reveal tracking-tighter text-white drop-shadow-2xl`}>
               {title}
@@ -124,7 +145,7 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
             {children}
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <div className="max-w-[92%] mx-auto px-6 md:px-12">
             <div className={`bg-white rounded-[2.5rem] shadow-sm reveal border border-black/10 min-h-[50vh] ${hideHero ? 'p-10 md:p-16' : 'p-8 md:p-16'}`}>
               <div className="relative z-10">
                   {hideHero && (
@@ -146,10 +167,10 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
 
       {/* Footer - Unified High Contrast */}
       <footer className="bg-white py-24 px-6 md:px-12 border-t border-black/10">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-20">
+        <div className="max-w-[92%] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-20">
           <div className="lg:col-span-2 space-y-8">
             <Link to="/" className="text-2xl font-bold text-black tracking-[0.4em] uppercase">Lightworks</Link>
-            <p className="text-sm text-black leading-relaxed max-w-sm font-medium opacity-60 italic">"A premium on-call photography service dedicated to the art of visual storytelling."</p>
+            <p className="text-sm text-black leading-relaxed max-w-sm font-medium italic">"A premium on-call photography service dedicated to the art of visual storytelling."</p>
           </div>
           <div className="space-y-8">
             <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Directory</p>
@@ -161,28 +182,15 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
           </div>
           <div className="space-y-8">
             <p className="text-[11px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Concierge</p>
-            <p className="text-[10px] text-black font-bold tracking-widest uppercase leading-relaxed opacity-60">Butuan City / HQ<br/>concierge@light.com</p>
+            <p className="text-[10px] text-black font-bold tracking-widest uppercase leading-relaxed">Butuan City / HQ<br/>concierge@light.com</p>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-black/5 text-center">
-            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-black opacity-30">© {new Date().getFullYear()} LIGHT STUDIO EXPERIENCE / ART DIRECTION BY ANTIGRAVITY</p>
+        <div className="max-w-[92%] mx-auto mt-24 pt-8 border-t border-black/5 text-center">
+            <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-black">© {new Date().getFullYear()} LIGHT STUDIO EXPERIENCE / ART DIRECTION BY ANTIGRAVITY</p>
         </div>
       </footer>
 
-      {/* Logout Modal */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[1000] flex items-center justify-center p-6 animate-fadeIn">
-          <div className="bg-white max-w-sm w-full rounded-[2.5rem] p-12 text-center shadow-2xl border border-black/10 relative animate-slideUp">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8 text-3xl">👋</div>
-            <h3 className="text-xl font-bold text-black uppercase tracking-widest mb-2">End Session</h3>
-            <p className="text-[11px] text-black opacity-40 font-bold uppercase tracking-widest mb-10 italic">"Your visual story continues soon."</p>
-            <div className="flex flex-col gap-4">
-              <button onClick={handleLogout} className="bg-black text-white py-5 rounded-2xl text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-[#E8734A] transition-all shadow-lg">Confirm Logout</button>
-              <button onClick={() => setShowLogoutModal(false)} className="text-[10px] font-bold uppercase tracking-widest text-black opacity-40 hover:opacity-100 transition-all py-2">Stay Authenticated</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Removed Logout Modal - Now Dropdown */}
 
       <style>{`
         .reveal { opacity: 0; transform: translateY(30px); transition: all 1s cubic-bezier(0.2, 1, 0.3, 1); }

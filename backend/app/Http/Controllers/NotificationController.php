@@ -9,8 +9,15 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $notifications = $request->user()->notifications()->paginate(20);
-        return response()->json($notifications);
+        try {
+            $user = $request->user();
+            if (!$user) return response()->json(['data' => []]);
+            
+            $notifications = $user->notifications()->paginate(20);
+            return response()->json($notifications);
+        } catch (\Exception $e) {
+            return response()->json(['data' => [], 'message' => 'Notification registry currently offline']);
+        }
     }
 
     public function markAsRead(Request $request, $id)

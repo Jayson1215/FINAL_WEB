@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const DEFAULT_CENTER = [125.5439, 8.9492]; // Note: MapLibre uses [lng, lat]
 
 const MAP_LAYERS = {
-  standard: "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
-  satellite: "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+  standard: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+  satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
 };
 
 function parseCoordinates(text) {
@@ -16,7 +17,7 @@ function parseCoordinates(text) {
   return [parseFloat(match[2]), parseFloat(match[1])]; // [lng, lat] for MapLibre
 }
 
-export default function LocationPickerMap({ locationText, onLocationSelect, height = '150px' }) {
+export default function LocationPickerMap({ locationText, onLocationSelect, height = '150px', minimal = false }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const marker = useRef(null);
@@ -60,6 +61,10 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
       attributionControl: false
     });
 
+    map.current.on('load', () => {
+      map.current.resize();
+    });
+
     // Custom Marker
     const el = document.createElement('div');
     el.className = 'custom-marker';
@@ -74,6 +79,10 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
       .setLngLat(initialPos)
       .addTo(map.current);
 
+    map.current.on('load', () => {
+      map.current.resize();
+    });
+
     map.current.on('click', (e) => {
       const { lng, lat } = e.lngLat;
       handleMapAction(lng, lat);
@@ -86,6 +95,16 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
       }
     };
   }, []);
+
+  // Force resize for minimal/modal instances
+  useEffect(() => {
+    if (minimal && map.current) {
+      const timer = setTimeout(() => {
+        map.current.resize();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [minimal, isExpanded]);
 
   // Sync Layer
   useEffect(() => {
@@ -122,16 +141,30 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
 
   const reverseGeocode = useCallback(async (lng, lat) => {
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+      // Switching to ArcGIS Professional Geocoding for higher subdivision/POI accuracy
+      const res = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?f=json&location=${lng},${lat}`);
       const data = await res.json();
-      const addr = data.address;
-      const neighborhood = addr.neighbourhood || addr.suburb || addr.village || addr.residential;
-      const road = addr.road || '';
-      const city = addr.city || addr.town || 'Butuan City';
-      const result = neighborhood ? `${neighborhood}, ${road} ${city}`.replace(/ ,/g, '') : data.display_name;
-      setResolvedAddr(result);
-      return result;
-    } catch (e) { return ''; }
+      
+      if (data.address) {
+        const a = data.address;
+        // ArcGIS provides very detailed LongLabels and specific address parts
+        // Order: Neighborhood/Subdivision -> Street Address -> City
+        const components = [];
+        
+        // Priority: Place Name or Neighborhood (Subdivision)
+        if (a.PlaceName || a.Neighborhood) components.push(a.PlaceName || a.Neighborhood);
+        if (a.Address) components.push(a.Address);
+        if (a.City) components.push(a.City);
+        
+        const result = components.length > 0 ? components.join(', ') : a.LongLabel;
+        setResolvedAddr(result);
+        return result;
+      }
+      return '';
+    } catch (e) { 
+      console.error('Geocoding failed:', e);
+      return ''; 
+    }
   }, []);
 
   const handleMapAction = useCallback(async (lng, lat) => {
@@ -144,8 +177,10 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
     setResolving(false);
 
     const currentText = locationText || '';
+    // If user has already typed Block/Lot specifics, keep them at the front
     const hasSpecifics = /block|lot|blk|unit|room/i.test(currentText);
-    const finalAddress = hasSpecifics ? `${currentText.split(',')[0]}, ${address}` : address;
+    const specificPart = hasSpecifics ? currentText.split(',')[0].trim() : '';
+    const finalAddress = specificPart ? `${specificPart}, ${address}` : address;
 
     if (onLocationSelect) {
       onLocationSelect({ lat, lng, address: finalAddress });
@@ -165,34 +200,69 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
     );
   }, [handleMapAction]);
 
+  if (minimal) {
+    return (
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div ref={mapContainer} className="w-full h-full" />
+        <div className="absolute top-6 right-6 z-30 flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={handleUseCurrent}
+            className="w-10 h-10 rounded-xl bg-[#E8734A] text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-all border border-white/20 mb-2"
+            title="Pin My Location"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </button>
+          
+          {Object.entries(MAP_LAYERS).map(([key, config]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveLayer(key)}
+              className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all shadow-2xl backdrop-blur-xl border ${activeLayer === key ? 'bg-black text-white border-black' : 'bg-white/90 text-black border-black/5 hover:bg-white'}`}
+            >
+              {key === 'standard' ? '🗺️' : '🛰️'}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="space-y-3 group/map">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-             <div className={`w-1.5 h-1.5 rounded-full ${resolving ? 'bg-[#E8734A] animate-ping' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'}`}></div>
-             <p className="text-[8px] font-bold uppercase tracking-widest text-black opacity-30">
-               {resolving ? 'Syncing MapLibre' : 'Vector Engine Active'}
-             </p>
+        {!minimal && (
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+               <div className={`w-1.5 h-1.5 rounded-full ${resolving ? 'bg-[#E8734A] animate-ping' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'}`}></div>
+               <p className="text-[8px] font-bold uppercase tracking-widest text-black opacity-30">
+                 {resolving ? 'Syncing MapLibre' : 'Vector Engine Active'}
+               </p>
+            </div>
+            <div className="flex gap-4">
+                <button type="button" onClick={handleUseCurrent} className="text-[8px] font-bold text-[#E8734A] uppercase tracking-widest hover:opacity-70 transition flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#E8734A]"></span>
+                  Pin My Location
+                </button>
+                <button type="button" onClick={() => setIsExpanded(true)} className="text-[8px] font-bold text-black opacity-40 uppercase tracking-widest hover:opacity-100 transition flex items-center gap-1.5 group/expand">
+                   <span>Full Screen</span>
+                   <svg className="w-2.5 h-2.5 group-hover/expand:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                </button>
+            </div>
           </div>
-          <div className="flex gap-4">
-              <button type="button" onClick={handleUseCurrent} className="text-[8px] font-bold text-[#E8734A] uppercase tracking-widest hover:opacity-70 transition">My Spot</button>
-              <button type="button" onClick={() => setIsExpanded(true)} className="text-[8px] font-bold text-black opacity-40 uppercase tracking-widest hover:opacity-100 transition flex items-center gap-1">
-                 Expand
-              </button>
-          </div>
-        </div>
+        )}
 
-        <div className="overflow-hidden rounded-2xl border-2 border-black/5 shadow-2xl relative z-10" style={{ height }}>
+        <div className={`${minimal ? 'h-full' : 'overflow-hidden rounded-2xl border-2 border-black/5 shadow-2xl'} relative z-10`} style={minimal ? {} : { height }}>
           <div ref={mapContainer} className="w-full h-full" />
           
-          <div className="absolute top-3 right-3 z-10 flex flex-col gap-2">
+          <div className="absolute top-6 right-6 z-30 flex flex-col gap-3">
             {Object.entries(MAP_LAYERS).map(([key, config]) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setActiveLayer(key)}
-                className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] transition-all shadow-lg backdrop-blur-md border ${activeLayer === key ? 'bg-black text-white border-black' : 'bg-white/80 text-black border-black/5 hover:bg-white'}`}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all shadow-2xl backdrop-blur-xl border ${activeLayer === key ? 'bg-black text-white border-black' : 'bg-white/90 text-black border-black/5 hover:bg-white'}`}
               >
                 {key === 'standard' ? '🗺️' : '🛰️'}
               </button>
@@ -200,38 +270,43 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
           </div>
         </div>
 
-        <p className="text-[7px] font-bold text-black opacity-30 uppercase tracking-widest italic text-center leading-relaxed">
-            Note: MapLibre high-speed vector engine enabled.
-        </p>
+        {!minimal && (
+          <p className="text-[7px] font-bold text-black opacity-30 uppercase tracking-widest italic text-center leading-relaxed">
+              Note: MapLibre high-speed vector engine enabled.
+          </p>
+        )}
       </div>
 
-      {/* Pop-up Modal */}
-      {isExpanded && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6" style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)' }}>
-          <div className="bg-white w-[90vw] h-[85vh] rounded-[2.5rem] shadow-2xl border border-black/10 overflow-hidden relative animate-modalPop">
-            <button onClick={() => setIsExpanded(false)} className="absolute top-6 left-6 z-[2500] bg-white/90 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center text-black shadow-xl border border-black/5 hover:bg-black hover:text-white transition-all group">
-               <span className="text-xl leading-none">&times;</span>
-            </button>
+      {/* Pop-up Modal - Full Precision Map - Portaled to Body to avoid container clipping */}
+      {isExpanded && createPortal(
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl animate-fadeIn">
+          <div className="bg-white w-[95vw] h-[90vh] rounded-[3rem] shadow-2xl border border-black/10 overflow-hidden relative animate-modalPop flex flex-col">
             
-            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[2500] pointer-events-none">
-               <div className="bg-black/80 backdrop-blur-xl px-6 py-2 rounded-full border border-white/10 shadow-2xl">
-                  <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-white">Refining Precision Destination</p>
+            {/* Modal Header */}
+            <div className="p-6 border-b border-black/5 flex justify-between items-center bg-white z-20">
+               <div className="space-y-1">
+                  <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Precision Targeting</p>
+                  <h3 className="text-xl font-serif text-black">Select Venue Destination</h3>
                </div>
-            </div>
-
-            {/* In a real MapLibre app, I'd need to re-initialize a map for the modal or move the container */}
-            {/* For this demo, I'll just keep the modal simple or re-init if needed */}
-             <div className="w-full h-full bg-slate-50 flex items-center justify-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-black opacity-30">MapLibre Modal Active</p>
-             </div>
-
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-[2500]">
-               <button onClick={() => setIsExpanded(false)} className="bg-black text-white px-10 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-[0.4em] shadow-2xl hover:bg-[#E8734A] transition-all border border-white/10">
-                  Secure Location
+               <button onClick={() => setIsExpanded(false)} className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-black border border-black/5 hover:bg-black hover:text-white transition-all">
+                  <span className="text-2xl leading-none">&times;</span>
                </button>
             </div>
+
+            {/* Modal Map Body */}
+            <div className="flex-1 relative bg-black">
+                <LocationPickerMap height="100%" locationText={locationText} onLocationSelect={onLocationSelect} minimal={true} />
+               
+               <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-[11000] w-full px-6 flex justify-center pointer-events-none">
+                  <button onClick={() => setIsExpanded(false)} className="pointer-events-auto bg-black text-white px-16 py-5 rounded-full text-[10px] font-bold uppercase tracking-[0.4em] shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5)] hover:bg-[#E8734A] transition-all border border-white/10 active:scale-95 flex items-center gap-4 group">
+                     <span>Secure Venue Location</span>
+                     <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                  </button>
+               </div>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <style>{`

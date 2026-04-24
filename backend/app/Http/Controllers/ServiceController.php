@@ -21,6 +21,7 @@ class ServiceController extends Controller
             'duration' => 'required|integer|min:1',
             'image_path' => 'nullable|string|max:2048',
             'downpayment_rate' => 'nullable|numeric|min:0|max:100',
+            'inclusions' => 'nullable|string',
         ]);
 
         return response()->json(Service::create($v), 201);
@@ -36,6 +37,7 @@ class ServiceController extends Controller
             'duration' => 'sometimes|integer|min:1',
             'image_path' => 'nullable|string|max:2048',
             'downpayment_rate' => 'nullable|numeric|min:0|max:100',
+            'inclusions' => 'nullable|string',
         ]);
 
         $service->update($v);

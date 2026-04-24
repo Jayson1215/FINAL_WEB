@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class PaymentController extends Controller
 {
@@ -92,6 +93,175 @@ class PaymentController extends Controller
     public function getAll()
     {
         return response()->json(Payment::with(['booking.user', 'booking.service'])->get());
+    }
+
+    /**
+     * Verify a Paymongo Checkout Session status
+     */
+    public function verify(Request $request)
+    {
+        $v = $request->validate([
+            'session_id' => 'required|string',
+        ]);
+
+        $payment = Payment::where('transaction_reference', $v['session_id'])->first();
+        if (!$payment) return response()->json(['message' => 'Payment record not found'], 404);
+
+        if ($payment->payment_status === 'paid') {
+            return response()->json(['message' => 'Payment already verified', 'status' => 'paid']);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Basic ' . base64_encode(env('PAYMONGO_SECRET_KEY') . ':'),
+            ])->get("https://api.paymongo.com/v1/checkout_sessions/{$v['session_id']}");
+
+            if ($response->failed()) {
+                return response()->json(['message' => 'Failed to verify with Paymongo'], 500);
+            }
+
+            $session = $response->json();
+            $status = $session['data']['attributes']['status'] ?? 'pending';
+            $paymentIntentStatus = $session['data']['attributes']['payment_intent']['attributes']['status'] ?? '';
+
+            if ($status === 'expired') {
+                $payment->update(['payment_status' => 'failed']);
+                return response()->json(['message' => 'Session expired', 'status' => 'failed']);
+            }
+
+            if ($paymentIntentStatus === 'succeeded') {
+                DB::transaction(function () use ($payment) {
+                    $payment->update(['payment_status' => 'paid']);
+                    
+                    $booking = $payment->booking;
+                    $booking->paid_amount += $payment->amount;
+                    
+                    if ($payment->type === 'downpayment' || $payment->type === 'full') {
+                        $booking->status = 'paid';
+                    }
+                    $booking->save();
+
+                    Notification::create([
+                        'user_id' => $booking->user_id,
+                        'type' => 'payment_confirmed',
+                        'title' => 'Payment Received',
+                        'message' => "Successfully received ₱" . number_format((float)$payment->amount) . " via GCash.",
+                        'link' => '/client/MyBookings'
+                    ]);
+                });
+
+                return response()->json(['message' => 'Payment verified', 'status' => 'paid']);
+            }
+
+            return response()->json(['message' => 'Payment still pending', 'status' => 'pending']);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Verification error', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Create a Paymongo Checkout Session for GCash
+     */
+    public function createCheckoutSession(Request $request)
+    {
+        $request->validate([
+            'booking_id' => 'required|exists:bookings,id',
+            'type' => 'required|in:downpayment,balance,full',
+        ]);
+
+        $booking = Booking::with('service')->findOrFail($request->booking_id);
+
+        // Security check
+        if ($booking->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Calculate amount in cents (Paymongo uses cents)
+        $amount = match($request->type) {
+            'downpayment' => $booking->downpayment_amount,
+            'balance' => max(0, $booking->total_amount - $booking->paid_amount),
+            'full' => $booking->total_amount,
+            default => 0
+        };
+
+        if ($amount <= 0) {
+            return response()->json(['message' => 'No balance to pay'], 400);
+        }
+
+        // Paymongo minimum is 20.00 PHP
+        if ($amount < 20) {
+            return response()->json([
+                'message' => 'Paymongo requires a minimum payment of ₱20.00. Please update the service price to test.'
+            ], 400);
+        }
+            
+        $amountInCents = (int)($amount * 100);
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Basic ' . base64_encode(config('services.paymongo.secret_key') . ':'),
+                'Content-Type' => 'application/json',
+            ])->post('https://api.paymongo.com/v1/checkout_sessions', [
+                'data' => [
+                    'attributes' => [
+                        'send_email_receipt' => true,
+                        'show_description' => true,
+                        'show_line_items' => true,
+                        'line_items' => [
+                            [
+                                'currency' => 'PHP',
+                                'amount' => $amountInCents,
+                                'description' => "{$booking->service->name} - " . ucfirst($request->type),
+                                'name' => "Studio Booking: {$booking->service->name}",
+                                'quantity' => 1,
+                            ]
+                        ],
+                        'payment_method_types' => ['gcash', 'qrph'],
+                        'description' => "Booking payment for {$booking->service->name}",
+                        'success_url' => env('FRONTEND_URL') . '/client/MyBookings?payment=success&session_id={CHECKOUT_SESSION_ID}',
+                        'cancel_url' => env('FRONTEND_URL') . '/client/MyBookings?payment=cancelled',
+                    ]
+                ]
+            ]);
+
+            if ($response->failed()) {
+                \Log::error('Paymongo Session Creation Failed', [
+                    'status' => $response->status(),
+                    'body' => $response->json(),
+                    'booking_id' => $booking->id
+                ]);
+                $errDetail = $response->json()['errors'][0]['detail'] ?? 'Unknown Paymongo Error';
+                return response()->json([
+                    'message' => 'Paymongo API Error: ' . $errDetail,
+                    'error' => $response->json()
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Paymongo Connection Exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'message' => 'Connection to Paymongo failed: ' . $e->getMessage()
+            ], 500);
+        }
+
+        $session = $response->json();
+        
+        // Create a pending payment record
+        Payment::create([
+            'booking_id' => $booking->id,
+            'payment_method' => 'gcash',
+            'amount' => $amount,
+            'payment_status' => 'pending',
+            'transaction_reference' => $session['data']['id'],
+            'type' => $request->type,
+        ]);
+
+        return response()->json([
+            'checkout_url' => $session['data']['attributes']['checkout_url']
+        ]);
     }
 
     /**

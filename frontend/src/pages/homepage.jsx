@@ -13,11 +13,17 @@ export default function Landing() {
   const nav = useNavigate();
   const { search } = useLocation();
   const [data, setData] = useState({ s: [], b: [], p: [], loading: true });
-  const [ui, setUi] = useState({ scrolled: false, booking: null, galleryItem: null, loginModal: false, registerModal: false });
+  const [ui, setUi] = useState({ scrolled: false, booking: null, galleryItem: null, loginModal: false, registerModal: false, categoryFilter: 'All' });
   const [form, setForm] = useState({ date: '', time: '', loc: '', note: '', sub: false, err: '' });
   const [loginForm, setLoginForm] = useState({ email: '', password: '', sub: false, err: '' });
   const [regForm, setRegForm] = useState({ name: '', email: '', password: '', conf: '', sub: false, err: '' });
   const { login, register } = useAuth();
+
+  useEffect(() => {
+    if (new URLSearchParams(search).get('login') === 'true') {
+      setUi(p => ({ ...p, loginModal: true }));
+    }
+  }, [search]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -120,12 +126,12 @@ export default function Landing() {
 
           {/* Navigation Section */}
           <div className="flex items-center gap-10">
-            <div className="hidden lg:flex gap-8 items-center border-r border-gray-200 pr-8">
-              <a href="#" className="text-[9px] font-bold uppercase tracking-widest text-[#1E293B] hover:text-[#E8734A] transition-colors">Home</a>
-              <a href="#about" className="text-[9px] font-bold uppercase tracking-widest text-[#1E293B] hover:text-[#E8734A] transition-colors">About Us</a>
-              <a href="#services" className="text-[9px] font-bold uppercase tracking-widest text-[#1E293B] hover:text-[#E8734A] transition-colors">Packages</a>
-              <a href="#gallery" className="text-[9px] font-bold uppercase tracking-widest text-[#1E293B] hover:text-[#E8734A] transition-colors">Gallery</a>
-              <a href="#contact" className="text-[9px] font-bold uppercase tracking-widest text-[#1E293B] hover:text-[#E8734A] transition-colors">Contact</a>
+            <div className="hidden lg:flex gap-8 items-center border-r border-black pr-8">
+              <a href="#" className="text-[9px] font-bold uppercase tracking-widest text-black hover:text-[#E8734A] transition-colors">Home</a>
+              <a href="#about" className="text-[9px] font-bold uppercase tracking-widest text-black hover:text-[#E8734A] transition-colors">About Us</a>
+              <a href="#services" className="text-[9px] font-bold uppercase tracking-widest text-black hover:text-[#E8734A] transition-colors">Packages</a>
+              <a href="#gallery" className="text-[9px] font-bold uppercase tracking-widest text-black hover:text-[#E8734A] transition-colors">Gallery</a>
+              <a href="#contact" className="text-[9px] font-bold uppercase tracking-widest text-black hover:text-[#E8734A] transition-colors">Contact</a>
             </div>
             <div className="flex gap-4 items-center">
               {user ? (
@@ -144,39 +150,79 @@ export default function Landing() {
         <div className="relative text-center space-y-6 px-6">
           <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Registry & Management</p>
           <h1 className="text-5xl md:text-8xl font-serif text-[#1E293B] leading-none tracking-tighter">Capturing Life <br /><span className="text-[#E8734A]">At Your Place.</span></h1>
-          <a href="#services" className="inline-block bg-[#1E293B] text-white py-4 px-12 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-xl">EXPLORE SERVICES</a>
+          <a href="#services" className="inline-block bg-[#1E293B] text-white py-4 px-12 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-xl">EXPLORE PACKAGES</a>
         </div>
       </section>
 
-      <section id="services" className="py-32 px-6 max-w-7xl mx-auto scroll-mt-20 reveal">
-        <div className="text-center mb-20 space-y-4">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E8734A]">Collections</p>
-          <h2 className="text-4xl font-serif text-[#1E293B]">Signature Packages</h2>
+      <section id="services" className="py-32 px-6 max-w-7xl mx-auto scroll-mt-20">
+        <div className="flex flex-col items-center gap-10 mb-20">
+          <div className="text-center space-y-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] animate-fadeIn">Directory / Signature Collections</p>
+            <h2 className="text-5xl md:text-6xl font-serif text-[#1E293B] tracking-tight">Signature Collections</h2>
+          </div>
+          
+          <div className="flex flex-wrap justify-center gap-3">
+             {['All', ...new Set(data.s.map(s => s.category))].filter(Boolean).map(cat => (
+               <button key={cat} onClick={() => setUi(p => ({ ...p, categoryFilter: cat }))} className={`px-8 py-2.5 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all ${ui.categoryFilter === cat ? 'bg-black text-white shadow-xl scale-105' : 'bg-white text-black hover:bg-gray-100 border-2 border-black'}`}>
+                 {cat}
+               </button>
+             ))}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {data.s.map(s => (
-            <div key={s.id} onClick={() => setUi(p => ({ ...p, booking: s }))} className="bg-white rounded-[2rem] p-4 border hover:shadow-2xl transition-all cursor-pointer group flex flex-col h-full">
-              <div className="relative overflow-hidden rounded-[1.5rem]">
-                <img src={resolveServiceImageUrl(s)} className="w-full aspect-[4/5] object-cover group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-[8px] font-bold uppercase tracking-widest text-[#1E293B] shadow-sm">{s.category}</div>
-              </div>
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-serif text-[#1E293B]">{s.name}</h3>
-                  <p className="text-[10px] font-bold text-[#1E293B]/60 uppercase">{formatDur(s.duration)}</p>
-                </div>
-                <p className="text-[10px] text-[#1E293B] font-medium italic mb-6 line-clamp-2 leading-relaxed">"{s.description}"</p>
-                <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-50">
-                  <p className="text-lg font-bold text-[#1E293B]">₱{parseFloat(s.price).toLocaleString()}</p>
-                  <button className="bg-[#1E293B] text-white px-6 py-2.5 rounded-xl text-[8px] font-bold uppercase tracking-widest group-hover:bg-[#E8734A] transition-all">Book Now</button>
-                </div>
-              </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {data.s.filter(s => ui.categoryFilter === 'All' || s.category === ui.categoryFilter).length === 0 ? (
+            <div className="col-span-full text-center py-20 bg-white rounded-[3rem] border-2 border-black border-dashed">
+               <p className="text-[10px] font-bold uppercase tracking-widest text-black">No {ui.categoryFilter} collections found.</p>
             </div>
-          ))}
+          ) : (
+            data.s.filter(s => ui.categoryFilter === 'All' || s.category === ui.categoryFilter).map(s => (
+              <div key={s.id} onClick={() => {
+                if (!user) {
+                  setUi(p => ({ ...p, loginModal: true }));
+                  return;
+                }
+                setUi(p => ({ ...p, booking: s }));
+              }} className="bg-white rounded-[2.5rem] p-8 border-2 border-black shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.2)] transition-all duration-700 cursor-pointer group flex flex-col h-[720px] overflow-hidden">
+                <div className="relative overflow-hidden rounded-[1.8rem] h-64 shrink-0 mb-8">
+                  <img src={resolveServiceImageUrl(s)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl text-[7px] font-bold uppercase tracking-[0.2em] text-[#1E293B] shadow-sm border border-black">{s.category}</div>
+                  <div className="absolute top-4 right-4 bg-black/20 backdrop-blur-md px-3 py-1 rounded-lg text-[7px] font-bold uppercase tracking-widest text-white border border-white/20">{formatDur(s.duration)}</div>
+                </div>
+                
+                <div className="px-3 flex-1 flex flex-col">
+                  <div className="space-y-4 mb-8">
+                    <h3 className="text-2xl font-serif text-black leading-tight tracking-tighter group-hover:text-[#E8734A] transition-colors">{s.name}</h3>
+                    <p className="text-[11px] text-black font-medium italic leading-relaxed line-clamp-3">"{s.description}"</p>
+                  </div>
+                  
+                  <div className="space-y-3 mb-8 flex-1">
+                     <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-[0.3em]">Tier Inclusions</p>
+                     <div className="space-y-1.5">
+                        {s.inclusions?.split('\n').slice(0, 4).map((inc, i) => (
+                          <div key={i} className="flex gap-2 items-start">
+                             <div className="w-1 h-1 rounded-full bg-black mt-1.5"></div>
+                             <p className="text-[10px] text-black font-medium leading-tight truncate">{inc.replace('• ', '')}</p>
+                          </div>
+                        ))}
+                     </div>
+                  </div>
+                  
+                  <div className="mt-auto pt-8 border-t-2 border-black flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <p className="text-[8px] font-bold text-black uppercase tracking-[0.2em] mb-1">Investment</p>
+                        <p className="text-xl font-bold text-black tracking-tight">₱{parseFloat(s.price).toLocaleString()}</p>
+                    </div>
+                    <button className="bg-black text-white px-8 py-4 rounded-2xl text-[9px] font-bold uppercase tracking-[0.2em] group-hover:bg-[#E8734A] transition-all shadow-lg hover:shadow-orange-200/50">Book Now</button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
-      <section id="gallery" className="py-32 bg-white scroll-mt-20 reveal">
+      <section id="gallery" className="py-32 bg-white scroll-mt-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-end mb-16">
             <div className="space-y-4">
@@ -200,9 +246,9 @@ export default function Landing() {
       </section>
 
       {ui.galleryItem && (
-        <div className="fixed inset-0 bg-black/5 backdrop-blur-2xl z-[400] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setUi(p => ({ ...p, galleryItem: null }))}>
-          <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center bg-white/40 backdrop-blur-md p-8 md:p-16 rounded-[3rem] border border-white/50 shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border border-white/20">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-2xl z-[400] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setUi(p => ({ ...p, galleryItem: null }))}>
+          <div className="max-w-6xl w-full grid md:grid-cols-2 gap-12 items-center bg-white p-8 md:p-16 rounded-[3rem] border-2 border-black shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-2 border-black">
               <img src={ui.galleryItem.image_url} alt={ui.galleryItem.title} className="w-full h-auto max-h-[70vh] object-contain" />
             </div>
             <div className="space-y-8">
@@ -210,7 +256,7 @@ export default function Landing() {
                 <p className="text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">{ui.galleryItem.category}</p>
                 <h2 className="text-5xl font-serif text-[#1E293B] leading-tight">{ui.galleryItem.title}</h2>
               </div>
-              <p className="text-sm text-[#1E293B]/70 italic leading-relaxed font-medium">"{ui.galleryItem.description || 'A captured moment of pure authenticity and light.'}"</p>
+              <p className="text-sm text-black italic leading-relaxed font-medium">"{ui.galleryItem.description || 'A captured moment of pure authenticity and light.'}"</p>
               <div className="pt-10">
                 <button onClick={() => setUi(p => ({ ...p, galleryItem: null }))} className="bg-[#1E293B] text-white px-10 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-xl">Close Gallery</button>
               </div>
@@ -219,15 +265,15 @@ export default function Landing() {
         </div>
       )}
 
-      <section id="about" className="py-32 px-6 max-w-7xl mx-auto scroll-mt-20 reveal">
+      <section id="about" className="py-32 px-6 max-w-7xl mx-auto scroll-mt-20">
         <div className="grid md:grid-cols-2 gap-20 items-center">
           <div className="space-y-8">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E8734A]">The Studio</p>
             <h2 className="text-5xl font-serif text-[#1E293B] leading-tight">We Believe in <br />Timeless Visuals.</h2>
-            <p className="text-[#1E293B] font-medium leading-relaxed max-w-md">LIGHT Studio Experience is dedicated to capturing the raw, authentic moments of your life. Based in Butuan City, we specialize in high-end editorial photography that tells a story beyond the lens.</p>
+            <p className="text-black font-medium leading-relaxed max-w-md">LIGHT Studio Experience is dedicated to capturing the raw, authentic moments of your life. Based in Butuan City, we specialize in high-end editorial photography that tells a story beyond the lens.</p>
             <div className="grid grid-cols-2 gap-8 pt-8">
-              <div><p className="text-3xl font-serif text-[#1E293B]">500+</p><p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest">Sessions</p></div>
-              <div><p className="text-3xl font-serif text-[#1E293B]">100%</p><p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest">Satisfaction</p></div>
+              <div><p className="text-3xl font-serif text-black">500+</p><p className="text-[8px] font-bold text-black uppercase tracking-widest">Sessions</p></div>
+              <div><p className="text-3xl font-serif text-black">100%</p><p className="text-[8px] font-bold text-black uppercase tracking-widest">Satisfaction</p></div>
             </div>
           </div>
           <div className="bg-[#1E293B] h-[600px] rounded-[3rem] overflow-hidden relative">
@@ -236,7 +282,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="contact" className="py-32 bg-[#1E293B] text-white scroll-mt-20 reveal">
+      <section id="contact" className="py-32 bg-[#1E293B] text-white scroll-mt-20">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20">
           <div className="space-y-12">
             <div className="space-y-4">
@@ -273,7 +319,7 @@ export default function Landing() {
             <h2 className="text-4xl font-serif mb-10 text-[#1E293B] text-center">Reserve {ui.booking.name}</h2>
             <form onSubmit={handleBook} className="space-y-5">
               <div className="grid grid-cols-2 gap-5">
-                <div className="space-y-2"><p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Session Date</p><input type="date" required className="w-full bg-white/50 backdrop-blur-sm p-4 rounded-2xl text-xs border border-white/20 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
+                <div className="space-y-2"><p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Session Date</p><input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-white/50 backdrop-blur-sm p-4 rounded-2xl text-xs border border-white/20 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
                 <div className="space-y-2"><p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Session Time</p><input type="time" required className="w-full bg-white/50 backdrop-blur-sm p-4 rounded-2xl text-xs border border-white/20 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} /></div>
               </div>
               <div className="space-y-2"><p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Location</p><input type="text" placeholder="Venue Location" required className="w-full bg-white/50 backdrop-blur-sm p-4 rounded-2xl text-xs border border-white/20 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.loc} onChange={e => setForm({ ...form, loc: e.target.value })} /></div>
@@ -285,8 +331,8 @@ export default function Landing() {
       )}
 
       <footer className="py-24 text-center border-t bg-white">
-        <Link to="/" className="text-2xl font-serif tracking-widest text-[#1E293B]">LIGHT</Link>
-        <p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest mt-6">© {new Date().getFullYear()} LIGHT STUDIO EXPERIENCE • ART DIRECTION BY ANTIGRAVITY</p>
+        <Link to="/" className="text-2xl font-serif tracking-widest text-black">LIGHT</Link>
+        <p className="text-[8px] font-bold text-black uppercase tracking-widest mt-6">© {new Date().getFullYear()} LIGHT STUDIO EXPERIENCE • ART DIRECTION BY ANTIGRAVITY</p>
       </footer>
       {ui.loginModal && (
         <div className="fixed inset-0 bg-black/10 backdrop-blur-3xl z-[500] flex items-center justify-center p-6 animate-fadeIn overflow-y-auto">
@@ -294,8 +340,8 @@ export default function Landing() {
             <div className="p-12">
               <div className="mb-10 text-center">
                 <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-4">Access Portal</p>
-                <h3 className="text-4xl font-serif text-[#1E293B]">Welcome Back</h3>
-                <p className="text-[10px] font-bold text-[#1E293B]/60 uppercase tracking-widest mt-2">Enter credentials to proceed</p>
+                <h3 className="text-4xl font-serif text-black">Welcome Back</h3>
+                <p className="text-[10px] font-bold text-black uppercase tracking-widest mt-2">Enter credentials to proceed</p>
               </div>
               {loginForm.err && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-[9px] font-bold uppercase tracking-widest border border-red-100">{loginForm.err}</div>}
               <form onSubmit={handleLogin} className="space-y-6">
@@ -327,7 +373,7 @@ export default function Landing() {
                   <span className="text-[9px] font-bold uppercase tracking-widest text-[#1E293B]">Continue with Google</span>
                 </button>
                 <div className="text-center">
-                  <p className="text-[9px] font-bold text-[#1E293B]/60 uppercase tracking-widest">Don't have an account?</p>
+                  <p className="text-[9px] font-bold text-black uppercase tracking-widest">Don't have an account?</p>
                   <button onClick={() => setUi(p => ({ ...p, loginModal: false, registerModal: true }))} className="mt-4 text-[9px] font-bold uppercase tracking-widest border-b border-[#E8734A] pb-1">Create Profile</button>
                 </div>
               </div>
@@ -343,7 +389,7 @@ export default function Landing() {
               <div className="mb-10 text-center">
                 <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-4">Join Community</p>
                 <h3 className="text-4xl font-serif text-[#1E293B]">Create Account</h3>
-                <p className="text-[10px] font-bold text-[#1E293B]/60 uppercase tracking-widest mt-2">Become a member today</p>
+                <p className="text-[10px] font-bold text-black uppercase tracking-widest mt-2">Become a member today</p>
               </div>
               {regForm.err && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl text-[9px] font-bold uppercase tracking-widest border border-red-100">{regForm.err}</div>}
               <form onSubmit={handleRegister} className="space-y-4">
@@ -368,7 +414,7 @@ export default function Landing() {
                 <button type="submit" disabled={regForm.sub} className="w-full bg-[#1E293B] text-white py-5 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-xl mt-2">{regForm.sub ? 'Creating Account...' : 'Start Your Journey'}</button>
               </form>
               <div className="mt-8 text-center">
-                <p className="text-[9px] font-bold text-[#1E293B]/60 uppercase tracking-widest">Already a member?</p>
+                <p className="text-[9px] font-bold text-black uppercase tracking-widest">Already a member?</p>
                 <button onClick={() => setUi(p => ({ ...p, registerModal: false, loginModal: true }))} className="mt-4 text-[9px] font-bold uppercase tracking-widest border-b border-[#E8734A] pb-1">Sign In to Account</button>
               </div>
             </div>

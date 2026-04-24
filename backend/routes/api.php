@@ -25,8 +25,8 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // Social Authentication Routes
-Route::get('/auth/{provider}/redirect', [\App\Http\Controllers\SocialAuthController::class, 'redirectToProvider']);
-Route::get('/auth/{provider}/callback', [\App\Http\Controllers\SocialAuthController::class, 'handleProviderCallback']);
+Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider']);
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback']);
 
 // Public services and portfolio access (for browsing before login)
 Route::get('/client/Packages', [ServiceController::class, 'index']);
@@ -62,8 +62,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/client/MyBookings/{booking}', [BookingController::class, 'destroy']);
         Route::post('/client/MyBookings/{booking}/cancel', [BookingController::class, 'requestCancellation']);
 
+        // Add-ons routes
+        Route::get('/client/AddOns', [\App\Http\Controllers\AddOnController::class, 'index']);
+
         // Payments routes (client)
         Route::post('/client/payments', [PaymentController::class, 'store']);
+        Route::post('/client/payments/create-session', [PaymentController::class, 'createCheckoutSession']);
+        Route::post('/client/payments/verify', [PaymentController::class, 'verify']);
     });
 
     /**

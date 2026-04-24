@@ -9,24 +9,18 @@ export default function AdminLayout({ children, title }) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
-    setProfileOpen(false);
-  };
-
-  const handleConfirmLogout = async () => {
+  const handleLogout = async () => {
     setIsLoggingOut(true);
     try { await logout(); navigate('/login'); }
     catch (err) { console.error('Logout error:', err); }
-    finally { setIsLoggingOut(false); setShowLogoutModal(false); }
+    finally { setIsLoggingOut(false); }
   };
 
   const navLinks = [
     { path: '/admin/dashboard', label: 'Dashboard' },
-    { path: '/admin/services', label: 'Services' },
+    { path: '/admin/services', label: 'Packages' },
     { path: '/admin/portfolio', label: 'Portfolio' },
     { path: '/admin/bookings', label: 'Bookings' },
     { path: '/admin/users', label: 'System Users' },
@@ -46,7 +40,10 @@ export default function AdminLayout({ children, title }) {
             <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-sm group-hover:bg-[#E8734A] transition-colors">
               <span className="text-white text-[10px] font-bold italic">LW</span>
             </div>
-            <h2 className="text-xs font-bold text-black uppercase tracking-[0.25em]">Lightworks</h2>
+            <div className="flex flex-col">
+              <h2 className="text-[10px] font-bold text-black uppercase tracking-[0.25em]">Lightworks</h2>
+              <span className="text-[6px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Portal</span>
+            </div>
           </Link>
         </div>
 
@@ -118,11 +115,11 @@ export default function AdminLayout({ children, title }) {
                   <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)}></div>
                   <div className="absolute right-0 mt-4 w-56 bg-white rounded-2xl shadow-2xl border border-black/20 z-20 py-3 animate-fadeIn">
                     <div className="px-5 py-3 border-b border-black/10 mb-2">
-                      <p className="text-[9px] font-bold text-black opacity-40 uppercase tracking-widest mb-1">Authenticated as</p>
-                      <p className="text-[11px] font-bold text-black truncate">{user?.email}</p>
+                      <p className="text-[9px] font-bold text-[#E8734A] uppercase tracking-widest mb-1">Welcome, {user?.name?.split(' ')[0]}</p>
+                      <p className="text-[10px] font-bold text-black truncate">{user?.email}</p>
                     </div>
-                    <button onClick={handleLogoutClick} className="w-full text-left px-5 py-3 text-[10px] font-bold text-red-500 hover:bg-red-50 transition-colors uppercase tracking-[0.2em]">
-                      Sign Out
+                    <button onClick={handleLogout} disabled={isLoggingOut} className="w-full text-left px-5 py-3 text-[10px] font-bold text-red-500 hover:bg-red-50 transition-colors uppercase tracking-[0.2em]">
+                      {isLoggingOut ? 'Logging Out...' : 'Log Out'}
                     </button>
                   </div>
                 </>
@@ -139,24 +136,7 @@ export default function AdminLayout({ children, title }) {
         </div>
       </main>
 
-      {/* Confirmation Modal with Black Borders */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-md flex items-center justify-center z-[1000] p-6 animate-fadeIn">
-          <div className="bg-white rounded-[2.5rem] shadow-2xl p-12 max-w-sm w-full border border-black/10 animate-slideUp text-center">
-            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-8">
-              <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-            </div>
-            <h2 className="text-xl font-bold text-black mb-2 tracking-tight">Confirm Logout</h2>
-            <p className="text-[11px] text-black opacity-60 font-bold uppercase tracking-widest mb-10">End your active session?</p>
-            <div className="flex gap-4">
-              <button onClick={() => setShowLogoutModal(false)} className="flex-1 py-4 bg-slate-50 text-black font-bold rounded-2xl hover:bg-slate-100 transition text-[10px] uppercase tracking-widest">Wait, No</button>
-              <button onClick={handleConfirmLogout} disabled={isLoggingOut} className="flex-1 py-4 bg-black text-white font-bold rounded-2xl hover:bg-[#E8734A] transition text-[10px] uppercase tracking-widest shadow-lg">
-                {isLoggingOut ? '...' : 'Yes, Logout'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Removed Logout Modal - Now direct in Dropdown */}
     </div>
   );
 }

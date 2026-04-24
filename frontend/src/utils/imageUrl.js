@@ -1,6 +1,5 @@
 const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const backendBaseUrl = apiBaseUrl.replace(/\/api\/?$/, '');
-const toLocalImageUrl = (filename) => `/images/${filename}`;
 
 const defaultServiceImageByFilename = {
   'service_wedding.png': '/images/service_wedding.png',
@@ -13,6 +12,13 @@ const defaultServiceImageByFilename = {
   'portfolio_corporate.png': '/images/service_event.png',
   'portfolio_architecture.png': '/images/service_editorial.png',
   'portfolio_nature.png': '/images/service_event.png',
+};
+
+const toLocalImageUrl = (filename) => {
+  if (defaultServiceImageByFilename[filename.toLowerCase()]) {
+    return defaultServiceImageByFilename[filename.toLowerCase()];
+  }
+  return `${backendBaseUrl}/api/images/${filename}`;
 };
 
 const serviceCategoryFallbacks = [

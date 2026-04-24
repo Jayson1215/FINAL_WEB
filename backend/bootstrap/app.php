@@ -20,10 +20,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // Exception handler - middleware handles CORS headers, so we just return JSON
         $exceptions->render(function (\Throwable $e, $request) {
             if ($request->expectsJson() || str_starts_with($request->path(), 'api')) {
+                $code = $e->getCode();
+                $statusCode = (is_int($code) && $code >= 100 && $code < 600) ? $code : 500;
+                
                 return response()->json([
                     'message' => $e->getMessage(),
                     'error' => class_basename($e),
-                ], $e->getCode() ?: 500);
+                ], $statusCode);
             }
         });
     })->create();

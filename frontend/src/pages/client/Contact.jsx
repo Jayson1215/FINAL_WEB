@@ -29,7 +29,7 @@ export default function Contact() {
               <div className="flex items-start gap-6 group">
                 <div className="w-12 h-12 rounded-2xl bg-white shadow-card flex items-center justify-center text-xl group-hover:bg-[#E8734A] group-hover:text-white transition-all duration-500">📍</div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] mb-1">Service Area</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#94A3B8] mb-1">Studio Reach</p>
                   <p className="text-sm font-bold text-[#1E293B]">Butuan City & Surrounding Regions</p>
                 </div>
               </div>
@@ -56,7 +56,7 @@ export default function Contact() {
               <div className="text-center py-16 space-y-6">
                 <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto animate-bounce">✓</div>
                 <h3 className="text-2xl font-serif text-[#1E293B]">Message Received</h3>
-                <p className="text-sm text-[#64748B] italic">"Our concierge team will reach out to you within 24 hours."</p>
+                <p className="text-sm text-[#64748B] italic">"Our studio team will reach out to you within 24 hours."</p>
                 <button onClick={() => setSubmitted(false)} className="text-[10px] font-bold uppercase tracking-widest text-[#E8734A] border-b border-[#E8734A] pb-1 hover:opacity-70 transition">Send Another</button>
               </div>
             ) : (

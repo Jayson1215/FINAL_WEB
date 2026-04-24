@@ -17,27 +17,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create default admin account
-        User::updateOrCreate(
-            ['email' => 'admin@studio.com'],
-            [
-                'name' => 'Studio Admin',
-                'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
-                'role' => 'admin',
-            ]
-        );
+        // Ensure admin exists
+        $admin = User::withTrashed()->firstOrNew(['email' => 'admin@studio.com']);
+        $admin->fill([
+            'name' => 'Studio Admin',
+            'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+            'role' => 'admin',
+        ]);
+        if ($admin->trashed()) $admin->restore();
+        $admin->save();
 
-        User::updateOrCreate(
-            ['email' => 'client@example.com'],
-            [
-                'name' => 'Test Client',
-                'role' => 'client',
-                'password' => bcrypt('password'),
-            ]
-        );
+        // Ensure test client exists
+        $client = User::withTrashed()->firstOrNew(['email' => 'client@example.com']);
+        $client->fill([
+            'name' => 'Test Client',
+            'role' => 'client',
+            'password' => bcrypt('password'),
+        ]);
+        if ($client->trashed()) $client->restore();
+        $client->save();
 
         $this->call([
             StudioContentSeeder::class,
+            EventPackagesSeeder::class,
         ]);
     }
 }

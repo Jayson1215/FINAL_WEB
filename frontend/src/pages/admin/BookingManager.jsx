@@ -44,7 +44,7 @@ export default function BookingManager() {
     <AdminLayout title="Manage Bookings">
       <div className="h-96 flex flex-col items-center justify-center space-y-4 animate-pulse">
         <div className="w-10 h-10 border-4 border-slate-100 border-t-black rounded-full animate-spin"></div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-black opacity-30">Accessing Master Registry...</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-black">Accessing Master Registry...</p>
       </div>
     </AdminLayout>
   );
@@ -80,77 +80,99 @@ export default function BookingManager() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/10">
-                {d.list.map(b => (
-                  <tr key={b.id} className="group hover:bg-slate-50/50 transition-all duration-500">
-                    <td className="px-8 py-8">
-                      <div className="flex flex-col gap-1 cursor-pointer" onClick={() => setViewModal({open: true, b})}>
-                         <p className="text-[11px] font-black text-black tracking-widest">{formatId(b.id)}</p>
-                         <p className="text-[8px] text-black opacity-20 font-bold uppercase">System ID: #{b.id}</p>
-                      </div>
-                    </td>
-                    <td className="px-8 py-8">
-                      <p className="text-sm font-bold text-black tracking-tight group-hover:text-[#E8734A] transition-colors">{b.user?.name}</p>
-                    </td>
-                    <td className="px-8 py-8">
-                        <div className="bg-slate-50 inline-block px-3 py-1.5 rounded-xl border border-black/5">
-                            <p className="text-[10px] font-bold text-black italic opacity-60">"{b.service?.name}"</p>
+                {d.list.map((b, idx) => {
+                  const displayId = `LW-${new Date(b.created_at).getFullYear()}-${(d.list.length - idx).toString().padStart(2, '0')}`;
+                  return (
+                    <tr key={b.id} className="group hover:bg-slate-50/50 transition-all duration-500">
+                      <td className="px-8 py-8">
+                        <div className="flex flex-col gap-1 cursor-pointer" onClick={() => setViewModal({open: true, b: { ...b, displayId }})}>
+                           <p className="text-[11px] font-black text-black tracking-widest">{displayId}</p>
+                           <p className="text-[8px] text-black font-bold uppercase">System ID: #{b.id.substring(0, 8)}...</p>
                         </div>
-                    </td>
-                    <td className="px-8 py-8 max-w-[200px]">
-                        <p className="text-[11px] font-bold text-black opacity-60 truncate">{b.location}</p>
-                    </td>
-                    <td className="px-8 py-8">
-                      <div className="space-y-1">
-                        <p className="text-sm font-bold text-black tracking-tighter">{new Date(b.booking_date).toLocaleDateString()}</p>
-                        <p className="text-[9px] text-[#E8734A] font-bold uppercase tracking-widest">{b.booking_time}</p>
-                      </div>
-                    </td>
-                    <td className="px-8 py-8">
-                      <div className="flex items-center gap-3">
-                         <div className={`px-4 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border ${getStatusStyle(b.status)} shadow-sm`}>
-                            {b.status}
-                         </div>
-                         
-                         {b.status === 'pending' && (
-                           <div className="flex gap-2 ml-4 animate-fadeIn">
-                             <button onClick={() => openAction(b, 'confirmed')} className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Confirm">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
-                             </button>
-                             <button onClick={() => openAction(b, 'rejected')} className="w-8 h-8 rounded-lg bg-red-500 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Reject">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
-                             </button>
+                      </td>
+                      <td className="px-8 py-8">
+                        <p className="text-sm font-bold text-black tracking-tight group-hover:text-[#E8734A] transition-colors">{b.user?.name}</p>
+                      </td>
+                      <td className="px-8 py-8">
+                          <div className="bg-slate-50 inline-block px-3 py-1.5 rounded-xl border border-black/5">
+                              <p className="text-[10px] font-bold text-black italic">"{b.service?.name}"</p>
+                          </div>
+                      </td>
+                      <td className="px-8 py-8 max-w-[200px]">
+                          <p className="text-[11px] font-bold text-black">{b.location}</p>
+                      </td>
+                      <td className="px-8 py-8">
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-black tracking-tighter">{new Date(b.booking_date).toLocaleDateString()}</p>
+                          <p className="text-[9px] text-[#E8734A] font-bold uppercase tracking-widest">{b.booking_time}</p>
+                        </div>
+                      </td>
+                      <td className="px-8 py-8">
+                          <div className="flex items-center gap-3">
+                            <button onClick={() => setViewModal({open: true, b: { ...b, displayId }})} className="w-8 h-8 rounded-lg bg-slate-100 text-black flex items-center justify-center shadow-sm hover:bg-black hover:text-white transition-all" title="View Details">
+                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+
+                           <div className={`px-4 py-1.5 rounded-full text-[8px] font-bold uppercase tracking-widest border ${getStatusStyle(b.status)} shadow-sm`}>
+                              {b.status}
                            </div>
-                         )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                           
+                           <div className="flex gap-2 ml-4 animate-fadeIn">
+                             {b.status === 'pending' && (
+                               <>
+                                 <button onClick={() => openAction(b, 'confirmed')} className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Confirm">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
+                                 </button>
+                                 <button onClick={() => openAction(b, 'rejected')} className="w-8 h-8 rounded-lg bg-red-500 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Reject">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                                 </button>
+                               </>
+                             )}
+
+                             {['confirmed', 'approved', 'paid'].includes(b.status) && (
+                               <>
+                                 <button onClick={() => openAction(b, 'finished')} className="w-8 h-8 rounded-lg bg-black text-[#E8734A] flex items-center justify-center shadow-lg hover:scale-110 transition-transform" title="Mark Finished">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg>
+                                 </button>
+                                 <button onClick={() => openAction(b, 'cancelled')} className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shadow-sm hover:bg-red-600 hover:text-white transition-all" title="Cancel Booking">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                 </button>
+                               </>
+                             )}
+                           </div>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       </div>
-
+ 
       {/* Pop-up Table Details - Session Manifest */}
       {viewModal.open && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setViewModal({open: false, b: null})}>
-          <div className="bg-white rounded-[3rem] shadow-2xl p-12 max-w-2xl w-full border border-black/10 relative animate-modalPop overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="absolute top-0 right-0 p-8 opacity-5 text-8xl font-serif">INFO</div>
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[2000] flex items-center justify-center p-6 lg:p-12" onClick={() => setViewModal({open: false, b: null})}>
+          <div className="bg-white rounded-[4rem] max-w-xl w-full shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] animate-cinemaShow border border-white/20 overflow-hidden relative" onClick={e => e.stopPropagation()}>
+            <div className="absolute top-0 right-0 p-12 opacity-5 text-[10rem] font-serif pointer-events-none select-none">LW</div>
             
             <div className="flex justify-between items-start mb-10 relative z-10">
                 <div className="space-y-1">
                     <p className="text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Full Session Manifest</p>
-                    <h3 className="text-3xl font-serif text-black">{viewModal.b.user?.name}</h3>
-                    <p className="text-[10px] font-bold uppercase text-black/30 tracking-[0.3em]">{formatId(viewModal.b.id)}</p>
+                    <h3 className="text-5xl font-serif text-black">{viewModal.b.user?.name}</h3>
+                    <p className="text-[10px] font-bold uppercase text-black tracking-[0.3em]">{viewModal.b.displayId}</p>
                 </div>
-                <button onClick={() => setViewModal({open: false, b: null})} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-black hover:bg-black hover:text-white transition-all">&times;</button>
+                <button onClick={() => setViewModal({open: false, b: null})} className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-black hover:bg-black hover:text-white transition-all text-2xl font-serif">×</button>
             </div>
+            
+            <div className="px-12 py-10 space-y-10 relative z-10">
 
             <div className="bg-slate-50/50 rounded-[2rem] border border-black/5 overflow-hidden mb-8">
                 <table className="w-full text-[11px]">
                     <tbody className="divide-y divide-black/5">
                         <tr>
-                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 w-1/3 bg-slate-100/50">Collection</td>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black w-1/3 bg-slate-100/50">Collection</td>
                             <td className="px-8 py-5 font-bold text-black italic">"{viewModal.b.service?.name}"</td>
                         </tr>
                         <tr 
@@ -158,29 +180,59 @@ export default function BookingManager() {
                             title="Click to Navigate via Google Maps"
                             onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(viewModal.b.location)}`, '_blank')}
                         >
-                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Venue Destination</td>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">Venue Destination</td>
                             <td className="px-8 py-5 font-bold text-black flex items-center justify-between">
                                 <span>{viewModal.b.location}</span>
                                 <svg className="w-4 h-4 text-[#E8734A] opacity-0 group-hover/row:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Logistics Date</td>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">Logistics Date</td>
                             <td className="px-8 py-5 font-bold text-black">{new Date(viewModal.b.booking_date).toLocaleDateString()} @ {viewModal.b.booking_time}</td>
                         </tr>
                         <tr>
-                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Creative Vision</td>
-                            <td className="px-8 py-5 font-medium text-black/60 italic leading-relaxed">"{viewModal.b.special_requests || 'No specific creative requests provided.'}"</td>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">Creative Vision</td>
+                            <td className="px-8 py-5 font-medium text-black italic leading-relaxed">"{viewModal.b.special_requests || 'No specific creative requests provided.'}"</td>
                         </tr>
                         <tr>
-                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black/30 bg-slate-100/50">Financial Manifest</td>
-                            <td className="px-8 py-5 font-bold text-black">₱{parseFloat(viewModal.b.total_amount).toLocaleString()}</td>
+                            <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">Financial Manifest</td>
+                            <td className="px-8 py-5 font-bold text-black flex flex-col gap-1">
+                                <span className="text-[12px]">Total: ₱{parseFloat(viewModal.b.total_amount).toLocaleString()}</span>
+                                <div className="flex gap-4">
+                                   <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Paid: ₱{parseFloat(viewModal.b.paid_amount || 0).toLocaleString()}</span>
+                                   <span className="text-[9px] text-red-600 font-bold uppercase tracking-widest">Balance: ₱{Math.max(0, parseFloat(viewModal.b.total_amount) - parseFloat(viewModal.b.paid_amount || 0)).toLocaleString()}</span>
+                                </div>
+                            </td>
                         </tr>
+                        {viewModal.b.payment && (
+                          <tr>
+                              <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">GCash Reference</td>
+                              <td className="px-8 py-5 font-mono text-[9px] text-black font-bold tracking-tighter">
+                                 {viewModal.b.payment.transaction_reference || 'N/A'}
+                              </td>
+                          </tr>
+                        )}
+                        {viewModal.b.add_ons?.length > 0 && (
+                          <tr>
+                              <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50 align-top">Add-on Upgrades</td>
+                              <td className="px-8 py-5 font-bold text-[#E8734A] space-y-1">
+                                {viewModal.b.add_ons.map(a => (
+                                  <div key={a.id} className="flex justify-between items-center bg-white/50 p-2 rounded-lg border border-black/5">
+                                    <span className="text-[10px]">{a.name}</span>
+                                    <span className="text-[10px]">₱{parseFloat(a.price).toLocaleString()}</span>
+                                  </div>
+                                ))}
+                              </td>
+                          </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
+          </div>
 
-            <button onClick={() => setViewModal({open: false, b: null})} className="w-full py-5 bg-black text-white rounded-2xl text-[10px] font-bold uppercase tracking-[0.4em] shadow-xl hover:bg-[#E8734A] transition-all">Dismiss Manifest</button>
+            <div className="px-12 pb-12 relative z-10">
+              <button onClick={() => setViewModal({open: false, b: null})} className="w-full py-6 bg-black text-white rounded-[2.5rem] text-[10px] font-bold uppercase tracking-[0.4em] shadow-2xl hover:bg-[#E8734A] transition-all">Dismiss Manifest</button>
+            </div>
           </div>
         </div>
       )}
@@ -197,11 +249,11 @@ export default function BookingManager() {
             </div>
 
             <div className="space-y-2">
-                <label className="text-[9px] font-bold text-black uppercase tracking-widest ml-2">Concierge Message</label>
+                <label className="text-[9px] font-bold text-black uppercase tracking-widest ml-2">Studio Message</label>
                 <textarea 
                   value={modal.note}
                   onChange={e => setModal({...modal, note: e.target.value})}
-                  className="w-full bg-slate-50 p-6 rounded-[2rem] h-40 text-xs text-black border border-black/10 outline-none focus:border-black focus:bg-white transition-all resize-none italic font-medium opacity-70" 
+                  className="w-full bg-slate-50 p-6 rounded-[2rem] h-40 text-xs text-black border border-black/10 outline-none focus:border-black focus:bg-white transition-all resize-none italic font-medium" 
                   placeholder="e.g., 'We have full availability for this session...'"
                 ></textarea>
             </div>
@@ -215,6 +267,12 @@ export default function BookingManager() {
       )}
 
       <style>{`
+        @keyframes cinemaShow {
+          0% { opacity: 0; transform: scale(0.9) translateY(40px); filter: blur(10px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        .animate-cinemaShow { animation: cinemaShow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
         @keyframes modalPop {
           0% { opacity: 0; transform: scale(0.95) translateY(20px); }
           100% { opacity: 1; transform: scale(1) translateY(0); }
