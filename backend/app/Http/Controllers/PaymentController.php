@@ -269,39 +269,49 @@ class PaymentController extends Controller
      */
     public function reports()
     {
-        // Actual income (total collected from paid payments)
-        $totalIncome = Payment::where('payment_status', 'paid')
-            ->sum('amount');
+        try {
+            // Actual income (total collected from paid payments)
+            $totalIncome = Payment::where('payment_status', 'paid')
+                ->sum('amount');
 
-        // Total bookings count
-        $totalBookings = Booking::count();
+            // Total bookings count
+            $totalBookings = Booking::count();
 
-        // Confirmed or Finished bookings count (Sessions that happened or are confirmed to happen)
-        $confirmedBookings = Booking::whereIn('status', ['confirmed', 'finished'])->count();
+            // Confirmed or Finished bookings count
+            $confirmedBookings = Booking::whereIn('status', ['confirmed', 'finished'])->count();
 
-        // Pending revenue (amount due from confirmed/finished bookings)
-        $pendingRevenue = Booking::whereIn('status', ['confirmed', 'finished'])
-            ->get()
-            ->sum(function($booking) {
-                return max(0, $booking->total_amount - $booking->paid_amount);
-            });
+            // Pending revenue (amount due from confirmed/finished bookings)
+            $pendingRevenue = Booking::whereIn('status', ['confirmed', 'finished'])
+                ->get()
+                ->sum(function($booking) {
+                    $total = (float)($booking->total_amount ?? 0);
+                    $paid = (float)($booking->paid_amount ?? 0);
+                    return max(0, $total - $paid);
+                });
 
-        // Refunded amount
-        $refundedAmount = Booking::where('refund_status', 'refunded')
-            ->sum('paid_amount');
+            // Refunded amount
+            $refundedAmount = Booking::where('refund_status', 'refunded')
+                ->sum('paid_amount');
 
-        // Pending refunds
-        $pendingRefunds = Booking::where('refund_status', 'requested')
-            ->sum('paid_amount');
+            // Pending refunds
+            $pendingRefunds = Booking::where('refund_status', 'requested')
+                ->sum('paid_amount');
 
-        return response()->json([
-            'total_revenue' => $totalIncome, // We'll call it total_revenue for frontend compatibility
-            'total_bookings' => $totalBookings,
-            'confirmed_bookings' => $confirmedBookings,
-            'pending_revenue' => $pendingRevenue,
-            'refunded_amount' => $refundedAmount,
-            'pending_refunds' => $pendingRefunds,
-            'pending_payments' => Payment::where('payment_status', 'pending')->count(),
-        ]);
+            return response()->json([
+                'total_revenue' => (float)$totalIncome,
+                'total_bookings' => $totalBookings,
+                'confirmed_bookings' => $confirmedBookings,
+                'pending_revenue' => (float)$pendingRevenue,
+                'refunded_amount' => (float)$refundedAmount,
+                'pending_refunds' => (float)$pendingRefunds,
+                'pending_payments' => Payment::where('payment_status', 'pending')->count(),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Reports Error: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error calculating reports: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
     }
 }
