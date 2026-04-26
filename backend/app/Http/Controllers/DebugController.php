@@ -19,6 +19,21 @@ class DebugController extends Controller
             $bookingsCount = $dbConnected ? Booking::count() : 0;
             $paymentsCount = $dbConnected ? Payment::count() : 0;
             
+            $paymongoTest = null;
+            try {
+                $testResponse = \Illuminate\Support\Facades\Http::withHeaders([
+                    'Authorization' => 'Basic ' . base64_encode(env('PAYMONGO_SECRET_KEY') . ':'),
+                ])->get('https://api.paymongo.com/v1/payments/pay_9ykeNx9ZH5ozyDxfZLSAwff7');
+                
+                $paymongoTest = [
+                    'status_code' => $testResponse->status(),
+                    'found' => $testResponse->successful(),
+                    'error_detail' => $testResponse->json()['errors'][0]['detail'] ?? null
+                ];
+            } catch (\Exception $e) {
+                $paymongoTest = ['error' => $e->getMessage()];
+            }
+
             return response()->json([
                 'status' => 'ok',
                 'timestamp' => now(),
@@ -34,6 +49,7 @@ class DebugController extends Controller
                 'paymongo' => [
                     'key_type' => str_starts_with(env('PAYMONGO_SECRET_KEY'), 'sk_live') ? 'LIVE' : 'TEST',
                     'key_set' => !empty(env('PAYMONGO_SECRET_KEY')),
+                    'diagnostic' => $paymongoTest
                 ]
             ]);
         } catch (\Exception $e) {
