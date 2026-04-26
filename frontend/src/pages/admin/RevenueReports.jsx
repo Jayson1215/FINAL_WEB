@@ -15,8 +15,11 @@ export default function RevenueReports() {
       const [r,p] = await Promise.all([paymentService.getReports(), paymentService.getAllPayments()]); 
       setStats(r.data); 
       setPayments(p.data||[]); 
-    } catch(e){ setError('Failed to load financial data'); } 
-    finally { setLoading(false); } 
+    } catch (e) {
+      setError(e.response?.data?.message || 'Failed to load financial data');
+    } finally {
+      setLoading(false); 
+    } 
   };
 
   const handleConfirmPayment = async (id) => { try { await paymentService.confirmPayment(id); fetchData(); } catch(e){ setError('Failed to confirm payment'); } };
