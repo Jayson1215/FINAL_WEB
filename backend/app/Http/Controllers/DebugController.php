@@ -47,6 +47,39 @@ class DebugController extends Controller
         }
     }
 
+    public function forceFixPayment()
+    {
+        try {
+            $payment = \App\Models\Payment::where('amount', 20)->first();
+            if ($payment) {
+                $payment->update([
+                    'paymongo_payment_id' => 'pay_9ykeNx9ZH5ozyDxfZLSAwff7',
+                    'payment_status' => 'paid'
+                ]);
+                
+                // Also restore the booking if missing
+                if (!\App\Models\Booking::find($payment->booking_id)) {
+                    \App\Models\Booking::create([
+                        'id' => $payment->booking_id,
+                        'user_id' => \App\Models\User::value('id'),
+                        'service_id' => \App\Models\Service::where('name', 'like', '%Wedding%')->value('id'),
+                        'booking_date' => '2026-04-26',
+                        'booking_time' => '18:00',
+                        'status' => 'paid',
+                        'total_amount' => 20,
+                        'paid_amount' => 20,
+                        'location' => 'Emergency Recovery'
+                    ]);
+                }
+                
+                return response()->json(['message' => 'Live Database Fixed! Booking and Payment are now linked.']);
+            }
+            return response()->json(['message' => 'Payment record not found.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     private function testDatabaseConnection()
     {
         try {
