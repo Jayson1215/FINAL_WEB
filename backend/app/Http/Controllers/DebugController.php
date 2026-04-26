@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DebugController extends Controller
 {
@@ -33,47 +34,50 @@ class DebugController extends Controller
     public function forceFixPayment()
     {
         try {
-            // 1. Delete EVERY payment and booking except the one we want to keep
-            Payment::query()->delete();
-            Booking::query()->delete();
-            
-            // 2. Find a user to link to (or use the first one)
-            $user = User::where('role', 'admin')->first() ?: User::first();
-            
-            // 3. Find a service
-            $service = Service::where('name', 'like', '%Wedding%')->first() ?: Service::first();
+            return DB::transaction(function () {
+                // 1. Delete EVERYTHING first (Payments first to avoid constraint errors)
+                Payment::query()->delete();
+                Booking::query()->delete();
+                
+                // 2. Find a user and service
+                $user = User::where('role', 'admin')->first() ?: User::first();
+                $service = Service::where('name', 'like', '%Wedding%')->first() ?: Service::first();
 
-            // 4. Create ONE clean booking
-            $bookingId = '019dc880-d0cf-714f-a24f-d172c876813b';
-            Booking::create([
-                'id' => $bookingId,
-                'user_id' => $user->id,
-                'service_id' => $service->id,
-                'booking_date' => now()->format('Y-m-d'),
-                'booking_time' => '12:00',
-                'status' => 'paid',
-                'total_amount' => 20,
-                'paid_amount' => 20,
-                'location' => 'Live Test Verified'
-            ]);
+                if (!$user || !$service) {
+                    throw new \Exception("User or Service missing in database. Please run seeders.");
+                }
 
-            // 5. Create ONE clean payment linked to it
-            Payment::create([
-                'id' => \Illuminate\Support\Str::uuid(),
-                'booking_id' => $bookingId,
-                'amount' => 20,
-                'payment_method' => 'gcash',
-                'payment_status' => 'paid',
-                'transaction_reference' => 'TXN-LIVE-VERIFIED',
-                'paymongo_payment_id' => 'pay_9ykeNx9ZH5ozyDxfZLSAwff7',
-                'type' => 'full'
-            ]);
+                // 3. Create ONE clean booking
+                $booking = Booking::create([
+                    'id' => '019dc880-d0cf-714f-a24f-d172c876813b',
+                    'user_id' => $user->id,
+                    'service_id' => $service->id,
+                    'booking_date' => now()->format('Y-m-d'),
+                    'booking_time' => '12:00',
+                    'status' => 'paid',
+                    'total_amount' => 20,
+                    'paid_amount' => 20,
+                    'location' => 'Live Test Verified'
+                ]);
 
-            return response()->json([
-                'message' => 'Deep Cleanup Successful!',
-                'linked_to_user' => $user->name,
-                'records_remaining' => 1
-            ]);
+                // 4. Create ONE clean payment linked to it
+                Payment::create([
+                    'id' => (string) Str::uuid(),
+                    'booking_id' => $booking->id,
+                    'amount' => 20,
+                    'payment_method' => 'gcash',
+                    'payment_status' => 'paid',
+                    'transaction_reference' => 'TXN-LIVE-VERIFIED',
+                    'paymongo_payment_id' => 'pay_9ykeNx9ZH5ozyDxfZLSAwff7',
+                    'type' => 'full'
+                ]);
+
+                return response()->json([
+                    'message' => 'Deep Cleanup Successful!',
+                    'linked_to_user' => $user->name,
+                    'records_remaining' => 1
+                ]);
+            });
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
