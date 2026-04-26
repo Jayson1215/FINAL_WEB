@@ -68,6 +68,10 @@ export default function BookingPage() {
 
   const handlePreSubmit = (e) => {
     e.preventDefault();
+    if (!f.loc?.trim()) {
+      setD(p => ({ ...p, err: 'Please set your location using the map search box.' }));
+      return;
+    }
     setD(p => ({ ...p, showConfirm: true }));
   };
 
@@ -201,13 +205,15 @@ export default function BookingPage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Location</label>
-                  <input type="text" placeholder="Specify Street, Barangay & Landmark" required className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.loc} onChange={e => setF({...f, loc: e.target.value})} />
-                </div>
-
                 <div className="rounded-xl overflow-hidden border border-black/10 shadow-sm transition-all duration-500">
-                   <LocationPickerMap locationText={f.loc} onLocationSelect={({address}) => setF({...f, loc: address})} height="300px" />
+                   <LocationPickerMap
+                     locationText={f.loc}
+                     onLocationSelect={({ address }) => {
+                       setF(prev => ({ ...prev, loc: address || '' }));
+                       setD(prev => (prev.err ? { ...prev, err: '' } : prev));
+                     }}
+                     height="300px"
+                   />
                 </div>
 
                 <div className="space-y-1.5">

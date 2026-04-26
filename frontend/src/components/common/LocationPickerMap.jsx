@@ -27,6 +27,7 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
   const [isExpanded, setIsExpanded] = useState(false);
   const [resolvedAddr, setResolvedAddr] = useState('');
   const [isMapDriven, setIsMapDriven] = useState(false);
+  const [searchText, setSearchText] = useState(locationText || '');
   const searchTimeout = useRef(null);
 
   // Initialize Map
@@ -137,8 +138,26 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
       map.current.flyTo({ center: parsed, zoom: 17, speed: 1.5 });
       marker.current.setLngLat(parsed);
     }
+    setSearchText(locationText || '');
     setIsMapDriven(false);
   }, [locationText]);
+
+  const handlePlaceSearch = useCallback(async () => {
+    const query = searchText.trim();
+    if (!query) return;
+    try {
+      const res = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(query)}&maxLocations=1`);
+      const data = await res.json();
+      if (data.candidates?.[0]) {
+        const { x: lng, y: lat } = data.candidates[0].location;
+        await handleMapAction(lng, lat);
+      } else if (onLocationSelect) {
+        onLocationSelect({ lat: null, lng: null, address: query });
+      }
+    } catch (err) {
+      console.error('Search failed', err);
+    }
+  }, [searchText, handleMapAction, onLocationSelect]);
 
   const reverseGeocode = useCallback(async (lng, lat) => {
     try {
@@ -187,6 +206,8 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
     const finalAddress = specificPart 
       ? (specificPart.toLowerCase().includes(address.toLowerCase()) ? specificPart : `${specificPart}, ${address}`)
       : address;
+
+    setSearchText(finalAddress);
 
     if (onLocationSelect) {
       onLocationSelect({ lat, lng, address: finalAddress });
@@ -247,29 +268,6 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
                </p>
             </div>
             <div className="flex gap-4 items-center">
-                <div className="relative group/search">
-                  <input 
-                    type="text" 
-                    placeholder="Search place..." 
-                    className="bg-white/50 backdrop-blur-xl border border-black/5 rounded-xl px-4 py-2 text-[8px] font-bold uppercase tracking-widest outline-none focus:bg-white focus:w-48 transition-all w-32"
-                    onKeyDown={async (e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const query = e.target.value;
-                        if (!query) return;
-                        try {
-                          const res = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(query)}&maxLocations=1`);
-                          const data = await res.json();
-                          if (data.candidates?.[0]) {
-                            const { x: lng, y: lat } = data.candidates[0].location;
-                            handleMapAction(lng, lat);
-                          }
-                        } catch (err) { console.error('Search failed', err); }
-                      }
-                    }}
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] opacity-20 group-hover/search:opacity-100 transition-opacity">🔍</div>
-                </div>
                 <button type="button" onClick={handleUseCurrent} className="text-[8px] font-bold text-[#E8734A] uppercase tracking-widest hover:opacity-70 transition flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#E8734A]"></span>
                   Pin My Location
@@ -284,6 +282,37 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
 
         <div className={`${minimal ? 'h-full' : 'overflow-hidden rounded-2xl border-2 border-black/5 shadow-2xl'} relative z-10`} style={minimal ? {} : { height }}>
           <div ref={mapContainer} className="w-full h-full" />
+
+          <div className="absolute top-4 left-4 right-20 z-30">
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                placeholder="Search place, street, barangay, landmark"
+                className="w-full bg-white/95 backdrop-blur-xl border border-black/10 rounded-xl px-4 py-2.5 text-[9px] font-bold tracking-wide outline-none focus:bg-white focus:border-black/30 transition-all"
+                value={searchText}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchText(value);
+                  if (onLocationSelect) {
+                    onLocationSelect({ lat: null, lng: null, address: value });
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handlePlaceSearch();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={handlePlaceSearch}
+                className="px-3 py-2.5 rounded-xl bg-black text-white text-[8px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all"
+              >
+                Search
+              </button>
+            </div>
+          </div>
           
           <div className="absolute top-6 right-6 z-30 flex flex-col gap-3">
             {Object.entries(MAP_LAYERS).map(([key, config]) => (
