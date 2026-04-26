@@ -68,14 +68,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/client/MyBookings/{booking}', [BookingController::class, 'destroy']);
         Route::post('/client/MyBookings/{booking}/cancel', [BookingController::class, 'requestCancellation']);
 
-        // Add-ons routes
-        Route::get('/client/AddOns', [\App\Http\Controllers\AddOnController::class, 'index']);
-
         // Payments routes (client)
         Route::post('/client/payments', [PaymentController::class, 'store']);
         Route::post('/client/payments/create-session', [PaymentController::class, 'createCheckoutSession']);
         Route::post('/client/payments/verify', [PaymentController::class, 'verify']);
     });
+
+    // Shared authenticated routes
+    Route::get('/client/AddOns', [\App\Http\Controllers\AddOnController::class, 'index']);
 
     /**
      * Admin Routes
