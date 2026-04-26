@@ -12,7 +12,7 @@ const PaymentSuccess = () => {
     const verify = async () => {
       try {
         const apiBase = import.meta.env.VITE_API_URL || 'https://final-web-ls8m.onrender.com/api';
-        await axios.get(`${apiBase}/payments/verify?session_id=${sessionId}`);
+        await axios.post(`${apiBase}/client/payments/verify`, { session_id: sessionId });
         setStatus('success');
         // Redirect to My Bookings after 3 seconds
         setTimeout(() => nav('/client/MyBookings'), 3000);
