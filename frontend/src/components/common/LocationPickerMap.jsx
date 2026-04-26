@@ -142,23 +142,6 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
     setIsMapDriven(false);
   }, [locationText]);
 
-  const handlePlaceSearch = useCallback(async () => {
-    const query = searchText.trim();
-    if (!query) return;
-    try {
-      const res = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(query)}&maxLocations=1`);
-      const data = await res.json();
-      if (data.candidates?.[0]) {
-        const { x: lng, y: lat } = data.candidates[0].location;
-        await handleMapAction(lng, lat);
-      } else if (onLocationSelect) {
-        onLocationSelect({ lat: null, lng: null, address: query });
-      }
-    } catch (err) {
-      console.error('Search failed', err);
-    }
-  }, [searchText, handleMapAction, onLocationSelect]);
-
   const reverseGeocode = useCallback(async (lng, lat) => {
     try {
       // Switching to ArcGIS Professional Geocoding for higher subdivision/POI accuracy
@@ -213,6 +196,23 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
       onLocationSelect({ lat, lng, address: finalAddress });
     }
   }, [onLocationSelect, reverseGeocode, locationText]);
+
+  const handlePlaceSearch = useCallback(async () => {
+    const query = searchText.trim();
+    if (!query) return;
+    try {
+      const res = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(query)}&maxLocations=1`);
+      const data = await res.json();
+      if (data.candidates?.[0]) {
+        const { x: lng, y: lat } = data.candidates[0].location;
+        await handleMapAction(lng, lat);
+      } else if (onLocationSelect) {
+        onLocationSelect({ lat: null, lng: null, address: query });
+      }
+    } catch (err) {
+      console.error('Search failed', err);
+    }
+  }, [searchText, handleMapAction, onLocationSelect]);
 
   const handleUseCurrent = useCallback(() => {
     if (!navigator.geolocation) return;
