@@ -23,11 +23,21 @@ export default function MyBookings() {
     const sessionId = query.get('session_id');
     const bookingSuccess = query.get('booking_success');
 
-    if (status) {
-      setPaymentStatus(status);
-      if (status === 'success' && sessionId) {
-        paymentService.verifyPayment(sessionId).then(() => fetchBookings());
-      }
+    if (status === 'success' && sessionId) {
+      // Show verifying state while we confirm with backend
+      setPaymentStatus('verifying');
+      paymentService.verifyPayment(sessionId)
+        .then(() => {
+          setPaymentStatus('success');
+          fetchBookings();
+        })
+        .catch((err) => {
+          console.error('Payment verification failed:', err);
+          setPaymentStatus('error');
+          fetchBookings(); // Still refresh bookings in case it was already processed
+        });
+    } else if (status === 'cancelled') {
+      setPaymentStatus('cancelled');
     } else if (bookingSuccess) {
       setPaymentStatus('booking_success');
     }
@@ -268,31 +278,47 @@ export default function MyBookings() {
 
       {/* Payment Status Overlay - Luxury Boutique Confirmation */}
       {paymentStatus && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[3000] flex items-center justify-center p-6 animate-glassFade" onClick={clearStatus}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[3000] flex items-center justify-center p-6 animate-glassFade" onClick={paymentStatus !== 'verifying' ? clearStatus : undefined}>
            <div className="bg-[#FAF9F6]/95 backdrop-blur-md rounded-[3.5rem] max-w-sm w-full p-10 text-center shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] border border-black/5 animate-glassPop relative overflow-hidden" onClick={e => e.stopPropagation()}>
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#C5A059]/10 rounded-full blur-3xl"></div>
               <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-black/5 rounded-full blur-3xl"></div>
               
-              <div className={`w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center text-3xl shadow-2xl relative z-10 ${paymentStatus === 'success' ? 'bg-black text-[#C5A059] shadow-[#C5A059]/20' : paymentStatus === 'booking_success' ? 'bg-black text-[#C5A059] shadow-black/20' : 'bg-red-500 text-white shadow-red-500/20'}`}>
-                <div className={`absolute inset-0 rounded-full bg-white/10 ${paymentStatus !== 'failed' ? 'animate-ping' : ''}`}></div>
-                <span className="relative z-20 font-serif">{paymentStatus === 'success' ? '✓' : paymentStatus === 'booking_success' ? '★' : '×'}</span>
-              </div>
-              
-              <h2 className="text-3xl font-serif text-black mb-3 tracking-tighter relative z-10">
-                {paymentStatus === 'success' ? 'Session Secured' : paymentStatus === 'booking_success' ? 'Manifest Logged' : 'Action Required'}
-              </h2>
-              
-              <p className="text-[11px] text-black/60 italic font-medium leading-relaxed mb-10 relative z-10 px-4">
-                {paymentStatus === 'success' 
-                  ? "Your creative session has been successfully finalized. We are now curating the studio environment for your arrival."
-                  : paymentStatus === 'booking_success'
-                  ? "Your reservation manifest has been received. Our curators will review the details and notify you via this portal."
-                  : "The transaction could not be verified. Your reservation remains active but requires manual settlement to proceed."}
-              </p>
-              
-              <button onClick={clearStatus} className="w-full py-5 bg-black text-white rounded-2xl text-[9px] font-bold uppercase tracking-[0.4em] shadow-2xl hover:bg-[#C5A059] transition-all relative z-10">
-                {paymentStatus === 'booking_success' ? 'Back to Registry' : 'Enter Dashboard'}
-              </button>
+              {paymentStatus === 'verifying' ? (
+                <>
+                  <div className="w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center relative z-10 bg-black/5">
+                    <div className="w-12 h-12 border-4 border-black/10 border-t-[#C5A059] rounded-full animate-spin"></div>
+                  </div>
+                  <h2 className="text-3xl font-serif text-black mb-3 tracking-tighter relative z-10">Verifying Payment</h2>
+                  <p className="text-[11px] text-black/60 italic font-medium leading-relaxed mb-10 relative z-10 px-4">
+                    Confirming your payment with the gateway. This will only take a moment...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className={`w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center text-3xl shadow-2xl relative z-10 ${paymentStatus === 'success' ? 'bg-black text-[#C5A059] shadow-[#C5A059]/20' : paymentStatus === 'booking_success' ? 'bg-black text-[#C5A059] shadow-black/20' : paymentStatus === 'error' ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-red-500 text-white shadow-red-500/20'}`}>
+                    <div className={`absolute inset-0 rounded-full bg-white/10 ${paymentStatus === 'success' || paymentStatus === 'booking_success' ? 'animate-ping' : ''}`}></div>
+                    <span className="relative z-20 font-serif">{paymentStatus === 'success' ? '✓' : paymentStatus === 'booking_success' ? '★' : '×'}</span>
+                  </div>
+                  
+                  <h2 className="text-3xl font-serif text-black mb-3 tracking-tighter relative z-10">
+                    {paymentStatus === 'success' ? 'Session Secured' : paymentStatus === 'booking_success' ? 'Manifest Logged' : paymentStatus === 'error' ? 'Verification Issue' : 'Action Required'}
+                  </h2>
+                  
+                  <p className="text-[11px] text-black/60 italic font-medium leading-relaxed mb-10 relative z-10 px-4">
+                    {paymentStatus === 'success' 
+                      ? "Your creative session has been successfully finalized. We are now curating the studio environment for your arrival."
+                      : paymentStatus === 'booking_success'
+                      ? "Your reservation manifest has been received. Our curators will review the details and notify you via this portal."
+                      : paymentStatus === 'error'
+                      ? "We couldn't confirm your payment automatically. Don't worry — if you completed the payment, it will be verified shortly. Please check your booking status."
+                      : "The transaction could not be verified. Your reservation remains active but requires manual settlement to proceed."}
+                  </p>
+                  
+                  <button onClick={clearStatus} className="w-full py-5 bg-black text-white rounded-2xl text-[9px] font-bold uppercase tracking-[0.4em] shadow-2xl hover:bg-[#C5A059] transition-all relative z-10">
+                    {paymentStatus === 'booking_success' ? 'Back to Registry' : 'Enter Dashboard'}
+                  </button>
+                </>
+              )}
            </div>
         </div>
       )}

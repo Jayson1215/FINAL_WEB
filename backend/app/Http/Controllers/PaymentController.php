@@ -107,8 +107,14 @@ class PaymentController extends Controller
             if (!$payment) return response()->json(['error' => 'Record not found', 'id' => $v['session_id']], 404);
             if ($payment->payment_status === 'paid') return response()->json(['message' => 'Already paid', 'status' => 'paid']);
 
+            $secretKey = config('services.paymongo.secret_key');
+            if (!$secretKey) {
+                \Log::error('PayMongo verify failed: PAYMONGO_SECRET_KEY is not configured');
+                return response()->json(['error' => 'Payment gateway not configured'], 500);
+            }
+
             $response = Http::withHeaders([
-                'Authorization' => 'Basic ' . base64_encode(env('PAYMONGO_SECRET_KEY') . ':'),
+                'Authorization' => 'Basic ' . base64_encode($secretKey . ':'),
             ])->get("https://api.paymongo.com/v1/checkout_sessions/{$v['session_id']}");
 
             if ($response->failed()) return response()->json(['error' => 'Paymongo Fail', 'msg' => $response->body()], 500);
@@ -199,8 +205,8 @@ class PaymentController extends Controller
                         ],
                         'payment_method_types' => ['gcash', 'qrph'],
                         'description' => "Booking payment for {$booking->service->name}",
-                        'success_url' => env('FRONTEND_URL') . '/client/MyBookings?payment=success&session_id={CHECKOUT_SESSION_ID}',
-                        'cancel_url' => env('FRONTEND_URL') . '/client/MyBookings?payment=cancelled',
+                        'success_url' => config('app.frontend_url') . '/client/MyBookings?payment=success&session_id={CHECKOUT_SESSION_ID}',
+                        'cancel_url' => config('app.frontend_url') . '/client/MyBookings?payment=cancelled',
                     ]
                 ]
             ]);
@@ -311,7 +317,7 @@ class PaymentController extends Controller
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Basic ' . base64_encode(env('PAYMONGO_SECRET_KEY') . ':'),
+                'Authorization' => 'Basic ' . base64_encode(config('services.paymongo.secret_key') . ':'),
                 'Content-Type' => 'application/json',
             ])->post('https://api.paymongo.com/v1/refunds', [
                 'data' => [

@@ -14,7 +14,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     setD(p => ({ ...p, loading: true, err: '' }));
     try {
-      await paymentService.createPayment(d.b.id, d.m, 'full');
+      await paymentService.manualPayment({ booking_id: d.b.id, payment_method: d.m, type: 'full' });
       setD(p => ({ ...p, done: true, loading: false }));
       setTimeout(() => nav('/client/MyBookings'), 3000);
     } catch (err) { setD(p => ({ ...p, loading: false, err: 'Payment Failed' })); }

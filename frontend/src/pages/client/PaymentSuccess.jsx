@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -12,13 +12,13 @@ const PaymentSuccess = () => {
     let isMounted = true;
     const verify = async () => {
       try {
-        const apiBase = import.meta.env.VITE_API_URL || 'https://final-web-ls8m.onrender.com/api';
-        await axios.post(`${apiBase}/payments/verify`, { session_id: sessionId });
+        await api.post('/payments/verify', { session_id: sessionId });
         if (isMounted) {
           setStatus('success');
           setTimeout(() => nav('/client/MyBookings'), 2500);
         }
       } catch (err) {
+        console.error('Payment verification failed:', err);
         if (isMounted) setStatus('error');
       }
     };
