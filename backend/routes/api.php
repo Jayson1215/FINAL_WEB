@@ -70,9 +70,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/client/MyBookings/{booking}/cancel', [BookingController::class, 'requestCancellation']);
 
         // Payments routes (client)
+        Route::match(['get', 'post'], '/payments/verify', [PaymentController::class, 'verify']);
         Route::post('/client/payments', [PaymentController::class, 'store']);
         Route::post('/client/payments/create-session', [PaymentController::class, 'createCheckoutSession']);
-        Route::post('/client/payments/verify', [PaymentController::class, 'verify']);
     });
 
     // Shared authenticated routes
