@@ -9,66 +9,41 @@ const PaymentSuccess = () => {
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
+    let isMounted = true;
     const verify = async () => {
       try {
         const apiBase = import.meta.env.VITE_API_URL || 'https://final-web-ls8m.onrender.com/api';
         await axios.post(`${apiBase}/payments/verify`, { session_id: sessionId });
-        setStatus('success');
-        // Redirect to My Bookings after 3 seconds
-        setTimeout(() => nav('/client/MyBookings'), 3000);
+        if (isMounted) {
+          setStatus('success');
+          setTimeout(() => nav('/client/MyBookings'), 2500);
+        }
       } catch (err) {
-        console.error('Verification failed', err);
-        setStatus('error');
+        if (isMounted) setStatus('error');
       }
     };
-
     if (sessionId) verify();
+    return () => { isMounted = false; };
   }, [sessionId, nav]);
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5] flex items-center justify-center p-6">
-      <div className="bg-white rounded-[3rem] p-12 max-w-md w-full shadow-2xl text-center space-y-8 animate-fadeIn">
-        {status === 'verifying' && (
-          <>
-            <div className="w-16 h-16 border-4 border-slate-100 border-t-[#E8734A] rounded-full animate-spin mx-auto"></div>
-            <h2 className="text-2xl font-serif text-black">Verifying Payment...</h2>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Please do not close this window</p>
-          </>
-        )}
-
+    <div style={{ minHeight: '100vh', background: '#F0F2F5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'serif' }}>
+      <div style={{ background: 'white', padding: '40px', borderRadius: '30px', maxWidth: '400px', width: '100%', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+        {status === 'verifying' && <h2 style={{ fontSize: '24px', color: '#000' }}>Verifying Payment...</h2>}
         {status === 'success' && (
-          <>
-            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto animate-bounce">
-              <span className="text-4xl text-emerald-500">✓</span>
-            </div>
-            <h2 className="text-3xl font-serif text-black">Payment Received!</h2>
-            <p className="text-xs text-gray-500 leading-relaxed italic">
-              Your luxury session is now secured. We are redirecting you back to your bookings...
-            </p>
-            <div className="pt-6">
-               <button onClick={() => nav('/client/MyBookings')} className="bg-black text-white px-10 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all">Go to My Bookings</button>
-            </div>
-          </>
+          <div>
+            <h2 style={{ fontSize: '28px', color: '#10b981' }}>Payment Received!</h2>
+            <p style={{ color: '#666', marginTop: '10px' }}>Redirecting to your bookings...</p>
+          </div>
         )}
-
         {status === 'error' && (
-          <>
-            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-4xl text-red-500">!</span>
-            </div>
-            <h2 className="text-2xl font-serif text-black">Verification Failed</h2>
-            <p className="text-xs text-gray-500 leading-relaxed mb-6">
-              We couldn't verify the payment status automatically. Please contact our studio support.
-            </p>
-            <button onClick={() => nav('/client/MyBookings')} className="bg-black text-white px-8 py-3 rounded-xl text-[10px] font-bold uppercase">Back to Bookings</button>
-          </>
+          <div>
+            <h2 style={{ fontSize: '24px', color: '#ef4444' }}>Verification Issue</h2>
+            <p style={{ color: '#666', marginTop: '10px' }}>Please check your bookings manually.</p>
+            <button onClick={() => nav('/client/MyBookings')} style={{ marginTop: '20px', padding: '10px 20px', background: '#000', color: '#fff', borderRadius: '10px', border: 'none', cursor: 'pointer' }}>Go to My Bookings</button>
+          </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fadeIn { animation: fadeIn 0.8s ease-out forwards; }
-      `}</style>
     </div>
   );
 };
