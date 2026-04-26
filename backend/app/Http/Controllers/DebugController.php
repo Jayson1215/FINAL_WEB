@@ -84,4 +84,20 @@ class DebugController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    public function getLogs()
+    {
+        try {
+            $logPath = storage_path('logs/laravel.log');
+            if (!file_exists($logPath)) {
+                return response()->json(['error' => 'Log file not found']);
+            }
+            // Get last 2000 chars
+            $content = file_get_contents($logPath);
+            $lastChars = substr($content, -2000);
+            return response()->json(['logs' => $lastChars]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }
+    }
 }

@@ -101,15 +101,27 @@ class PaymentController extends Controller
     public function verify(Request $request)
     {
         try {
-            $v = $request->validate(['session_id' => 'required|string']);
-            $payment = Payment::where('transaction_reference', $v['session_id'])->first();
+            $v = $request->validate([
+                'session_id' => 'sometimes|string',
+                'booking_id' => 'sometimes|exists:bookings,id'
+            ]);
+            
+            if (isset($v['session_id'])) {
+                $payment = Payment::where('transaction_reference', $v['session_id'])->first();
+            } else if (isset($v['booking_id'])) {
+                $payment = Payment::where('booking_id', $v['booking_id'])
+                    ->where('payment_status', 'pending')
+                    ->latest()
+                    ->first();
+            } else {
+                return response()->json(['error' => 'Missing session_id or booking_id'], 400);
+            }
             
             if (!$payment) {
                 \Log::error('Payment verify: record not found', [
-                    'session_id' => $v['session_id'],
-                    'all_refs' => Payment::pluck('transaction_reference')->toArray()
+                    'request' => $v
                 ]);
-                return response()->json(['error' => 'Record not found', 'id' => $v['session_id']], 404);
+                return response()->json(['error' => 'Record not found'], 404);
             }
             if ($payment->payment_status === 'paid') return response()->json(['message' => 'Already paid', 'status' => 'paid']);
 
@@ -211,8 +223,8 @@ class PaymentController extends Controller
                         ],
                         'payment_method_types' => ['gcash', 'qrph'],
                         'description' => "Booking payment for {$booking->service->name}",
-                        'success_url' => config('app.frontend_url') . '/client/MyBookings?payment=success&session_id={CHECKOUT_SESSION_ID}',
-                        'cancel_url' => config('app.frontend_url') . '/client/MyBookings?payment=cancelled',
+                        'success_url' => config('app.frontend_url') . '/client/MyBookings?payment=success&booking_id=' . $booking->id,
+                        'cancel_url' => config('app.frontend_url') . '/client/MyBookings?payment=cancelled&booking_id=' . $booking->id,
                     ]
                 ]
             ]);

@@ -21,12 +21,17 @@ export default function MyBookings() {
   useEffect(() => {
     const status = query.get('payment');
     const sessionId = query.get('session_id');
+    const bookingId = query.get('booking_id');
     const bookingSuccess = query.get('booking_success');
 
-    if (status === 'success' && sessionId) {
+    if (status === 'success' && (sessionId || bookingId)) {
       // Show verifying state while we confirm with backend
       setPaymentStatus('verifying');
-      paymentService.verifyPayment(sessionId)
+      const verifyPromise = bookingId 
+        ? paymentService.verifyPaymentByBooking(bookingId) 
+        : paymentService.verifyPayment(sessionId);
+        
+      verifyPromise
         .then(() => {
           setPaymentStatus('success');
           fetchBookings();
@@ -185,7 +190,7 @@ export default function MyBookings() {
                         <div className="flex gap-3">
                             <button onClick={() => setD({ ...d, sel: { ...b, displayId } })} className="bg-white border border-black text-black px-6 py-3.5 rounded-2xl text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all shadow-sm">DETAILS</button>
                             
-                            {['confirmed', 'approved'].includes(b.status) && parseFloat(b.total_amount) - parseFloat(b.paid_amount || 0) > 0 && (
+                            {['confirmed', 'approved'].includes(b.status) && (parseFloat(b.total_amount) - parseFloat(b.paid_amount || 0)) >= 20 && (
                                 <button 
                                 onClick={async () => {
                                     setPayLoading(b.id);
