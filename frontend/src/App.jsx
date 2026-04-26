@@ -17,6 +17,7 @@ const ServicesList = React.lazy(() => import('./pages/client/PackageList'));
 const BookingPage = React.lazy(() => import('./pages/client/BookingPage'));
 const MyBookings = React.lazy(() => import('./pages/client/MyBookings'));
 const CheckoutPage = React.lazy(() => import('./pages/client/CheckoutPage'));
+const PaymentSuccess = React.lazy(() => import('./pages/client/PaymentSuccess'));
 const Contact = React.lazy(() => import('./pages/client/Contact'));
 
 // Admin pages - lazy loaded
@@ -160,6 +161,16 @@ function AppRoutes() {
           <PrivateRoute requiredRole="client">
             <Suspense fallback={<PageLoader />}>
               <CheckoutPage />
+            </Suspense>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/payment/success"
+        element={
+          <PrivateRoute requiredRole="client">
+            <Suspense fallback={<PageLoader />}>
+              <PaymentSuccess />
             </Suspense>
           </PrivateRoute>
         }
