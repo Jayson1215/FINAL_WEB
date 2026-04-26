@@ -324,6 +324,8 @@ class PaymentController extends Controller
                 'error' => true
             ], 500);
         }
+    }
+
     /**
      * Refund a payment (admin only)
      */
