@@ -36,11 +36,11 @@ export default function ClientDashboard() {
       <div className="space-y-20 px-6 md:px-12 max-w-7xl mx-auto pb-40">
         
         {/* Signature Packages Card */}
-        <section id="services" className="scroll-mt-28 bg-white rounded-[3rem] p-10 md:p-16 shadow-sm border border-black/10 reveal">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-16">
-            <div className="space-y-4">
+        <section id="services" className="scroll-mt-28 bg-white rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-16 shadow-sm border border-black/10 reveal">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-8 mb-12 md:mb-16">
+            <div className="space-y-3 md:space-y-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">The Collection</p>
-              <h2 className="text-4xl font-serif text-black underline decoration-black/5">Signature Packages</h2>
+              <h2 className="text-3xl md:text-4xl font-serif text-black underline decoration-black/5">Signature Packages</h2>
             </div>
             
             <div className="flex flex-wrap gap-2">
@@ -65,7 +65,7 @@ export default function ClientDashboard() {
                 </div>
               ) : (
                 data.s.filter(s => ui.category === 'All' || s.category === ui.category).map(s => (
-                  <div key={s.id} onClick={() => nav(`/client/packages/book/${s.id}`)} className="bg-white rounded-[2.5rem] p-8 border-2 border-black shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.2)] transition-all duration-700 cursor-pointer group flex flex-col h-[720px] overflow-hidden">
+                  <div key={s.id} onClick={() => nav(`/client/packages/book/${s.id}`)} className="bg-white rounded-[2.5rem] p-6 md:p-8 border-2 border-black shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.2)] transition-all duration-700 cursor-pointer group flex flex-col min-h-[680px] md:h-[720px] overflow-hidden">
                     <div className="relative overflow-hidden rounded-[1.8rem] h-64 shrink-0 mb-8">
                       <img src={resolveServiceImageUrl(s)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
                       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl text-[7px] font-bold uppercase tracking-[0.2em] text-black shadow-sm border border-black">{s.category}</div>
@@ -104,11 +104,11 @@ export default function ClientDashboard() {
         </section>
 
         {/* Gallery Section Card */}
-        <section id="gallery" className="scroll-mt-28 bg-white rounded-[3rem] p-10 md:p-16 shadow-sm border border-black/10 reveal">
-          <div className="flex justify-between items-end mb-16">
-            <div className="space-y-4">
+        <section id="gallery" className="scroll-mt-28 bg-white rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-16 shadow-sm border border-black/10 reveal">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 md:gap-16 mb-12 md:mb-16">
+            <div className="space-y-3 md:space-y-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Inspiration</p>
-              <h2 className="text-4xl font-serif text-black underline decoration-black/5">Recent Masterpieces</h2>
+              <h2 className="text-3xl md:text-4xl font-serif text-black underline decoration-black/5">Recent Masterpieces</h2>
             </div>
             <button onClick={() => nav('/client/Gallery')} className="text-[10px] font-bold uppercase tracking-widest border-b-2 border-black pb-1 hover:text-[#E8734A] hover:border-[#E8734A] transition-all">Full Portfolio</button>
           </div>
@@ -122,9 +122,9 @@ export default function ClientDashboard() {
               {data.p.slice(0, 6).map(item => (
                 <div key={item.id} onClick={() => setUi(p => ({ ...p, galleryItem: item }))} className="relative rounded-[2.5rem] overflow-hidden group cursor-pointer border border-black/5">
                   <img src={item.image_url} alt={item.title} className="w-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-10 flex flex-col justify-end">
-                    <p className="text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em] mb-2">{item.category}</p>
-                    <h4 className="text-white font-serif text-2xl">{item.title}</h4>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-6 md:p-10 flex flex-col justify-end">
+                    <p className="text-[9px] md:text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em] mb-2">{item.category}</p>
+                    <h4 className="text-white font-serif text-xl md:text-2xl">{item.title}</h4>
                   </div>
                 </div>
               ))}
@@ -135,21 +135,21 @@ export default function ClientDashboard() {
 
       {/* Gallery Detail Modal */}
       {ui.galleryItem && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xl z-[600] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setUi(p => ({ ...p, galleryItem: null }))}>
-          <div className="max-w-4xl w-full grid md:grid-cols-2 gap-10 items-center bg-white p-8 md:p-10 rounded-[3rem] border border-black/10 shadow-2xl relative" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setUi(p => ({ ...p, galleryItem: null }))} className="absolute top-8 right-8 text-2xl text-black/20 hover:text-black transition-all">×</button>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xl z-[600] flex items-center justify-center p-4 md:p-6 animate-fadeIn" onClick={() => setUi(p => ({ ...p, galleryItem: null }))}>
+          <div className="max-w-4xl w-full grid md:grid-cols-2 gap-8 md:gap-10 items-center bg-white p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem] border border-black/10 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setUi(p => ({ ...p, galleryItem: null }))} className="absolute top-6 right-6 md:top-8 md:right-8 text-2xl text-black/20 hover:text-black transition-all">×</button>
             <div className="relative rounded-[2rem] overflow-hidden shadow-xl border border-black/5">
-              <img src={ui.galleryItem.image_url} alt={ui.galleryItem.title} className="w-full h-auto max-h-[60vh] object-contain" />
+              <img src={ui.galleryItem.image_url} alt={ui.galleryItem.title} className="w-full h-auto max-h-[50vh] md:max-h-[60vh] object-contain" />
             </div>
-            <div className="space-y-8">
-              <div className="space-y-3">
-                <p className="text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.5em]">{ui.galleryItem.category}</p>
-                <h2 className="text-4xl font-serif text-black leading-tight tracking-tighter">{ui.galleryItem.title}</h2>
-                <div className="w-12 h-[1px] bg-black"></div>
+            <div className="space-y-6 md:space-y-8">
+              <div className="space-y-2 md:space-y-3">
+                <p className="text-[9px] md:text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.5em]">{ui.galleryItem.category}</p>
+                <h2 className="text-3xl md:text-4xl font-serif text-black leading-tight tracking-tighter">{ui.galleryItem.title}</h2>
+                <div className="w-10 md:w-12 h-[1px] bg-black"></div>
               </div>
-              <p className="text-[13px] text-black italic leading-relaxed font-medium opacity-60">"{ui.galleryItem.description || 'A captured moment of pure authenticity and light.'}"</p>
-              <div className="pt-6">
-                <button onClick={() => setUi(p => ({ ...p, galleryItem: null }))} className="bg-black text-white px-10 py-4 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-lg">Close Masterpiece</button>
+              <p className="text-xs md:text-[13px] text-black italic leading-relaxed font-medium opacity-60">"{ui.galleryItem.description || 'A captured moment of pure authenticity and light.'}"</p>
+              <div className="pt-4 md:pt-6">
+                <button onClick={() => setUi(p => ({ ...p, galleryItem: null }))} className="w-full md:w-auto bg-black text-white px-10 py-4 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-lg">Close Masterpiece</button>
               </div>
             </div>
           </div>

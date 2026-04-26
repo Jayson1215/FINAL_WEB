@@ -149,7 +149,7 @@ export default function MyBookings() {
                             </div>
                         </div>
                         
-                        <h3 className="text-4xl font-serif text-black tracking-tighter mb-6 leading-tight">{b.service?.name}</h3>
+                        <h3 className="text-2xl md:text-4xl font-serif text-black tracking-tighter mb-4 md:mb-6 leading-tight">{b.service?.name}</h3>
                     
                         <div className="grid grid-cols-2 gap-8 border-t border-black/5 pt-6">
                             <div className="space-y-1">

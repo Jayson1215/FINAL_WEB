@@ -86,26 +86,26 @@ export default function AdminLayout({ children, title }) {
       <main className="flex-1 flex flex-col overflow-hidden">
         
         {/* Header with Black Borders */}
-        <header className="h-20 bg-white border-b border-black/20 flex items-center justify-between px-10 z-30 shadow-sm">
-          <div className="flex items-center gap-6">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-black text-xl md:hidden">☰</button>
+        <header className="h-20 bg-white border-b border-black/20 flex items-center justify-between px-4 sm:px-10 z-30 shadow-sm">
+          <div className="flex items-center gap-4 sm:gap-6">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-black text-xl md:hidden p-2">☰</button>
             <div className="flex items-center gap-4">
-               <div className="w-1 h-6 bg-black/20 rounded-full"></div>
-               <h1 className="text-sm font-bold text-black uppercase tracking-[0.2em]">{title}</h1>
+               <div className="w-1 h-6 bg-black/20 rounded-full hidden xs:block"></div>
+               <h1 className="text-[10px] sm:text-sm font-bold text-black uppercase tracking-[0.2em] truncate max-w-[120px] sm:max-w-none">{title}</h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6">
             <NotificationBell />
             
             {/* Profile Dropdown */}
             <div className="relative">
-              <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-4 group pl-4 border-l border-black/20">
-                <div className="text-right hidden sm:block">
+              <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-3 sm:gap-4 group pl-3 sm:pl-4 border-l border-black/20">
+                <div className="text-right hidden lg:block">
                   <p className="text-[10px] font-bold text-black uppercase tracking-widest">{user?.name}</p>
                   <p className="text-[9px] text-black opacity-40 font-bold uppercase tracking-tighter">System Admin</p>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-slate-50 border border-black/20 flex items-center justify-center font-bold text-black group-hover:border-[#E8734A] group-hover:text-[#E8734A] transition-all">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-50 border border-black/20 flex items-center justify-center font-bold text-black group-hover:border-[#E8734A] group-hover:text-[#E8734A] transition-all">
                   {user?.name?.charAt(0)}
                 </div>
               </button>
@@ -129,7 +129,7 @@ export default function AdminLayout({ children, title }) {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-10 md:p-12 bg-[#F3F4F6]">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 bg-[#F3F4F6]">
           <div className="max-w-7xl mx-auto pb-20">
             {children}
           </div>

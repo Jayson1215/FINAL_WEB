@@ -48,7 +48,17 @@ This document provides a comprehensive breakdown of all features and system logi
 *   **Full Data View**: Expanded table view showing user contact, package details, and financial balances.
 *   **Google Maps Navigation**: One-click link to open the session venue directly in Google Maps for studio logistics.
 
-#### **3. Content & Package Management**
+#### **3. Personnel & Profile Management**
+*   **Boutique Directory**: Dedicated interface for managing studio personnel and clientele.
+*   **Archival Logic (Soft Delete)**: Ability to "Deactivate" profiles, moving them to a secure archive rather than permanent deletion.
+*   **Profile Recovery**: One-tap restoration of archived accounts to active status.
+*   **Nuclear Purge**: Option for permanent database removal of decommissioned profiles.
+
+#### **4. Revenue & Financial Intelligence**
+*   **Income Analytics**: Real-time visualization of studio earnings and pending balances.
+*   **Settlement Tracking**: Comprehensive log of all GCash, Maya, and Card transactions.
+
+#### **5. Content & Package Management**
 *   **Service Editor**: Full CRUD (Create, Read, Update, Delete) for luxury packages.
 *   **Portfolio Management**: Ability to curate and update the artistic gallery.
 
@@ -56,10 +66,15 @@ This document provides a comprehensive breakdown of all features and system logi
 
 ### 🛰️ System & Branding Logic
 
-#### **1. Cloud Infrastructure (Aiven)**
+#### **1. Notification Concierge**
+*   **Real-Time Alerts**: Intelligent bell system that notifies users of booking status updates or payment confirmations.
+*   **Smart Redirection**: Context-aware notifications that take users directly to the relevant booking or report.
+*   **Global Registry**: Centralized management of read/unread studio communications.
+
+#### **2. Cloud Infrastructure (Aiven)**
 *   **Persistent Sync**: Real-time data storage in the Aiven Cloud MySQL database.
 *   **SSL Encryption**: Secure, encrypted communication bridge for all database operations.
-*   **Soft Delete Protection**: Safe deletion of users to preserve database integrity.
+*   **Soft Delete Protection**: Safe archival system to preserve database integrity and historical records.
 
 #### **2. The "Studio Elite" Design Engine**
 *   **Vogue Oyster Palette**: System-wide use of Oyster (`#FAF9F6`), Onyx (`#111111`), and Champagne Gold (`#C5A059`).
