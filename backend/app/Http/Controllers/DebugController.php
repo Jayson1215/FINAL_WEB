@@ -23,8 +23,10 @@ class DebugController extends Controller
                     'payments' => Payment::count(),
                 ],
                 'paymongo' => [
-                    'live_mode' => str_starts_with(env('PAYMONGO_SECRET_KEY'), 'sk_live'),
-                ]
+                    'live_mode' => str_starts_with(config('services.paymongo.secret_key', ''), 'sk_live'),
+                    'key_set' => !empty(config('services.paymongo.secret_key')),
+                ],
+                'recent_payments' => Payment::orderBy('created_at', 'desc')->take(5)->get(['id', 'booking_id', 'payment_method', 'payment_status', 'amount', 'transaction_reference', 'type', 'created_at']),
             ]);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);

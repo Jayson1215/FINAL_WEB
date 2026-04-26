@@ -104,7 +104,13 @@ class PaymentController extends Controller
             $v = $request->validate(['session_id' => 'required|string']);
             $payment = Payment::where('transaction_reference', $v['session_id'])->first();
             
-            if (!$payment) return response()->json(['error' => 'Record not found', 'id' => $v['session_id']], 404);
+            if (!$payment) {
+                \Log::error('Payment verify: record not found', [
+                    'session_id' => $v['session_id'],
+                    'all_refs' => Payment::pluck('transaction_reference')->toArray()
+                ]);
+                return response()->json(['error' => 'Record not found', 'id' => $v['session_id']], 404);
+            }
             if ($payment->payment_status === 'paid') return response()->json(['message' => 'Already paid', 'status' => 'paid']);
 
             $secretKey = config('services.paymongo.secret_key');
@@ -236,14 +242,28 @@ class PaymentController extends Controller
         $session = $response->json();
         
         // Create a pending payment record
-        Payment::create([
-            'booking_id' => $booking->id,
-            'payment_method' => 'gcash',
-            'amount' => $amount,
-            'payment_status' => 'pending',
-            'transaction_reference' => $session['data']['id'],
-            'type' => $request->type,
-        ]);
+        try {
+            $payment = Payment::create([
+                'booking_id' => $booking->id,
+                'payment_method' => 'gcash',
+                'amount' => $amount,
+                'payment_status' => 'pending',
+                'transaction_reference' => $session['data']['id'],
+                'type' => $request->type,
+            ]);
+            \Log::info('Payment record created for checkout', [
+                'payment_id' => $payment->id,
+                'transaction_reference' => $session['data']['id'],
+                'booking_id' => $booking->id,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create payment record', [
+                'error' => $e->getMessage(),
+                'session_id' => $session['data']['id'],
+                'booking_id' => $booking->id,
+            ]);
+            // Still return checkout URL - payment can be reconciled later
+        }
 
         return response()->json([
             'checkout_url' => $session['data']['attributes']['checkout_url']
