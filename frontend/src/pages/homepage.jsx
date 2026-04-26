@@ -352,19 +352,37 @@ export default function Landing() {
       </section>
 
       {ui.booking && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur-3xl z-[400] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setUi(p => ({ ...p, booking: null }))}>
-          <div className="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-12 max-w-2xl w-full relative shadow-[0_32px_64px_-15px_rgba(0,0,0,0.2)] border border-white/40 overflow-hidden animate-slideUp" onClick={e => e.stopPropagation()}>
-            <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#1E293B] via-[#E8734A] to-[#1E293B]"></div>
-            <h2 className="text-2xl md:text-4xl font-serif mb-6 md:mb-10 text-[#1E293B] text-center">Reserve {ui.booking.name}</h2>
-            <form onSubmit={handleBook} className="space-y-4 md:space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="space-y-2"><p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Session Date</p><input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-white/50 backdrop-blur-sm p-4 rounded-2xl text-xs border border-white/20 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} /></div>
-                <div className="space-y-2"><p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Session Time</p><input type="time" required className="w-full bg-white/50 backdrop-blur-sm p-4 rounded-2xl text-xs border border-white/20 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} /></div>
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-3xl z-[400] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setUi(p => ({ ...p, booking: null }))}>
+          <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-10 max-w-lg w-full relative shadow-[0_32px_64px_-15px_rgba(0,0,0,0.2)] border border-white/50 animate-slideUp overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#1E293B]"></div>
+            
+            <div className="text-center mb-8">
+              <p className="text-[9px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-2">Manifest Reservation</p>
+              <h2 className="text-3xl font-serif text-[#1E293B] leading-tight">{ui.booking.name}</h2>
+            </div>
+
+            <form onSubmit={handleBook} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest pl-2">Session Date</p>
+                  <input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-white/50 backdrop-blur-sm p-3 rounded-2xl text-[11px] border border-black/5 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest pl-2">Session Time</p>
+                  <input type="time" required className="w-full bg-white/50 backdrop-blur-sm p-3 rounded-2xl text-[11px] border border-black/5 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
+                </div>
               </div>
-              <div className="space-y-2"><p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Location</p><input type="text" placeholder="Venue Location" required className="w-full bg-white/50 backdrop-blur-sm p-4 rounded-2xl text-xs border border-white/20 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.loc} onChange={e => setForm({ ...form, loc: e.target.value })} /></div>
-              <div className="space-y-2"><p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Additional Notes</p><textarea placeholder="Special Requests" className="w-full bg-white/50 backdrop-blur-sm p-4 rounded-2xl text-xs h-28 border border-white/20 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} /></div>
-              <button type="submit" disabled={form.sub} className="w-full bg-[#1E293B] text-white py-5 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-xl mt-4">{form.sub ? 'Syncing...' : 'Confirm Request'}</button>
+              <div className="space-y-1.5">
+                <p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest pl-2">Venue Destination</p>
+                <input type="text" placeholder="Specify Location" required className="w-full bg-white/50 backdrop-blur-sm p-3 rounded-2xl text-[11px] border border-black/5 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.loc} onChange={e => setForm({ ...form, loc: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest pl-2">Creative Vision</p>
+                <textarea placeholder="Special Requests" className="w-full bg-white/50 backdrop-blur-sm p-3 rounded-2xl text-[11px] h-24 border border-black/5 text-[#1E293B] font-bold focus:bg-white transition-all outline-none resize-none" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} />
+              </div>
+              <button type="submit" disabled={form.sub} className="w-full bg-[#1E293B] text-white py-4.5 rounded-2xl text-[9px] font-bold uppercase tracking-[0.2em] hover:bg-[#E8734A] transition-all shadow-xl mt-4">{form.sub ? 'Syncing...' : 'Submit Reservation'}</button>
             </form>
+            <button onClick={() => setUi(p => ({ ...p, booking: null }))} className="absolute top-6 right-6 text-xl text-[#1E293B]/30 hover:text-[#1E293B] transition-colors font-serif">×</button>
           </div>
         </div>
       )}

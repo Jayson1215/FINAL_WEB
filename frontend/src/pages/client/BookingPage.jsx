@@ -177,41 +177,41 @@ export default function BookingPage() {
               </div>
 
               <div className="space-y-5">
-                <div className="grid sm:grid-cols-2 gap-8">
-                  <div className="space-y-2">
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
                     <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Session Date</label>
-                    <input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-slate-50 p-4 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.date} onChange={e => setF({...f, date: e.target.value})} />
+                    <input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.date} onChange={e => setF({...f, date: e.target.value})} />
                   </div>
-                  <div className="space-y-2 flex flex-col">
+                  <div className="space-y-1.5 flex flex-col">
                     <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Start Time</label>
-                    <input type="time" required className="w-full bg-slate-50 p-4 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.time} onChange={e => setF({...f, time: e.target.value})} />
+                    <input type="time" required className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.time} onChange={e => setF({...f, time: e.target.value})} />
                     
                     {sessionWindow && (
-                        <div className="mt-3 animate-fadeIn">
-                           <div className="bg-[#1E293B] px-4 py-3 rounded-xl shadow-lg flex items-center justify-between border border-white/10">
-                              <div className="space-y-0.5">
+                        <div className="mt-2 animate-fadeIn">
+                           <div className="bg-[#1E293B] px-4 py-2.5 rounded-xl shadow-md flex items-center justify-between border border-white/10">
+                              <div className="space-y-0">
                                  <p className="text-[7px] font-bold text-white opacity-40 uppercase tracking-widest">End Time ({sessionWindow.durationHours}h)</p>
-                                 <p className="text-[10px] font-bold text-[#E8734A] tracking-widest">{sessionWindow.end}</p>
+                                 <p className="text-[9px] font-bold text-[#E8734A] tracking-widest">{sessionWindow.end}</p>
                               </div>
-                              <svg className="w-4 h-4 text-[#E8734A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                              <svg className="w-3.5 h-3.5 text-[#E8734A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                            </div>
                         </div>
                     )}
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Venue Location</label>
-                  <input type="text" placeholder="Specify Street, Barangay & Landmark" required className="w-full bg-slate-50 p-4 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.loc} onChange={e => setF({...f, loc: e.target.value})} />
+                  <input type="text" placeholder="Specify Street, Barangay & Landmark" required className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.loc} onChange={e => setF({...f, loc: e.target.value})} />
                 </div>
 
-                <div className="rounded-xl overflow-hidden border border-black/10 shadow-sm grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all duration-700">
-                   <LocationPickerMap locationText={f.loc} onLocationSelect={({address}) => setF({...f, loc: address})} height="150px" />
+                <div className="rounded-xl overflow-hidden border border-black/10 shadow-sm grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all duration-500">
+                   <LocationPickerMap locationText={f.loc} onLocationSelect={({address}) => setF({...f, loc: address})} height="130px" />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Creative Vision</label>
-                  <textarea placeholder="Atmosphere, shots, priorities..." className="w-full bg-slate-50 p-3 rounded-lg text-[10px] h-24 border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none resize-none" value={f.note} onChange={e => setF({...f, note: e.target.value})} />
+                  <textarea placeholder="Atmosphere, shots, priorities..." className="w-full bg-slate-50 p-3 rounded-xl text-[10px] h-20 border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none resize-none" value={f.note} onChange={e => setF({...f, note: e.target.value})} />
                 </div>
 
                 {d.a.length > 0 && (
@@ -219,7 +219,7 @@ export default function BookingPage() {
                     <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Enhance Your Package (Add-ons)</label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {d.a.map(addon => (
-                        <div key={addon.id} onClick={() => toggleAddOn(addon.id)} className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center ${f.selectedAddOns.includes(addon.id) ? 'border-[#E8734A] bg-orange-50/50' : 'border-black/5 bg-slate-50'}`}>
+                        <div key={addon.id} onClick={() => toggleAddOn(addon.id)} className={`p-3 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center ${f.selectedAddOns.includes(addon.id) ? 'border-[#E8734A] bg-orange-50/50' : 'border-black/5 bg-slate-50'}`}>
                            <div className="space-y-0.5">
                               <p className="text-[10px] font-bold text-black tracking-tight">{addon.name}</p>
                               <p className="text-[9px] font-bold text-[#E8734A]">₱{parseFloat(addon.price).toLocaleString()}</p>
