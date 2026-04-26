@@ -13,7 +13,7 @@ export default function AdminLayout({ children, title }) {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    try { await logout(); navigate('/login'); }
+    try { await logout(); navigate('/'); }
     catch (err) { console.error('Logout error:', err); }
     finally { setIsLoggingOut(false); }
   };
