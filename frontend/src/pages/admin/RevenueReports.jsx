@@ -123,22 +123,37 @@ export default function RevenueReports() {
                     <td className="px-8 py-6 border-r border-black/5 text-sm font-bold text-black">
                       ₱{parseFloat(p.amount).toLocaleString()}
                     </td>
-                    <td className="px-8 py-6 text-right">
-                      {p.payment_status==='pending' ? (
-                        <button onClick={()=>handleConfirmPayment(p.id)} className="text-[9px] font-bold text-white bg-black px-5 py-2.5 rounded-lg hover:bg-[#E8734A] transition-all uppercase tracking-widest shadow-lg">Confirm Entry</button>
-                      ) : p.payment_status === 'refunded' ? (
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 px-4 py-2 rounded-lg">Refunded</span>
-                      ) : (
-                        <div className="flex justify-end gap-3">
-                          <span className="text-[9px] font-bold uppercase tracking-widest text-green-600 bg-green-50 border border-green-100 px-4 py-2 rounded-lg">Verified Session</span>
-                          {p.paymongo_payment_id && (
-                            <button onClick={()=>handleRefund(p.id)} className="text-[9px] font-bold text-red-600 bg-white border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-all uppercase tracking-widest">Refund</button>
-                          )}
-                        </div>
-                      )}
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-3">
+                        {p.booking?.status === 'confirmed' && p.payment_status !== 'paid' && (
+                          <span className="bg-amber-50 text-amber-600 text-[9px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl border border-amber-100">Pending Payment</span>
+                        )}
+                        {p.payment_status === 'paid' && p.booking?.status !== 'completed' && (
+                          <div className="flex items-center gap-3">
+                            <span className="bg-emerald-50 text-emerald-600 text-[9px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl border border-emerald-100 flex items-center gap-2">
+                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                               VERIFIED SESSION
+                            </span>
+                            {p.paymongo_payment_id && (
+                              <button 
+                                onClick={() => handleRefund(p.id)}
+                                className="px-4 py-2 border border-red-200 text-red-500 text-[9px] font-bold uppercase tracking-widest rounded-xl hover:bg-red-50 transition-all"
+                              >
+                                Refund
+                              </button>
+                            )}
+                          </div>
+                        )}
+                        {(p.booking?.status === 'completed' || p.booking?.status === 'finished') && (
+                          <span className="bg-slate-100 text-slate-500 text-[9px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl border border-slate-200">Session Done</span>
+                        )}
+                        {p.booking?.status === 'cancelled' && (
+                           <span className="bg-red-50 text-red-600 text-[9px] font-bold uppercase tracking-widest px-4 py-2 rounded-xl border border-red-100">Cancelled</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                )) : (<tr><td colSpan="5" className="py-20 text-center text-[10px] font-bold text-black uppercase tracking-widest italic opacity-40">No transactional records detected.</td></tr>)}
+                )) : (<tr><td colSpan="6" className="py-20 text-center text-[10px] font-bold text-black uppercase tracking-widest italic opacity-40">No transactional records detected.</td></tr>)}
               </tbody>
             </table>
           </div>
