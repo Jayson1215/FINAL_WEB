@@ -71,19 +71,30 @@ class BookingController extends Controller
     public function destroy(Request $request, Booking $booking) {
         if ($request->user()->id !== $booking->user_id && $request->user()->role !== 'admin') return response()->json(['message' => 'Unauthorized'], 403);
         $booking->update(['status' => 'cancelled']);
+        
+        // Auto-delete payments when cancelled so they vanish from the reports
+        \App\Models\Payment::where('booking_id', $booking->id)->delete();
+        
         return response()->json(['message' => 'Cancelled']);
     }
 
     public function updateStatus(Request $request, Booking $booking) {
-        $v = $request->validate(['status' => 'required|in:pending,approved,awaiting_payment,paid,confirmed,cancelled,finished,rejected', 'admin_notes' => 'nullable|string|max:1000']);
+        $v = $request->validate(['status' => 'required|in:pending,approved,awaiting_payment,paid,confirmed,cancelled,finished,completed,rejected', 'admin_notes' => 'nullable|string|max:1000']);
+        
+        // Map 'finished' to 'completed' for consistency if needed, but we'll support both
         $booking->update($v);
+
+        // Auto-delete payments when cancelled so they vanish from the reports
+        if ($v['status'] === 'cancelled' || $v['status'] === 'rejected') {
+            \App\Models\Payment::where('booking_id', $booking->id)->delete();
+        }
 
         $msg = match($v['status']) {
             'approved', 'confirmed' => 'Your booking is available.',
             'awaiting_payment' => "Proceed to payment.",
             'paid' => "Payment received! Confirmed.",
             'rejected' => 'Booking declined.',
-            'finished' => "Session complete.",
+            'finished', 'completed' => "Session complete.",
             default => "Status updated to " . $v['status']
         };
 
