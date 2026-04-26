@@ -6,13 +6,13 @@ const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const nav = useNavigate();
   const [status, setStatus] = useState('verifying');
-  const sessionId = searchParams.get('session_id');
+  const bookingId = searchParams.get('booking_id');
 
   useEffect(() => {
     let isMounted = true;
     const verify = async () => {
       try {
-        await api.post('/payments/verify', { session_id: sessionId });
+        await api.post('/payments/verify', { booking_id: bookingId });
         if (isMounted) {
           setStatus('success');
           setTimeout(() => nav('/client/MyBookings'), 2500);
@@ -22,9 +22,9 @@ const PaymentSuccess = () => {
         if (isMounted) setStatus('error');
       }
     };
-    if (sessionId) verify();
+    if (bookingId) verify();
     return () => { isMounted = false; };
-  }, [sessionId, nav]);
+  }, [bookingId, nav]);
 
   return (
     <div style={{ minHeight: '100vh', background: '#F0F2F5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'serif' }}>

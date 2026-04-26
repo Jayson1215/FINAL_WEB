@@ -223,7 +223,7 @@ class PaymentController extends Controller
                         ],
                         'payment_method_types' => ['gcash', 'qrph'],
                         'description' => "Booking payment for {$booking->service->name}",
-                        'success_url' => config('app.frontend_url') . '/client/MyBookings?payment=success&booking_id=' . $booking->id,
+                        'success_url' => config('app.frontend_url') . '/client/PaymentSuccess?booking_id=' . $booking->id,
                         'cancel_url' => config('app.frontend_url') . '/client/MyBookings?payment=cancelled&booking_id=' . $booking->id,
                     ]
                 ]
