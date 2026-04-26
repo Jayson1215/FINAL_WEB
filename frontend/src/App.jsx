@@ -175,6 +175,16 @@ function AppRoutes() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/client/PaymentSuccess"
+        element={
+          <PrivateRoute requiredRole="client">
+            <Suspense fallback={<PageLoader />}>
+              <PaymentSuccess />
+            </Suspense>
+          </PrivateRoute>
+        }
+      />
 
       {/* Admin Routes */}
       <Route

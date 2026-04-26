@@ -105,14 +105,12 @@ class PaymentController extends Controller
                 'session_id' => 'sometimes|string',
                 'booking_id' => 'sometimes|exists:bookings,id'
             ]);
+            $sessionId = $v['session_id'] ?? null;
             
             if (isset($v['session_id'])) {
                 $payment = Payment::where('transaction_reference', $v['session_id'])->first();
             } else if (isset($v['booking_id'])) {
-                $payment = Payment::where('booking_id', $v['booking_id'])
-                    ->where('payment_status', 'pending')
-                    ->latest()
-                    ->first();
+                $payment = Payment::where('booking_id', $v['booking_id'])->latest()->first();
             } else {
                 return response()->json(['error' => 'Missing session_id or booking_id'], 400);
             }
@@ -123,6 +121,16 @@ class PaymentController extends Controller
                 ]);
                 return response()->json(['error' => 'Record not found'], 404);
             }
+
+            // If session_id is not provided (booking redirect flow), use the saved checkout session reference.
+            if (!$sessionId) {
+                $sessionId = $payment->transaction_reference;
+            }
+
+            if (!$sessionId) {
+                return response()->json(['error' => 'Missing checkout session reference'], 400);
+            }
+
             if ($payment->payment_status === 'paid') return response()->json(['message' => 'Already paid', 'status' => 'paid']);
 
             $secretKey = config('services.paymongo.secret_key');
@@ -133,7 +141,7 @@ class PaymentController extends Controller
 
             $response = Http::withHeaders([
                 'Authorization' => 'Basic ' . base64_encode($secretKey . ':'),
-            ])->get("https://api.paymongo.com/v1/checkout_sessions/{$v['session_id']}");
+            ])->get("https://api.paymongo.com/v1/checkout_sessions/{$sessionId}");
 
             if ($response->failed()) return response()->json(['error' => 'Paymongo Fail', 'msg' => $response->body()], 500);
 
@@ -223,7 +231,7 @@ class PaymentController extends Controller
                         ],
                         'payment_method_types' => ['gcash', 'qrph'],
                         'description' => "Booking payment for {$booking->service->name}",
-                        'success_url' => config('app.frontend_url') . '/client/PaymentSuccess?booking_id=' . $booking->id,
+                        'success_url' => config('app.frontend_url') . '/client/MyBookings?payment=success&booking_id=' . $booking->id,
                         'cancel_url' => config('app.frontend_url') . '/client/MyBookings?payment=cancelled&booking_id=' . $booking->id,
                     ]
                 ]
