@@ -102,8 +102,10 @@ export default function RevenueReports() {
                       </div>
                     </td>
                     <td className="px-8 py-6 border-r border-black/5">
-                      <p className="text-sm font-bold text-black">{p.booking?.user?.name||'Guest'}</p>
-                      <p className="text-[8px] text-black/40 font-medium">{p.booking?.service?.name}</p>
+                      <p className="text-sm font-bold text-black">
+                        {p.booking?.user?.name || p.booking?.user?.email || 'System Record'}
+                      </p>
+                      <p className="text-[8px] text-black/40 font-medium">{p.booking?.service?.name || 'Studio Package'}</p>
                     </td>
                     <td className="px-8 py-6 border-r border-black/5">
                       <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-1 rounded ${p.type === 'downpayment' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>

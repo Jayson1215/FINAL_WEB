@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{AuthController, BookingController, ServiceController, PortfolioController, PaymentController, NotificationController, SocialAuthController};
 
 Route::get('/health', [\App\Http\Controllers\DebugController::class, 'health']);
-Route::get('/force-fix-payment', [\App\Http\Controllers\DebugController::class, 'forceFixPayment']);
 
 Route::get('/images/{filename}', function ($filename) {
     $filename = basename($filename);
