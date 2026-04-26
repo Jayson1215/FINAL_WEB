@@ -87,20 +87,36 @@ export default function RevenueReports() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50 border-b border-black/20">
-                  {['Reference', 'Lead Client', 'Channel', 'Amount', 'Verification'].map((h, i)=>(
-                    <th key={h} className={`px-8 py-5 text-[9px] font-bold text-black uppercase tracking-[0.25em] ${i < 4 ? 'border-r border-black/10' : ''}`}>{h}</th>
+                  {['Reference', 'Lead Client', 'Type', 'Channel', 'Amount', 'Verification'].map((h, i)=>(
+                    <th key={h} className={`px-8 py-5 text-[9px] font-bold text-black uppercase tracking-[0.25em] ${i < 5 ? 'border-r border-black/10' : ''}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/10 bg-white">
                 {payments.length>0 ? payments.map(p=>(
                   <tr key={p.id} className="group hover:bg-slate-50/50 transition-colors">
-                    <td className="px-8 py-6 border-r border-black/5 text-[10px] font-bold tracking-widest text-black uppercase">{p.transaction_reference}</td>
                     <td className="px-8 py-6 border-r border-black/5">
-                      <p className="text-sm font-bold text-black">{p.booking?.user?.name||'Guest'}</p>
+                      <div className="flex flex-col gap-1">
+                        <p className="text-[10px] font-bold tracking-widest text-black uppercase">{p.transaction_reference?.substring(0, 15)}...</p>
+                        {p.paymongo_payment_id && <p className="text-[7px] text-[#C5A059] font-bold uppercase">Paymongo: {p.paymongo_payment_id.substring(0, 12)}...</p>}
+                      </div>
                     </td>
                     <td className="px-8 py-6 border-r border-black/5">
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-black bg-slate-100 border border-black/5 px-3 py-1 rounded-md">{p.payment_method}</span>
+                      <p className="text-sm font-bold text-black">{p.booking?.user?.name||'Guest'}</p>
+                      <p className="text-[8px] text-black/40 font-medium">{p.booking?.service?.name}</p>
+                    </td>
+                    <td className="px-8 py-6 border-r border-black/5">
+                      <span className={`text-[8px] font-bold uppercase tracking-widest px-2 py-1 rounded ${p.type === 'downpayment' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                        {p.type || 'Payment'}
+                      </span>
+                    </td>
+                    <td className="px-8 py-6 border-r border-black/5">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-black bg-slate-100 border border-black/5 px-3 py-1 rounded-md w-fit">
+                          {p.payment_method}
+                        </span>
+                        {p.transaction_reference?.startsWith('cs_') && <p className="text-[7px] text-green-600 font-bold uppercase tracking-tighter">Automated Gateway</p>}
+                      </div>
                     </td>
                     <td className="px-8 py-6 border-r border-black/5 text-sm font-bold text-black">
                       ₱{parseFloat(p.amount).toLocaleString()}
@@ -108,10 +124,12 @@ export default function RevenueReports() {
                     <td className="px-8 py-6 text-right">
                       {p.payment_status==='pending' ? (
                         <button onClick={()=>handleConfirmPayment(p.id)} className="text-[9px] font-bold text-white bg-black px-5 py-2.5 rounded-lg hover:bg-[#E8734A] transition-all uppercase tracking-widest shadow-lg">Confirm Entry</button>
+                      ) : p.payment_status === 'refunded' ? (
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 px-4 py-2 rounded-lg">Refunded</span>
                       ) : (
                         <div className="flex justify-end gap-3">
                           <span className="text-[9px] font-bold uppercase tracking-widest text-green-600 bg-green-50 border border-green-100 px-4 py-2 rounded-lg">Verified Session</span>
-                          {p.payment_status === 'paid' && (
+                          {p.paymongo_payment_id && (
                             <button onClick={()=>handleRefund(p.id)} className="text-[9px] font-bold text-red-600 bg-white border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-all uppercase tracking-widest">Refund</button>
                           )}
                         </div>
