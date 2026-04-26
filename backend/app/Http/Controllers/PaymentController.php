@@ -130,22 +130,33 @@ class PaymentController extends Controller
             }
 
             if ($paymentIntentStatus === 'succeeded') {
-                DB::transaction(function () use ($payment) {
-                    $payment->update(['payment_status' => 'paid']);
+                DB::transaction(function () use ($payment, $session) {
+                    // Extract the payment ID from the session response
+                    $paymongoPaymentId = $session['data']['attributes']['payments'][0]['id'] ?? null;
+                    
+                    $payment->update([
+                        'payment_status' => 'paid',
+                        'paymongo_payment_id' => $paymongoPaymentId
+                    ]);
                     
                     $booking = $payment->booking;
-                    $booking->paid_amount += $payment->amount;
+                    $booking->paid_amount = (float)$booking->paid_amount + (float)$payment->amount;
                     
-                    if ($payment->type === 'downpayment' || $payment->type === 'full') {
+                    if ($payment->type === 'downpayment' || 
+                        $payment->type === 'full' || 
+                        $booking->paid_amount >= $booking->total_amount) {
                         $booking->status = 'paid';
                     }
+                    
                     $booking->save();
+
+                    \Log::info("Payment Verified: Booking {$booking->id} marked as {$booking->status}");
 
                     Notification::create([
                         'user_id' => $booking->user_id,
                         'type' => 'payment_confirmed',
                         'title' => 'Payment Received',
-                        'message' => "Successfully received ₱" . number_format((float)$payment->amount) . " via GCash.",
+                        'message' => "Successfully received ₱" . number_format((float)$payment->amount) . " via GCash. Your session is now secured.",
                         'link' => '/client/MyBookings'
                     ]);
                 });
@@ -312,6 +323,63 @@ class PaymentController extends Controller
                 'message' => 'Error calculating reports: ' . $e->getMessage(),
                 'error' => true
             ], 500);
+        }
+    /**
+     * Refund a payment (admin only)
+     */
+    public function refund(Request $request, Payment $payment)
+    {
+        if ($payment->payment_status !== 'paid') {
+            return response()->json(['message' => 'Only paid payments can be refunded'], 400);
+        }
+
+        if (!$payment->paymongo_payment_id) {
+            return response()->json(['message' => 'Paymongo Payment ID not found. Refund must be done manually via Dashboard for this old record.'], 400);
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Basic ' . base64_encode(env('PAYMONGO_SECRET_KEY') . ':'),
+                'Content-Type' => 'application/json',
+            ])->post('https://api.paymongo.com/v1/refunds', [
+                'data' => [
+                    'attributes' => [
+                        'amount' => (int)($payment->amount * 100), // in cents
+                        'payment_id' => $payment->paymongo_payment_id,
+                        'reason' => $request->reason ?? 'user_requested'
+                    ]
+                ]
+            ]);
+
+            if ($response->failed()) {
+                return response()->json([
+                    'message' => 'Paymongo Refund Failed: ' . ($response->json()['errors'][0]['detail'] ?? 'Unknown error'),
+                ], 500);
+            }
+
+            // Update local records
+            DB::transaction(function () use ($payment) {
+                $payment->update(['payment_status' => 'refunded']);
+                
+                $booking = $payment->booking;
+                $booking->paid_amount = max(0, (float)$booking->paid_amount - (float)$payment->amount);
+                $booking->refund_status = 'refunded';
+                $booking->status = 'cancelled'; // Mark as cancelled after refund
+                $booking->save();
+
+                Notification::create([
+                    'user_id' => $booking->user_id,
+                    'type' => 'refund_processed',
+                    'title' => 'Refund Processed',
+                    'message' => "A refund of ₱" . number_format((float)$payment->amount) . " has been sent back to your original payment method.",
+                    'link' => '/client/MyBookings'
+                ]);
+            });
+
+            return response()->json(['message' => 'Refund processed successfully']);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Refund error: ' . $e->getMessage()], 500);
         }
     }
 }

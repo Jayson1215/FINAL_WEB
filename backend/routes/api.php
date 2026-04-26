@@ -104,6 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Payments management (admin)
         Route::get('/admin/payments', [PaymentController::class, 'getAll']);
         Route::post('/admin/payments/{payment}/confirm', [PaymentController::class, 'confirm']);
+        Route::post('/admin/payments/{payment}/refund', [PaymentController::class, 'refund']);
         Route::get('/admin/reports', [PaymentController::class, 'reports']);
     });
 });

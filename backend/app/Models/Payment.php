@@ -20,6 +20,7 @@ class Payment extends Model
         'payment_status',
         'amount',
         'transaction_reference',
+        'paymongo_payment_id',
         'type',
     ];
 

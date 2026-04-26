@@ -23,6 +23,16 @@ export default function RevenueReports() {
   };
 
   const handleConfirmPayment = async (id) => { try { await paymentService.confirmPayment(id); fetchData(); } catch(e){ setError('Failed to confirm payment'); } };
+  const handleRefund = async (id) => {
+    if (window.confirm('Are you sure you want to refund this payment? This will send money back to the user via Paymongo.')) {
+      try {
+        await paymentService.refundPayment(id, 'User requested refund');
+        fetchData();
+      } catch (e) {
+        setError(e.response?.data?.message || 'Failed to process refund');
+      }
+    }
+  };
 
   if(loading&&!stats) return (
     <AdminLayout title="Financial Analytics">
@@ -99,8 +109,11 @@ export default function RevenueReports() {
                       {p.payment_status==='pending' ? (
                         <button onClick={()=>handleConfirmPayment(p.id)} className="text-[9px] font-bold text-white bg-black px-5 py-2.5 rounded-lg hover:bg-[#E8734A] transition-all uppercase tracking-widest shadow-lg">Confirm Entry</button>
                       ) : (
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-3">
                           <span className="text-[9px] font-bold uppercase tracking-widest text-green-600 bg-green-50 border border-green-100 px-4 py-2 rounded-lg">Verified Session</span>
+                          {p.payment_status === 'paid' && (
+                            <button onClick={()=>handleRefund(p.id)} className="text-[9px] font-bold text-red-600 bg-white border border-red-200 px-4 py-2 rounded-lg hover:bg-red-50 transition-all uppercase tracking-widest">Refund</button>
+                          )}
                         </div>
                       )}
                     </td>

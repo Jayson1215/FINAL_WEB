@@ -6,5 +6,6 @@ export const paymentService = {
   manualPayment: (data) => api.post('/client/payments', data),
   getAdminPayments: () => api.get('/admin/payments'),
   confirmPayment: (id) => api.post(`/admin/payments/${id}/confirm`),
+  refundPayment: (id, reason) => api.post(`/admin/payments/${id}/refund`, { reason }),
   getReports: () => api.get('/admin/reports'),
 };
