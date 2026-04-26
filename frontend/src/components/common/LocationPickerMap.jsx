@@ -177,11 +177,16 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
     const address = await reverseGeocode(lng, lat);
     setResolving(false);
 
+    // Smart Merge Logic: Keep existing specific details (Block, Lot, Phase, etc.)
     const currentText = locationText || '';
-    // If user has already typed Block/Lot specifics, keep them at the front
-    const hasSpecifics = /block|lot|blk|unit|room/i.test(currentText);
-    const specificPart = hasSpecifics ? currentText.split(',')[0].trim() : '';
-    const finalAddress = specificPart ? `${specificPart}, ${address}` : address;
+    const specifics = currentText.match(/.*(Block|Lot|Blk|Phase|Unit|Room|House|#).*/i);
+    const specificPart = specifics ? currentText : '';
+    
+    // If the new address already contains the subdivision name (like Emily Homes), 
+    // don't repeat it if the user already typed it.
+    const finalAddress = specificPart 
+      ? (specificPart.toLowerCase().includes(address.toLowerCase()) ? specificPart : `${specificPart}, ${address}`)
+      : address;
 
     if (onLocationSelect) {
       onLocationSelect({ lat, lng, address: finalAddress });

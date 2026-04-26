@@ -6,6 +6,7 @@ import { bookingService } from '../services/bookingService';
 import { portfolioService } from '../services/portfolioService';
 import Chatbot from '../components/common/Chatbot';
 import NotificationBell from '../components/common/NotificationBell';
+import StudioLocationMap from '../components/common/StudioLocationMap';
 import { resolveServiceImageUrl } from '../utils/imageUrl';
 
 export default function Landing() {
