@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use App\Models\Portfolio;
+use App\Models\Booking;
+use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
 class DebugController extends Controller
@@ -14,6 +16,8 @@ class DebugController extends Controller
             $dbConnected = $this->testDatabaseConnection();
             $servicesCount = $dbConnected ? Service::count() : 0;
             $portfoliosCount = $dbConnected ? Portfolio::count() : 0;
+            $bookingsCount = $dbConnected ? Booking::count() : 0;
+            $paymentsCount = $dbConnected ? Payment::count() : 0;
             
             return response()->json([
                 'status' => 'ok',
@@ -24,6 +28,8 @@ class DebugController extends Controller
                     'connected' => $dbConnected,
                     'services_count' => $servicesCount,
                     'portfolios_count' => $portfoliosCount,
+                    'bookings_count' => $bookingsCount,
+                    'payments_count' => $paymentsCount,
                 ],
             ]);
         } catch (\Exception $e) {
