@@ -22,6 +22,8 @@ Route::get('/images/{filename}', function ($filename) {
         'Cache-Control' => 'public, max-age=86400',
     ]);
 });
+Route::match(['get', 'post'], '/payments/verify', [PaymentController::class, 'verify']);
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -70,7 +72,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/client/MyBookings/{booking}/cancel', [BookingController::class, 'requestCancellation']);
 
         // Payments routes (client)
-        Route::match(['get', 'post'], '/payments/verify', [PaymentController::class, 'verify']);
         Route::post('/client/payments', [PaymentController::class, 'store']);
         Route::post('/client/payments/create-session', [PaymentController::class, 'createCheckoutSession']);
     });
