@@ -173,17 +173,17 @@ export default function BookingPage() {
             <form onSubmit={handlePreSubmit} className="bg-white rounded-[1.5rem] p-8 border border-black/10 shadow-sm space-y-6 relative overflow-hidden">
               <div className="space-y-1">
                 <p className="text-[8px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Logistics</p>
-                <h3 className="text-xl font-serif text-black">Reservation Manifest</h3>
+                <h3 className="text-xl font-serif text-black">Booking Manifest</h3>
               </div>
 
               <div className="space-y-5">
-                <div className="grid sm:grid-cols-2 gap-6">
-                  <div className="space-y-1.5">
-                    <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Session Date</label>
+                <div className="flex flex-wrap gap-6">
+                  <div className="w-44 space-y-1.5">
+                    <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Date</label>
                     <input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.date} onChange={e => setF({...f, date: e.target.value})} />
                   </div>
-                  <div className="space-y-1.5 flex flex-col">
-                    <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Start Time</label>
+                  <div className="w-32 space-y-1.5 flex flex-col">
+                    <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Time</label>
                     <input type="time" required className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.time} onChange={e => setF({...f, time: e.target.value})} />
                     
                     {sessionWindow && (
@@ -201,7 +201,7 @@ export default function BookingPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Venue Location</label>
+                  <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Location</label>
                   <input type="text" placeholder="Specify Street, Barangay & Landmark" required className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.loc} onChange={e => setF({...f, loc: e.target.value})} />
                 </div>
 
@@ -210,7 +210,7 @@ export default function BookingPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Creative Vision</label>
+                  <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Special Requests</label>
                   <textarea placeholder="Atmosphere, shots, priorities..." className="w-full bg-slate-50 p-3 rounded-xl text-[10px] h-20 border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none resize-none" value={f.note} onChange={e => setF({...f, note: e.target.value})} />
                 </div>
 
