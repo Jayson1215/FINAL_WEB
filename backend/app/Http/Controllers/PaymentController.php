@@ -100,74 +100,43 @@ class PaymentController extends Controller
      */
     public function verify(Request $request)
     {
-        $v = $request->validate([
-            'session_id' => 'required|string',
-        ]);
-
-        $payment = Payment::where('transaction_reference', $v['session_id'])->first();
-        if (!$payment) return response()->json(['message' => 'Payment record not found'], 404);
-
-        if ($payment->payment_status === 'paid') {
-            return response()->json(['message' => 'Payment already verified', 'status' => 'paid']);
-        }
-
         try {
+            $v = $request->validate(['session_id' => 'required|string']);
+            $payment = Payment::where('transaction_reference', $v['session_id'])->first();
+            
+            if (!$payment) return response()->json(['error' => 'Record not found', 'id' => $v['session_id']], 404);
+            if ($payment->payment_status === 'paid') return response()->json(['message' => 'Already paid', 'status' => 'paid']);
+
             $response = Http::withHeaders([
                 'Authorization' => 'Basic ' . base64_encode(env('PAYMONGO_SECRET_KEY') . ':'),
             ])->get("https://api.paymongo.com/v1/checkout_sessions/{$v['session_id']}");
 
-            if ($response->failed()) {
-                return response()->json(['message' => 'Failed to verify with Paymongo'], 500);
-            }
+            if ($response->failed()) return response()->json(['error' => 'Paymongo Fail', 'msg' => $response->body()], 500);
 
             $session = $response->json();
-            $status = $session['data']['attributes']['status'] ?? 'pending';
-            $paymentIntentStatus = $session['data']['attributes']['payment_intent']['attributes']['status'] ?? '';
+            $pIntentStatus = $session['data']['attributes']['payment_intent']['attributes']['status'] ?? '';
 
-            if ($status === 'expired') {
-                $payment->update(['payment_status' => 'failed']);
-                return response()->json(['message' => 'Session expired', 'status' => 'failed']);
-            }
-
-            if ($paymentIntentStatus === 'succeeded') {
+            if ($pIntentStatus === 'succeeded') {
                 DB::transaction(function () use ($payment, $session) {
-                    // Extract the payment ID from the session response
-                    $paymongoPaymentId = $session['data']['attributes']['payments'][0]['id'] ?? null;
-                    
                     $payment->update([
                         'payment_status' => 'paid',
-                        'paymongo_payment_id' => $paymongoPaymentId
+                        'paymongo_payment_id' => $session['data']['attributes']['payments'][0]['id'] ?? null
                     ]);
-                    
                     $booking = $payment->booking;
-                    $booking->paid_amount = (float)$booking->paid_amount + (float)$payment->amount;
-                    
-                    if ($payment->type === 'downpayment' || 
-                        $payment->type === 'full' || 
-                        $booking->paid_amount >= $booking->total_amount) {
-                        $booking->status = 'paid';
+                    if ($booking) {
+                        $booking->paid_amount += (float)$payment->amount;
+                        if ($payment->type === 'downpayment' || $payment->type === 'full' || $booking->paid_amount >= $booking->total_amount) {
+                            $booking->status = 'paid';
+                        }
+                        $booking->save();
                     }
-                    
-                    $booking->save();
-
-                    \Log::info("Payment Verified: Booking {$booking->id} marked as {$booking->status}");
-
-                    Notification::create([
-                        'user_id' => $booking->user_id,
-                        'type' => 'payment_confirmed',
-                        'title' => 'Payment Received',
-                        'message' => "Successfully received ₱" . number_format((float)$payment->amount) . " via GCash. Your session is now secured.",
-                        'link' => '/client/MyBookings'
-                    ]);
                 });
-
-                return response()->json(['message' => 'Payment verified', 'status' => 'paid']);
+                return response()->json(['message' => 'Verified', 'status' => 'paid']);
             }
-
-            return response()->json(['message' => 'Payment still pending', 'status' => 'pending']);
+            return response()->json(['message' => 'Incomplete', 'status' => $pIntentStatus]);
 
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Verification error', 'error' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Server Crash', 'msg' => $e->getMessage(), 'line' => $e->getLine()], 500);
         }
     }
 
