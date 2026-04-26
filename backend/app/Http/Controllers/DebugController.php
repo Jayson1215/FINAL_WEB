@@ -31,6 +31,10 @@ class DebugController extends Controller
                     'bookings_count' => $bookingsCount,
                     'payments_count' => $paymentsCount,
                 ],
+                'paymongo' => [
+                    'key_type' => str_starts_with(env('PAYMONGO_SECRET_KEY'), 'sk_live') ? 'LIVE' : 'TEST',
+                    'key_set' => !empty(env('PAYMONGO_SECRET_KEY')),
+                ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
