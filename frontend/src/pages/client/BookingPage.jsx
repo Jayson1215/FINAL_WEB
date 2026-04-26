@@ -98,13 +98,14 @@ export default function BookingPage() {
     }
   };
 
-  if (d.loading) return (
-    <ClientLayout title="Preparing Manifest..." hideHero={true}>
-      <div className="h-64 flex flex-col items-center justify-center space-y-4">
-        <div className="w-8 h-8 border-4 border-slate-100 border-t-black rounded-full animate-spin"></div>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-black opacity-40">Syncing Masterpiece Data...</p>
-      </div>
-    </ClientLayout>
+  if (d.loading) return <div className="min-h-screen flex items-center justify-center bg-[#F0F2F5]"><div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin"></div></div>;
+  
+  if (!d.s) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0F2F5] p-6 text-center">
+      <h2 className="text-3xl font-serif text-black mb-4">Package Not Found</h2>
+      <p className="text-gray-500 mb-8 max-w-md">The package you are looking for might have been updated or removed during our system maintenance.</p>
+      <button onClick={() => nav('/client/Packages')} className="bg-black text-white px-10 py-4 rounded-2xl text-[10px] font-bold uppercase tracking-widest">View All Packages</button>
+    </div>
   );
 
   return (
