@@ -26,7 +26,7 @@ export default function RevenueReports() {
   const handleRefund = async (id) => {
     if (window.confirm('Are you sure you want to refund this payment? This will send money back to the user via Paymongo.')) {
       try {
-        await paymentService.refundPayment(id, 'User requested refund');
+        await paymentService.refundPayment(id, 'requested_by_customer');
         fetchData();
       } catch (e) {
         setError(e.response?.data?.message || 'Failed to process refund');

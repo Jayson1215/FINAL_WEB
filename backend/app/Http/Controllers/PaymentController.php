@@ -295,6 +295,7 @@ class PaymentController extends Controller
             $pendingRevenue = Booking::whereIn('status', ['confirmed', 'finished'])
                 ->get()
                 ->sum(function($booking) {
+                    if (!$booking) return 0;
                     $total = (float)($booking->total_amount ?? 0);
                     $paid = (float)($booking->paid_amount ?? 0);
                     return max(0, $total - $paid);
@@ -348,7 +349,7 @@ class PaymentController extends Controller
                     'attributes' => [
                         'amount' => (int)($payment->amount * 100), // in cents
                         'payment_id' => $payment->paymongo_payment_id,
-                        'reason' => $request->reason ?? 'user_requested'
+                        'reason' => $request->reason ?? 'requested_by_customer'
                     ]
                 ]
             ]);
