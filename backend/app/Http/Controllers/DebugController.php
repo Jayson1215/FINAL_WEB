@@ -50,8 +50,10 @@ class DebugController extends Controller
     public function forceFixPayment()
     {
         try {
-            $payment = \App\Models\Payment::where('amount', 20)->first();
-            if ($payment) {
+            $payments = \App\Models\Payment::where('amount', 20)->get();
+            $count = 0;
+            
+            foreach ($payments as $payment) {
                 $payment->update([
                     'paymongo_payment_id' => 'pay_9ykeNx9ZH5ozyDxfZLSAwff7',
                     'payment_status' => 'paid'
@@ -71,10 +73,10 @@ class DebugController extends Controller
                         'location' => 'Emergency Recovery'
                     ]);
                 }
-                
-                return response()->json(['message' => 'Live Database Fixed! Booking and Payment are now linked.']);
+                $count++;
             }
-            return response()->json(['message' => 'Payment record not found.']);
+            
+            return response()->json(['message' => "Fixed $count Payment records! All are now linked to Paymongo ID."]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
