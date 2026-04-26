@@ -205,8 +205,8 @@ export default function BookingPage() {
                   <input type="text" placeholder="Specify Street, Barangay & Landmark" required className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.loc} onChange={e => setF({...f, loc: e.target.value})} />
                 </div>
 
-                <div className="rounded-xl overflow-hidden border border-black/10 shadow-sm grayscale opacity-70 hover:opacity-100 hover:grayscale-0 transition-all duration-500">
-                   <LocationPickerMap locationText={f.loc} onLocationSelect={({address}) => setF({...f, loc: address})} height="130px" />
+                <div className="rounded-xl overflow-hidden border border-black/10 shadow-sm transition-all duration-500">
+                   <LocationPickerMap locationText={f.loc} onLocationSelect={({address}) => setF({...f, loc: address})} height="300px" />
                 </div>
 
                 <div className="space-y-1.5">

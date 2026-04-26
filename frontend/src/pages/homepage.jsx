@@ -351,6 +351,14 @@ export default function Landing() {
         </div>
       </section>
 
+      <section className="py-24 px-6 max-w-7xl mx-auto">
+        <div className="mb-16 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-4">Precision Accuracy</p>
+            <h2 className="text-4xl font-serif text-[#1E293B]">Locate Our Studio</h2>
+        </div>
+        <StudioLocationMap />
+      </section>
+
       {ui.booking && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-3xl z-[400] flex items-center justify-center p-6 animate-fadeIn" onClick={() => setUi(p => ({ ...p, booking: null }))}>
           <div className="bg-white/80 backdrop-blur-2xl rounded-[3rem] p-8 md:p-10 max-w-md w-full relative shadow-[0_32px_64px_-15px_rgba(0,0,0,0.2)] border border-white/50 animate-slideUp overflow-hidden" onClick={e => e.stopPropagation()}>

@@ -7,7 +7,8 @@ const DEFAULT_CENTER = [125.5439, 8.9492]; // Note: MapLibre uses [lng, lat]
 
 const MAP_LAYERS = {
   standard: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-  satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+  satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 };
 
 function parseCoordinates(text) {
@@ -22,7 +23,7 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
   const map = useRef(null);
   const marker = useRef(null);
   const [resolving, setResolving] = useState(false);
-  const [activeLayer, setActiveLayer] = useState('standard');
+  const [activeLayer, setActiveLayer] = useState('dark');
   const [isExpanded, setIsExpanded] = useState(false);
   const [resolvedAddr, setResolvedAddr] = useState('');
   const [isMapDriven, setIsMapDriven] = useState(false);
@@ -221,7 +222,7 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
               onClick={() => setActiveLayer(key)}
               className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all shadow-2xl backdrop-blur-xl border ${activeLayer === key ? 'bg-black text-white border-black' : 'bg-white/90 text-black border-black/5 hover:bg-white'}`}
             >
-              {key === 'standard' ? '🗺️' : '🛰️'}
+              {key === 'standard' ? '🗺️' : key === 'satellite' ? '🛰️' : '🌙'}
             </button>
           ))}
         </div>
@@ -240,7 +241,30 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
                  {resolving ? 'Syncing MapLibre' : 'Vector Engine Active'}
                </p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
+                <div className="relative group/search">
+                  <input 
+                    type="text" 
+                    placeholder="Search place..." 
+                    className="bg-white/50 backdrop-blur-xl border border-black/5 rounded-xl px-4 py-2 text-[8px] font-bold uppercase tracking-widest outline-none focus:bg-white focus:w-48 transition-all w-32"
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const query = e.target.value;
+                        if (!query) return;
+                        try {
+                          const res = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&singleLine=${encodeURIComponent(query)}&maxLocations=1`);
+                          const data = await res.json();
+                          if (data.candidates?.[0]) {
+                            const { x: lng, y: lat } = data.candidates[0].location;
+                            handleMapAction(lng, lat);
+                          }
+                        } catch (err) { console.error('Search failed', err); }
+                      }
+                    }}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] opacity-20 group-hover/search:opacity-100 transition-opacity">🔍</div>
+                </div>
                 <button type="button" onClick={handleUseCurrent} className="text-[8px] font-bold text-[#E8734A] uppercase tracking-widest hover:opacity-70 transition flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#E8734A]"></span>
                   Pin My Location
@@ -264,7 +288,7 @@ export default function LocationPickerMap({ locationText, onLocationSelect, heig
                 onClick={() => setActiveLayer(key)}
                 className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all shadow-2xl backdrop-blur-xl border ${activeLayer === key ? 'bg-black text-white border-black' : 'bg-white/90 text-black border-black/5 hover:bg-white'}`}
               >
-                {key === 'standard' ? '🗺️' : '🛰️'}
+                {key === 'standard' ? '🗺️' : key === 'satellite' ? '🛰️' : '🌙'}
               </button>
             ))}
           </div>
