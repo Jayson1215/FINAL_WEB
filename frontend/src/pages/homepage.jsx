@@ -362,12 +362,12 @@ export default function Landing() {
             </div>
 
             <form onSubmit={handleBook} className="space-y-5">
-              <div className="flex flex-wrap gap-4">
-                <div className="flex-1 min-w-[140px] space-y-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
                   <p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest pl-2">Date</p>
                   <input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-white/50 backdrop-blur-sm p-3 rounded-xl text-[10px] border border-black/5 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
                 </div>
-                <div className="w-32 space-y-1.5">
+                <div className="space-y-1.5">
                   <p className="text-[8px] font-bold text-[#1E293B]/60 uppercase tracking-widest pl-2">Time</p>
                   <input type="time" required className="w-full bg-white/50 backdrop-blur-sm p-3 rounded-xl text-[10px] border border-black/5 text-[#1E293B] font-bold focus:bg-white transition-all outline-none" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
                 </div>

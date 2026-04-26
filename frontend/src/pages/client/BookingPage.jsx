@@ -177,12 +177,12 @@ export default function BookingPage() {
               </div>
 
               <div className="space-y-5">
-                <div className="flex flex-wrap gap-6">
-                  <div className="w-44 space-y-1.5">
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
                     <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Date</label>
                     <input type="date" required min={new Date().toISOString().split('T')[0]} className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.date} onChange={e => setF({...f, date: e.target.value})} />
                   </div>
-                  <div className="w-32 space-y-1.5 flex flex-col">
+                  <div className="space-y-1.5">
                     <label className="text-[8px] font-bold text-black uppercase tracking-widest pl-1">Time</label>
                     <input type="time" required className="w-full bg-slate-50 p-3 rounded-xl text-[10px] border border-black/10 text-black font-bold focus:bg-white focus:border-black transition-all outline-none" value={f.time} onChange={e => setF({...f, time: e.target.value})} />
                     
