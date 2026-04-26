@@ -8,7 +8,7 @@ const DEFAULT_CENTER = [125.5439, 8.9492]; // Note: MapLibre uses [lng, lat]
 const MAP_LAYERS = {
   standard: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
   satellite: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+  dark: "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 };
 
 function parseCoordinates(text) {
