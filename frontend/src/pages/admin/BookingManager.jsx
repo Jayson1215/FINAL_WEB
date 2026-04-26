@@ -181,73 +181,81 @@ export default function BookingManager() {
 
       {/* Pop-up Table Details - Booking Manifest */}
       {viewModal.open && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[2000] flex items-center justify-center p-6 lg:p-12" onClick={() => setViewModal({ open: false, b: null })}>
-          <div className="bg-white rounded-[4rem] max-w-xl w-full shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] animate-cinemaShow border border-white/20 overflow-hidden relative" onClick={e => e.stopPropagation()}>
-            <div className="absolute top-0 right-0 p-12 opacity-5 text-[10rem] font-serif pointer-events-none select-none">LW</div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[2000] flex items-center justify-center p-6" onClick={() => setViewModal({ open: false, b: null })}>
+          <div className="bg-white rounded-[2.5rem] max-w-lg w-full shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] animate-cinemaShow border border-white/20 overflow-hidden relative" onClick={e => e.stopPropagation()}>
+            <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-[8rem] font-serif pointer-events-none select-none">LW</div>
 
-            <div className="flex justify-between items-start mb-10 relative z-10">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Full Booking Manifest</p>
-                <h3 className="text-5xl font-serif text-black">{viewModal.b.user?.name}</h3>
-                <p className="text-[10px] font-bold uppercase text-black tracking-[0.3em]">{viewModal.b.displayId}</p>
+            <div className="px-8 pt-8 pb-4 relative z-10">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <p className="text-[9px] font-bold text-[#E8734A] uppercase tracking-[0.4em]">Manifest Details</p>
+                  <h3 className="text-3xl font-serif text-black leading-tight">{viewModal.b.user?.name}</h3>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[9px] font-bold text-black/40 uppercase tracking-widest">{viewModal.b.displayId}</span>
+                    <div className={`px-2 py-0.5 rounded-full text-[7px] font-bold uppercase tracking-widest border ${getStatusStyle(viewModal.b.status)}`}>
+                      {viewModal.b.status}
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => setViewModal({ open: false, b: null })} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-black hover:bg-black hover:text-white transition-all text-xl font-serif">×</button>
               </div>
-              <button onClick={() => setViewModal({ open: false, b: null })} className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-black hover:bg-black hover:text-white transition-all text-2xl font-serif">×</button>
             </div>
 
-            <div className="px-12 py-10 space-y-10 relative z-10">
-
-              <div className="bg-slate-50/50 rounded-[2rem] border border-black/5 overflow-hidden mb-8">
-                <table className="w-full text-[11px]">
+            <div className="px-8 py-4 space-y-6 relative z-10 overflow-y-auto max-h-[60vh] custom-scrollbar">
+              <div className="bg-slate-50/50 rounded-3xl border border-black/5 overflow-hidden">
+                <table className="w-full text-[10px]">
                   <tbody className="divide-y divide-black/5">
                     <tr>
-                      <td className="px-8 py-5 font-bold uppercase tracking-widest text-black w-1/3 bg-slate-100/50">Collection</td>
-                      <td className="px-8 py-5 font-bold text-black italic">"{viewModal.b.service?.name}"</td>
+                      <td className="px-6 py-4 font-bold uppercase tracking-widest text-black/40 w-1/3 bg-slate-100/30">Collection</td>
+                      <td className="px-6 py-4 font-bold text-black">"{viewModal.b.service?.name}"</td>
                     </tr>
                     <tr
                       className="cursor-pointer hover:bg-slate-100 transition-colors group/row"
                       title="Click to Navigate via Google Maps"
                       onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(viewModal.b.location)}`, '_blank')}
                     >
-                      <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">Venue Destination</td>
-                      <td className="px-8 py-5 font-bold text-black flex items-center justify-between">
-                        <span>{viewModal.b.location}</span>
-                        <svg className="w-4 h-4 text-[#E8734A] opacity-0 group-hover/row:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      <td className="px-6 py-4 font-bold uppercase tracking-widest text-black/40 bg-slate-100/30">Destination</td>
+                      <td className="px-6 py-4 font-bold text-black flex items-center justify-between">
+                        <span className="truncate max-w-[180px]">{viewModal.b.location}</span>
+                        <svg className="w-3 h-3 text-[#E8734A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">Logistics Date</td>
-                      <td className="px-8 py-5 font-bold text-black">{new Date(viewModal.b.booking_date).toLocaleDateString()} @ {viewModal.b.booking_time}</td>
+                      <td className="px-6 py-4 font-bold uppercase tracking-widest text-black/40 bg-slate-100/30">Schedule</td>
+                      <td className="px-6 py-4 font-bold text-black">{new Date(viewModal.b.booking_date).toLocaleDateString()} @ {viewModal.b.booking_time}</td>
                     </tr>
                     <tr>
-                      <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">Creative Vision</td>
-                      <td className="px-8 py-5 font-medium text-black italic leading-relaxed">"{viewModal.b.special_requests || 'No specific creative requests provided.'}"</td>
+                      <td className="px-6 py-4 font-bold uppercase tracking-widest text-black/40 bg-slate-100/30 align-top">Requests</td>
+                      <td className="px-6 py-4 font-medium text-black/60 italic leading-relaxed text-[9px]">"{viewModal.b.special_requests || 'Standard production requested.'}"</td>
                     </tr>
                     <tr>
-                      <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">Financial Manifest</td>
-                      <td className="px-8 py-5 font-bold text-black flex flex-col gap-1">
-                        <span className="text-[12px]">Total: ₱{parseFloat(viewModal.b.total_amount).toLocaleString()}</span>
-                        <div className="flex gap-4">
-                          <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Paid: ₱{parseFloat(viewModal.b.paid_amount || 0).toLocaleString()}</span>
-                          <span className="text-[9px] text-red-600 font-bold uppercase tracking-widest">Balance: ₱{Math.max(0, parseFloat(viewModal.b.total_amount) - parseFloat(viewModal.b.paid_amount || 0)).toLocaleString()}</span>
+                      <td className="px-6 py-4 font-bold uppercase tracking-widest text-black/40 bg-slate-100/30">Financials</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-black">Total: ₱{parseFloat(viewModal.b.total_amount).toLocaleString()}</span>
+                        </div>
+                        <div className="flex gap-3">
+                          <span className="text-[8px] text-emerald-600 font-bold uppercase">Paid: ₱{parseFloat(viewModal.b.paid_amount || 0).toLocaleString()}</span>
+                          <span className="text-[8px] text-red-500 font-bold uppercase">Bal: ₱{Math.max(0, parseFloat(viewModal.b.total_amount) - parseFloat(viewModal.b.paid_amount || 0)).toLocaleString()}</span>
                         </div>
                       </td>
                     </tr>
                     {viewModal.b.payment && (
                       <tr>
-                        <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50">GCash Reference</td>
-                        <td className="px-8 py-5 font-mono text-[9px] text-black font-bold tracking-tighter">
+                        <td className="px-6 py-4 font-bold uppercase tracking-widest text-black/40 bg-slate-100/30">Reference</td>
+                        <td className="px-6 py-4 font-mono text-[8px] text-black font-bold truncate max-w-[150px]">
                           {viewModal.b.payment.transaction_reference || 'N/A'}
                         </td>
                       </tr>
                     )}
                     {viewModal.b.add_ons?.length > 0 && (
                       <tr>
-                        <td className="px-8 py-5 font-bold uppercase tracking-widest text-black bg-slate-100/50 align-top">Add-on Upgrades</td>
-                        <td className="px-8 py-5 font-bold text-[#E8734A] space-y-1">
+                        <td className="px-6 py-4 font-bold uppercase tracking-widest text-black/40 bg-slate-100/30 align-top">Upgrades</td>
+                        <td className="px-6 py-4 space-y-1">
                           {viewModal.b.add_ons.map(a => (
-                            <div key={a.id} className="flex justify-between items-center bg-white/50 p-2 rounded-lg border border-black/5">
-                              <span className="text-[10px]">{a.name}</span>
-                              <span className="text-[10px]">₱{parseFloat(a.price).toLocaleString()}</span>
+                            <div key={a.id} className="flex justify-between items-center text-[9px]">
+                              <span className="text-black font-medium">{a.name}</span>
+                              <span className="text-[#E8734A] font-bold">₱{parseFloat(a.price).toLocaleString()}</span>
                             </div>
                           ))}
                         </td>
@@ -258,8 +266,8 @@ export default function BookingManager() {
               </div>
             </div>
 
-            <div className="px-12 pb-12 relative z-10">
-              <button onClick={() => setViewModal({ open: false, b: null })} className="w-full py-6 bg-black text-white rounded-[2.5rem] text-[10px] font-bold uppercase tracking-[0.4em] shadow-2xl hover:bg-[#E8734A] transition-all">Dismiss Booking</button>
+            <div className="px-8 pb-8 pt-4 relative z-10">
+              <button onClick={() => setViewModal({ open: false, b: null })} className="w-full py-4 bg-black text-white rounded-2xl text-[9px] font-bold uppercase tracking-[0.3em] shadow-lg hover:bg-[#E8734A] transition-all">Dismiss Details</button>
             </div>
           </div>
         </div>
