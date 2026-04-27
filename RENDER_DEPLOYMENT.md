@@ -67,6 +67,16 @@ Then deploy frontend to Vercel.
 - Visit `/api/health` to verify the app is running
 - Test the API endpoints from your frontend
 
+### 9. Photo Deployment Checklist (Cross-Device)
+- Keep deployable images in `backend/public/assets/images`.
+- Keep frontend static images in `frontend/public/images`.
+- Commit and push image files to Git before deploying.
+- Use API-served image paths or URLs stored in DB values (for example: `/assets/images/your-photo.png` or `https://...`).
+- After deployment, verify a sample image URL works:
+	- `https://<your-backend-url>/api/images/service_wedding.png`
+
+The Docker build now syncs images from `frontend/public/images` into `backend/public/assets/images` so both frontend and backend image paths stay available in production.
+
 ## Troubleshooting
 
 ### Logs Not Showing

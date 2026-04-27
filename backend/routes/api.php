@@ -14,8 +14,21 @@ Route::get('/images/{filename}', function ($filename) {
         return response()->json(['error' => 'File not found'], 404);
     }
 
-    $path = public_path('assets/images/' . $filename);
-    if (!file_exists($path)) {
+    $candidatePaths = [
+        public_path('assets/images/' . $filename),
+        public_path('images/' . $filename),
+        public_path('storage/images/' . $filename),
+    ];
+
+    $path = null;
+    foreach ($candidatePaths as $candidate) {
+        if (file_exists($candidate)) {
+            $path = $candidate;
+            break;
+        }
+    }
+
+    if (!$path) {
         return response()->json(['error' => 'File not found'], 404);
     }
 

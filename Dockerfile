@@ -46,6 +46,8 @@ RUN composer install --no-dev --optimize-autoloader
 # Copy built frontend to public
 RUN mkdir -p public
 RUN cp -r /app/frontend/dist/* /app/backend/public/
+RUN mkdir -p /app/backend/public/assets/images \
+ && if [ -d /app/frontend/public/images ]; then cp -f /app/frontend/public/images/* /app/backend/public/assets/images/ 2>/dev/null || true; fi
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 WORKDIR /app/backend
