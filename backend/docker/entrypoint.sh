@@ -11,6 +11,12 @@ mkdir -p storage/framework/sessions storage/framework/views storage/framework/ca
 chmod -R 777 storage bootstrap/cache storage/logs
 chmod -R a+rwx storage bootstrap/cache storage/logs 2>/dev/null || true
 
+# Ensure external image storage directory exists when configured (e.g. Render disk)
+if [ -n "$IMAGES_STORAGE_PATH" ]; then
+    mkdir -p "$IMAGES_STORAGE_PATH"
+    chmod -R 777 "$IMAGES_STORAGE_PATH" 2>/dev/null || true
+fi
+
 # Clear all caches
 echo "[1/6] Clearing caches..."
 php artisan cache:clear --no-interaction || true

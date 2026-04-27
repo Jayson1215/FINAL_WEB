@@ -62,7 +62,6 @@ class StudioContentSeeder extends Seeder
 
         // --- SEED SERVICES ---
         echo "\nSeeding Services...\n";
-        $apiUrl = config('app.url');
         $services = [
             [
                 'name' => 'The Signature Wedding',
@@ -70,7 +69,7 @@ class StudioContentSeeder extends Seeder
                 'category' => 'Wedding',
                 'price' => 20.00,
                 'duration' => 600, // 10 hours
-                'image_path' => $apiUrl . '/api/images/service_wedding.png'
+                'image_path' => '/api/images/service_wedding.png'
             ],
             [
                 'name' => 'Editorial Portraiture',
@@ -78,7 +77,7 @@ class StudioContentSeeder extends Seeder
                 'category' => 'Portrait',
                 'price' => 20.00,
                 'duration' => 120, // 2 hours
-                'image_path' => $apiUrl . '/api/images/service_portrait.png'
+                'image_path' => '/api/images/service_portrait.png'
             ],
             [
                 'name' => 'Fashion & Commercial',
@@ -86,7 +85,7 @@ class StudioContentSeeder extends Seeder
                 'category' => 'Editorial',
                 'price' => 20.00,
                 'duration' => 300, // 5 hours
-                'image_path' => $apiUrl . '/api/images/service_editorial.png'
+                'image_path' => '/api/images/service_editorial.png'
             ],
             [
                 'name' => 'Gala & Event Coverage',
@@ -94,7 +93,7 @@ class StudioContentSeeder extends Seeder
                 'category' => 'Events',
                 'price' => 20.00,
                 'duration' => 240, // 4 hours
-                'image_path' => $apiUrl . '/api/images/service_event.png'
+                'image_path' => '/api/images/service_event.png'
             ],
         ];
 
@@ -113,37 +112,37 @@ class StudioContentSeeder extends Seeder
             [
                 'title' => 'Ethereal Grace',
                 'category' => 'Bridal',
-                'image_url' => $apiUrl . '/api/images/portfolio_bride.png',
+                'image_url' => '/api/images/portfolio_bride.png',
                 'description' => 'A close-up study of bridal elegance, focusing on light and texture.'
             ],
             [
                 'title' => 'The Noir Muse',
                 'category' => 'Fashion',
-                'image_url' => $apiUrl . '/api/images/portfolio_fashion.png',
+                'image_url' => '/api/images/portfolio_fashion.png',
                 'description' => 'Minimalist fashion photography exploring shadows and architectural lines.'
             ],
             [
                 'title' => 'First Light',
                 'category' => 'Newborn',
-                'image_url' => $apiUrl . '/api/images/portfolio_newborn.png',
+                'image_url' => '/api/images/portfolio_newborn.png',
                 'description' => 'A tender, minimalist representation of new beginnings.'
             ],
             [
                 'title' => 'The Metropolitan Gala',
                 'category' => 'Events',
-                'image_url' => $apiUrl . '/api/images/portfolio_corporate.png',
+                'image_url' => '/api/images/portfolio_corporate.png',
                 'description' => 'Capturing the sophisticated ambiance of a high-end corporate gathering.'
             ],
             [
                 'title' => 'Linear Serenity',
                 'category' => 'Architecture',
-                'image_url' => $apiUrl . '/api/images/portfolio_architecture.png',
+                'image_url' => '/api/images/portfolio_architecture.png',
                 'description' => 'Exploring the intersection of natural light and modern design.'
             ],
             [
                 'title' => 'The Silent Peak',
                 'category' => 'Nature',
-                'image_url' => $apiUrl . '/api/images/portfolio_nature.png',
+                'image_url' => '/api/images/portfolio_nature.png',
                 'description' => 'A dramatic, ethereal landscape study in atmospheric light.'
             ],
         ];

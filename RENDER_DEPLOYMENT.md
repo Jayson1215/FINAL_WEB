@@ -39,6 +39,7 @@ MYSQL_ATTR_SSL_CA=/app/ca.pem
 
 FRONTEND_URL=https://finalweb-pied.vercel.app
 FRONTEND_URLS=https://finalweb-pied.vercel.app,http://localhost:5173,http://localhost:5174
+IMAGES_STORAGE_PATH=/var/data/lightworks-images
 
 GOOGLE_CLIENT_ID=1013098177252-cotfhmi61po05fj9r7a5v500t8d7uu1j.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=<your-secret>
@@ -72,8 +73,11 @@ Then deploy frontend to Vercel.
 - Keep frontend static images in `frontend/public/images`.
 - Commit and push image files to Git before deploying.
 - Use API-served image paths or URLs stored in DB values (for example: `/assets/images/your-photo.png` or `https://...`).
+- For uploaded photos, use persistent disk storage in Render with `IMAGES_STORAGE_PATH=/var/data/lightworks-images`.
 - After deployment, verify a sample image URL works:
 	- `https://<your-backend-url>/api/images/service_wedding.png`
+
+Important: Replace `<your-backend-url>` with your real deployed domain. `https://your-backend-url/...` is only a placeholder and will fail DNS.
 
 The Docker build now syncs images from `frontend/public/images` into `backend/public/assets/images` so both frontend and backend image paths stay available in production.
 

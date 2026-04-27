@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             StudioContentSeeder::class,
             EventPackagesSeeder::class,
+            ImageAssetsSeeder::class,
         ]);
     }
 }

@@ -20,6 +20,11 @@ Route::get('/images/{filename}', function ($filename) {
         public_path('storage/images/' . $filename),
     ];
 
+    $persistentImagePath = env('IMAGES_STORAGE_PATH');
+    if (!empty($persistentImagePath)) {
+        $candidatePaths[] = rtrim($persistentImagePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $filename;
+    }
+
     $path = null;
     foreach ($candidatePaths as $candidate) {
         if (file_exists($candidate)) {
@@ -32,9 +37,11 @@ Route::get('/images/{filename}', function ($filename) {
         return response()->json(['error' => 'File not found'], 404);
     }
 
-    return response()->file($path, [
-        'Cache-Control' => 'public, max-age=86400',
-    ]);
+    $mimeType = @mime_content_type($path) ?: 'application/octet-stream';
+
+    return response(file_get_contents($path), 200)
+        ->header('Content-Type', $mimeType)
+        ->header('Cache-Control', 'public, max-age=86400');
 });
 Route::match(['get', 'post'], '/payments/verify', [PaymentController::class, 'verify']);
 

@@ -6,8 +6,9 @@ import { bookingService } from '../../services/bookingService';
 import { resolveImageUrl } from '../../utils/imageUrl';
 
 export default function ManageServices() {
+  const emptyForm = { name: '', description: '', category: 'Wedding', price: '', duration: '', image_path: '', image: null, inclusions: '' };
   const [d, setD] = useState({ s: [], p: [], a: [], loading: true, form: false, cat: 'All' });
-  const [f, setF] = useState({ name: '', description: '', category: 'Wedding', price: '', duration: '', image_path: '', inclusions: '' });
+  const [f, setF] = useState(emptyForm);
   const [editId, setEditId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
  
@@ -47,9 +48,19 @@ export default function ManageServices() {
   const save = async (e) => {
     e.preventDefault();
     try {
-      const res = editId ? await serviceService.updateService(editId, f) : await serviceService.createService(f);
+      const payload = new FormData();
+      payload.append('name', f.name);
+      payload.append('description', f.description || '');
+      payload.append('category', f.category || '');
+      payload.append('price', f.price || 0);
+      payload.append('duration', Math.round(Number(f.duration) || 0));
+      payload.append('inclusions', f.inclusions || '');
+      if (f.image) payload.append('image', f.image);
+      if (f.image_path?.trim()) payload.append('image_path', f.image_path.trim());
+
+      const res = editId ? await serviceService.updateService(editId, payload) : await serviceService.createService(payload);
       setD(p => ({ ...p, s: editId ? p.s.map(x => x.id === editId ? res.data : x) : [...p.s, res.data], form: false }));
-      setF({ name: '', description: '', category: '', price: '', duration: '', image_path: '', inclusions: '' });
+      setF(emptyForm);
       setEditId(null);
     } catch (e) { alert('Save Failed'); }
   };
@@ -74,7 +85,7 @@ export default function ManageServices() {
         </div>
 
         {d.form && (
-          <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[500] flex items-center justify-center p-6 animate-fadeIn overflow-y-auto" onClick={() => { setD({ ...d, form: false }); setEditId(null); setF({ name: '', description: '', category: '', price: '', duration: '', image_path: '', inclusions: '' }); }}>
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[500] flex items-center justify-center p-6 animate-fadeIn overflow-y-auto" onClick={() => { setD({ ...d, form: false }); setEditId(null); setF(emptyForm); }}>
             <div className="bg-white rounded-[4rem] max-w-4xl w-full relative shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] p-12 animate-cinemaShow border border-white/20" onClick={e => e.stopPropagation()}>
               <div className="mb-10 text-center">
                 <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A] mb-4">Package Management</p>
@@ -117,9 +128,18 @@ export default function ManageServices() {
                   <p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Package Inclusions (One per line)</p>
                   <textarea placeholder="• Item 1&#10;• Item 2..." className="w-full bg-white/60 p-4 rounded-2xl text-xs h-32 border border-gray-400 text-black font-medium focus:border-[#E8734A] transition-all outline-none" value={f.inclusions} onChange={e => setF({ ...f, inclusions: e.target.value })} />
                 </div>
+                <div className="space-y-2">
+                  <p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Upload Package Photo</p>
+                  <input type="file" accept="image/*" className="w-full bg-white/60 p-4 rounded-2xl text-xs border border-gray-400" onChange={e => setF({ ...f, image: e.target.files?.[0] || null })} />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-[8px] font-bold text-[#1E293B]/80 uppercase tracking-widest pl-2">Or Public Image URL/Path (Optional)</p>
+                  <input placeholder="https://... or /assets/images/..." className="w-full bg-white/60 p-4 rounded-2xl text-xs border border-gray-400 text-[#1E293B] font-bold focus:bg-white focus:border-[#E8734A] transition-all outline-none" value={f.image_path || ''} onChange={e => setF({ ...f, image_path: e.target.value })} />
+                  <p className="text-[10px] text-gray-500">Do not use local paths like C:\\Users\\... because they will not load on other computers.</p>
+                </div>
                 <button className="w-full bg-black text-white py-6 rounded-[2rem] text-[10px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-2xl mt-4">{editId ? 'Save Changes' : 'Launch Collection'}</button>
               </form>
-              <button onClick={() => { setD({ ...d, form: false }); setEditId(null); }} className="absolute top-10 right-10 text-3xl text-black/20 hover:text-black transition-colors font-serif">×</button>
+              <button onClick={() => { setD({ ...d, form: false }); setEditId(null); setF(emptyForm); }} className="absolute top-10 right-10 text-3xl text-black/20 hover:text-black transition-colors font-serif">×</button>
             </div>
           </div>
         )}
@@ -161,7 +181,7 @@ export default function ManageServices() {
                   </div>
                 </div>
                 <div className="flex gap-3 mt-8">
-                  <button onClick={() => { setF(s); setEditId(s.id); setD({ ...d, form: true }); }} className="flex-1 py-3.5 bg-[#1E293B] text-white rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-md">Edit Package</button>
+                  <button onClick={() => { setF({ ...s, image: null }); setEditId(s.id); setD({ ...d, form: true }); }} className="flex-1 py-3.5 bg-[#1E293B] text-white rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-[#E8734A] transition-all shadow-md">Edit Package</button>
                   <button onClick={() => setDeleteId(s.id)} className="flex-1 py-3.5 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[9px] font-bold uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all shadow-sm">Delete</button>
                 </div>
               </div>

@@ -5,23 +5,28 @@ import { resolveImageUrl } from '../../utils/imageUrl';
 
 export default function ManagePortfolio() {
   const [d, setD] = useState({ list: [], loading: true, form: false });
-  const [f, setF] = useState({ title: '', description: '', category: '', image: null });
+  const [f, setF] = useState({ title: '', description: '', category: '', image: null, image_url: '' });
 
   useEffect(() => { fetch(); }, []);
-  const fetch = async () => { try { const r = await portfolioService.getPortfolio(); setD({ list: r.data, loading: false, form: false }); } catch(e) { setD(p => ({ ...p, loading: false })); } };
+  const fetch = async () => { try { const r = await portfolioService.getAllPortfolio(); setD({ list: r.data, loading: false, form: false }); } catch(e) { setD(p => ({ ...p, loading: false })); } };
 
   const save = async (e) => {
     e.preventDefault();
     try {
       const fd = new FormData();
-      Object.keys(f).forEach(k => fd.append(k, f[k]));
-      await portfolioService.createPortfolio(fd);
-      setF({ title: '', description: '', category: '', image: null });
+      fd.append('title', f.title);
+      fd.append('description', f.description || '');
+      fd.append('category', f.category || '');
+      if (f.image) fd.append('image', f.image);
+      if (f.image_url?.trim()) fd.append('image_url', f.image_url.trim());
+
+      await portfolioService.createPortfolioItem(fd);
+      setF({ title: '', description: '', category: '', image: null, image_url: '' });
       fetch();
     } catch(e) { alert('Upload Failed'); }
   };
 
-  const del = async (id) => { if (window.confirm('Delete?')) { await portfolioService.deletePortfolio(id); fetch(); } };
+  const del = async (id) => { if (window.confirm('Delete?')) { await portfolioService.deletePortfolioItem(id); fetch(); } };
 
   if (d.loading) return <AdminLayout title="..."><div className="h-96 flex items-center justify-center animate-pulse">Loading...</div></AdminLayout>;
 
@@ -37,7 +42,9 @@ export default function ManagePortfolio() {
           <form onSubmit={save} className="bg-white p-8 rounded-[2rem] border shadow-sm space-y-4">
             <input placeholder="Title" className="w-full bg-gray-50 p-4 rounded-xl text-xs" value={f.title} onChange={e => setF({ ...f, title: e.target.value })} required />
             <input placeholder="Category" className="w-full bg-gray-50 p-4 rounded-xl text-xs" value={f.category} onChange={e => setF({ ...f, category: e.target.value })} />
-            <input type="file" className="text-xs" onChange={e => setF({ ...f, image: e.target.files[0] })} required />
+            <input type="file" accept="image/*" className="text-xs" onChange={e => setF({ ...f, image: e.target.files[0] || null })} />
+            <input placeholder="Or paste public image URL/path (optional)" className="w-full bg-gray-50 p-4 rounded-xl text-xs" value={f.image_url} onChange={e => setF({ ...f, image_url: e.target.value })} />
+            <p className="text-[10px] text-gray-500">Use upload or a public URL. Local paths like C:\\Users\\... are not valid across computers.</p>
             <button className="w-full bg-[#E8734A] text-white py-4 rounded-xl text-[10px] font-bold uppercase">Upload</button>
           </form>
         )}
