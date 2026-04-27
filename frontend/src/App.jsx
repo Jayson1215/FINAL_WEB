@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -10,23 +10,23 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import SocialCallback from './pages/auth/SocialCallback';
 
-// Client pages - lazy loaded
-const Dashboard = React.lazy(() => import('./pages/client/Dashboard'));
-const PortfolioGallery = React.lazy(() => import('./pages/client/PortfolioGallery'));
-const ServicesList = React.lazy(() => import('./pages/client/PackageList'));
-const BookingPage = React.lazy(() => import('./pages/client/BookingPage'));
-const MyBookings = React.lazy(() => import('./pages/client/MyBookings'));
-const CheckoutPage = React.lazy(() => import('./pages/client/CheckoutPage'));
-const PaymentSuccess = React.lazy(() => import('./pages/client/PaymentSuccess'));
-const Contact = React.lazy(() => import('./pages/client/Contact'));
+// Client pages - eager load
+import Dashboard from './pages/client/Dashboard';
+import PortfolioGallery from './pages/client/PortfolioGallery';
+import ServicesList from './pages/client/PackageList';
+import BookingPage from './pages/client/BookingPage';
+import MyBookings from './pages/client/MyBookings';
+import CheckoutPage from './pages/client/CheckoutPage';
+import PaymentSuccess from './pages/client/PaymentSuccess';
+import Contact from './pages/client/Contact';
 
-// Admin pages - lazy loaded
-const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
-const ManageServices = React.lazy(() => import('./pages/admin/ManageServices'));
-const ManagePortfolio = React.lazy(() => import('./pages/admin/ManagePortfolio'));
-const BookingManager = React.lazy(() => import('./pages/admin/BookingManager'));
-const ManageUsers = React.lazy(() => import('./pages/admin/ManageUsers'));
-const RevenueReports = React.lazy(() => import('./pages/admin/RevenueReports'));
+// Admin pages - eager load
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageServices from './pages/admin/ManageServices';
+import ManagePortfolio from './pages/admin/ManagePortfolio';
+import BookingManager from './pages/admin/BookingManager';
+import ManageUsers from './pages/admin/ManageUsers';
+import RevenueReports from './pages/admin/RevenueReports';
 
 // Loading fallback component
 const PageLoader = () => (
@@ -89,9 +89,7 @@ function AppRoutes() {
         path="/client/home"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <Dashboard />
-            </Suspense>
+            <Dashboard />
           </PrivateRoute>
         }
       />
@@ -99,9 +97,7 @@ function AppRoutes() {
         path="/client/Packages"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <ServicesList />
-            </Suspense>
+            <ServicesList />
           </PrivateRoute>
         }
       />
@@ -109,9 +105,7 @@ function AppRoutes() {
         path="/client/Portfolio"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <PortfolioGallery />
-            </Suspense>
+            <PortfolioGallery />
           </PrivateRoute>
         }
       />
@@ -119,9 +113,7 @@ function AppRoutes() {
         path="/client/Gallery"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <PortfolioGallery />
-            </Suspense>
+            <PortfolioGallery />
           </PrivateRoute>
         }
       />
@@ -129,9 +121,7 @@ function AppRoutes() {
         path="/client/MyBookings"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <MyBookings />
-            </Suspense>
+            <MyBookings />
           </PrivateRoute>
         }
       />
@@ -139,9 +129,7 @@ function AppRoutes() {
         path="/client/contact"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <Contact />
-            </Suspense>
+            <Contact />
           </PrivateRoute>
         }
       />
@@ -149,9 +137,7 @@ function AppRoutes() {
         path="/client/packages/book/:serviceId"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <BookingPage />
-            </Suspense>
+            <BookingPage />
           </PrivateRoute>
         }
       />
@@ -159,9 +145,7 @@ function AppRoutes() {
         path="/client/checkout"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <CheckoutPage />
-            </Suspense>
+            <CheckoutPage />
           </PrivateRoute>
         }
       />
@@ -169,9 +153,7 @@ function AppRoutes() {
         path="/payment/success"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <PaymentSuccess />
-            </Suspense>
+            <PaymentSuccess />
           </PrivateRoute>
         }
       />
@@ -179,9 +161,7 @@ function AppRoutes() {
         path="/client/PaymentSuccess"
         element={
           <PrivateRoute requiredRole="client">
-            <Suspense fallback={<PageLoader />}>
-              <PaymentSuccess />
-            </Suspense>
+            <PaymentSuccess />
           </PrivateRoute>
         }
       />
@@ -191,9 +171,7 @@ function AppRoutes() {
         path="/admin/dashboard"
         element={
           <PrivateRoute requiredRole="admin">
-            <Suspense fallback={<PageLoader />}>
-              <AdminDashboard />
-            </Suspense>
+            <AdminDashboard />
           </PrivateRoute>
         }
       />
@@ -201,9 +179,7 @@ function AppRoutes() {
         path="/admin/services"
         element={
           <PrivateRoute requiredRole="admin">
-            <Suspense fallback={<PageLoader />}>
-              <ManageServices />
-            </Suspense>
+            <ManageServices />
           </PrivateRoute>
         }
       />
@@ -211,9 +187,7 @@ function AppRoutes() {
         path="/admin/portfolio"
         element={
           <PrivateRoute requiredRole="admin">
-            <Suspense fallback={<PageLoader />}>
-              <ManagePortfolio />
-            </Suspense>
+            <ManagePortfolio />
           </PrivateRoute>
         }
       />
@@ -221,9 +195,7 @@ function AppRoutes() {
         path="/admin/bookings"
         element={
           <PrivateRoute requiredRole="admin">
-            <Suspense fallback={<PageLoader />}>
-              <BookingManager />
-            </Suspense>
+            <BookingManager />
           </PrivateRoute>
         }
       />
@@ -231,9 +203,7 @@ function AppRoutes() {
         path="/admin/users"
         element={
           <PrivateRoute requiredRole="admin">
-            <Suspense fallback={<PageLoader />}>
-              <ManageUsers />
-            </Suspense>
+            <ManageUsers />
           </PrivateRoute>
         }
       />
@@ -241,9 +211,7 @@ function AppRoutes() {
         path="/admin/reports"
         element={
           <PrivateRoute requiredRole="admin">
-            <Suspense fallback={<PageLoader />}>
-              <RevenueReports />
-            </Suspense>
+            <RevenueReports />
           </PrivateRoute>
         }
       />
