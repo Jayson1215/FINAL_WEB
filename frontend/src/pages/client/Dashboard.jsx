@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { serviceService } from '../../services/serviceService';
 import { bookingService } from '../../services/bookingService';
 import { portfolioService } from '../../services/portfolioService';
-import { resolveServiceImageUrl } from '../../utils/imageUrl';
+import { resolveImageUrl, resolveServiceImageUrl } from '../../utils/imageUrl';
 import ClientLayout from '../../components/layout/ClientLayout';
 
 export default function ClientDashboard() {
@@ -121,7 +121,16 @@ export default function ClientDashboard() {
             <div className="columns-1 md:columns-2 lg:columns-3 gap-10 space-y-10 animate-fadeIn">
               {data.p.slice(0, 6).map(item => (
                 <div key={item.id} onClick={() => setUi(p => ({ ...p, galleryItem: item }))} className="relative rounded-[2.5rem] overflow-hidden group cursor-pointer border border-black/5">
-                  <img src={item.image_url} alt={item.title} className="w-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
+                  <img
+                    src={resolveImageUrl(item.image_url || item.image_path)}
+                    alt={item.title}
+                    className="w-full object-cover group-hover:scale-110 transition-transform duration-[2s]"
+                    onError={(e) => {
+                      if (e.currentTarget.dataset.fallbackApplied) return;
+                      e.currentTarget.dataset.fallbackApplied = '1';
+                      e.currentTarget.src = '/images/featured-work.png';
+                    }}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-6 md:p-10 flex flex-col justify-end">
                     <p className="text-[9px] md:text-[10px] font-bold text-[#E8734A] uppercase tracking-[0.4em] mb-2">{item.category}</p>
                     <h4 className="text-white font-serif text-xl md:text-2xl">{item.title}</h4>
@@ -139,7 +148,16 @@ export default function ClientDashboard() {
           <div className="max-w-4xl w-full grid md:grid-cols-2 gap-8 md:gap-10 items-center bg-white p-6 md:p-10 rounded-[2.5rem] md:rounded-[3rem] border border-black/10 shadow-2xl relative" onClick={e => e.stopPropagation()}>
             <button onClick={() => setUi(p => ({ ...p, galleryItem: null }))} className="absolute top-6 right-6 md:top-8 md:right-8 text-2xl text-black/20 hover:text-black transition-all">×</button>
             <div className="relative rounded-[2rem] overflow-hidden shadow-xl border border-black/5">
-              <img src={ui.galleryItem.image_url} alt={ui.galleryItem.title} className="w-full h-auto max-h-[50vh] md:max-h-[60vh] object-contain" />
+              <img
+                src={resolveImageUrl(ui.galleryItem.image_url || ui.galleryItem.image_path)}
+                alt={ui.galleryItem.title}
+                className="w-full h-auto max-h-[50vh] md:max-h-[60vh] object-contain"
+                onError={(e) => {
+                  if (e.currentTarget.dataset.fallbackApplied) return;
+                  e.currentTarget.dataset.fallbackApplied = '1';
+                  e.currentTarget.src = '/images/featured-work.png';
+                }}
+              />
             </div>
             <div className="space-y-6 md:space-y-8">
               <div className="space-y-2 md:space-y-3">

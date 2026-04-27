@@ -7,7 +7,7 @@ import { portfolioService } from '../services/portfolioService';
 import Chatbot from '../components/common/Chatbot';
 import NotificationBell from '../components/common/NotificationBell';
 import StudioLocationMap from '../components/common/StudioLocationMap';
-import { resolveServiceImageUrl } from '../utils/imageUrl';
+import { resolveImageUrl, resolveServiceImageUrl } from '../utils/imageUrl';
 
 export default function Landing() {
   const { user, logout } = useAuth();
@@ -273,7 +273,16 @@ export default function Landing() {
           <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
             {data.p.slice(0, 6).map(item => (
               <div key={item.id} onClick={() => setUi(p => ({ ...p, galleryItem: item }))} className="relative rounded-[2rem] overflow-hidden group cursor-pointer">
-                <img src={item.image_url} alt={item.title} className="w-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
+                <img
+                  src={resolveImageUrl(item.image_url || item.image_path)}
+                  alt={item.title}
+                  className="w-full object-cover group-hover:scale-110 transition-transform duration-[2s]"
+                  onError={(e) => {
+                    if (e.currentTarget.dataset.fallbackApplied) return;
+                    e.currentTarget.dataset.fallbackApplied = '1';
+                    e.currentTarget.src = '/images/featured-work.png';
+                  }}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex flex-col justify-end">
                   <p className="text-[9px] font-bold text-[#E8734A] uppercase tracking-widest mb-1">{item.category}</p>
                   <h4 className="text-white font-serif text-lg">{item.title}</h4>
@@ -289,7 +298,16 @@ export default function Landing() {
           <div className="max-w-6xl w-full grid md:grid-cols-2 gap-8 md:gap-12 items-center bg-white p-6 md:p-16 rounded-[2.5rem] md:rounded-[3rem] border-2 border-black shadow-2xl relative" onClick={e => e.stopPropagation()}>
             <button onClick={() => setUi(p => ({ ...p, galleryItem: null }))} className="absolute top-6 right-6 md:top-8 md:right-8 text-2xl text-[#1E293B]/40 hover:text-[#1E293B] transition-colors">×</button>
             <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-2 border-black">
-              <img src={ui.galleryItem.image_url} alt={ui.galleryItem.title} className="w-full h-auto max-h-[50vh] md:max-h-[70vh] object-contain" />
+              <img
+                src={resolveImageUrl(ui.galleryItem.image_url || ui.galleryItem.image_path)}
+                alt={ui.galleryItem.title}
+                className="w-full h-auto max-h-[50vh] md:max-h-[70vh] object-contain"
+                onError={(e) => {
+                  if (e.currentTarget.dataset.fallbackApplied) return;
+                  e.currentTarget.dataset.fallbackApplied = '1';
+                  e.currentTarget.src = '/images/featured-work.png';
+                }}
+              />
             </div>
             <div className="space-y-6 md:space-y-8">
               <div className="space-y-2 md:space-y-3">
