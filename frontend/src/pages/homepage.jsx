@@ -19,6 +19,7 @@ export default function Landing() {
   const [loginForm, setLoginForm] = useState({ email: '', password: '', sub: false, err: '' });
   const [regForm, setRegForm] = useState({ name: '', email: '', password: '', conf: '', sub: false, err: '' });
   const { login, register } = useAuth();
+  const [heroVideoFailed, setHeroVideoFailed] = useState(false);
 
   useEffect(() => {
     if (new URLSearchParams(search).get('login') === 'true') {
@@ -184,7 +185,13 @@ export default function Landing() {
       </nav>
 
       <section className="h-[85vh] flex items-center justify-center bg-white relative">
-        <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-60"><source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" /></video>
+        {heroVideoFailed ? (
+          <img src="/images/studio-hero.png" alt="Hero Background" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+        ) : (
+          <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-60" poster="/images/studio-hero.png" onError={() => setHeroVideoFailed(true)}>
+            <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
+          </video>
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#F0F2F5]"></div>
         <div className="relative text-center space-y-6 px-6">
           <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#E8734A]">Bookings & Management</p>
