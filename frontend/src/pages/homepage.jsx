@@ -189,7 +189,7 @@ export default function Landing() {
           <img src="/images/studio-hero.png" alt="Hero Background" className="absolute inset-0 w-full h-full object-cover opacity-60" />
         ) : (
           <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-60" poster="/images/studio-hero.png" onError={() => setHeroVideoFailed(true)}>
-            <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
+            <source src="/videos/hero-camera.mp4" type="video/mp4" />
           </video>
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#F0F2F5]"></div>

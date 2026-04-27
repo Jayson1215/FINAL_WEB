@@ -165,7 +165,7 @@ export default function ClientLayout({ children, title, fullHero = false, hideHe
               <img src="/images/studio-hero.png" alt="Hero" className="w-full h-full object-cover opacity-50" />
             ) : (
               <video autoPlay muted loop playsInline className="w-full h-full object-cover opacity-50" poster="/images/studio-hero.png" onError={() => setHeroVideoFailed(true)}>
-                <source src="https://cdn.coverr.co/videos/coverr-looking-at-a-camera-lens-4171/1080p.mp4" type="video/mp4" />
+                <source src="/videos/hero-camera.mp4" type="video/mp4" />
               </video>
             )}
             <div className={`absolute inset-0 bg-gradient-to-b ${fullHero ? 'from-black/40 via-transparent to-[#F3F4F6]' : 'from-black/20 to-[#F3F4F6]'}`}></div>
