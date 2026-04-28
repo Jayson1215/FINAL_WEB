@@ -92,7 +92,7 @@ class PaymentController extends Controller
      */
     public function getAll()
     {
-        return response()->json(Payment::with(['booking.user', 'booking.service'])->get());
+        return response()->json(Payment::with(['booking.user', 'booking.service'])->latest()->get());
     }
 
     /**
