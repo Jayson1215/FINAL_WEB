@@ -195,7 +195,7 @@ export default function MyBookings() {
                                 onClick={async () => {
                                     setPayLoading(b.id);
                                     try {
-                                    const res = await paymentService.createCheckoutSession({ booking_id: b.id, type: 'balance' });
+                                    const res = await paymentService.createCheckoutSession({ booking_id: b.id, type: 'full' });
                                     if (res.data?.checkout_url) window.location.href = res.data.checkout_url;
                                     } catch (e) { alert(`Error: ${e.message}`); setPayLoading(null); }
                                 }} 
