@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class ServiceController extends Controller
 {
-    public function index() { return response()->json(Service::all()); }
+    public function index() { return response()->json(Service::orderBy('price', 'asc')->get()); }
 
     public function show(Service $service) { return response()->json($service); }
 

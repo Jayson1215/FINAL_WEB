@@ -33,8 +33,7 @@ const PageLoader = () => (
   <div className="flex justify-center items-center h-screen bg-[#F0F2F5]">
     <div className="text-center">
       <div className="w-12 h-12 border-[3px] border-[#E2E8F0] border-t-[#E8734A] rounded-full animate-spin mx-auto mb-6"></div>
-      <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#1E293B]">LIGHT Photography</p>
-      <p className="text-[9px] uppercase tracking-[0.4em] text-[#94A3B8] mt-2">On-Call Service</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#1E293B]">Loading Lightworks...</p>
     </div>
   </div>
 );
